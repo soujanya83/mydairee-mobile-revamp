@@ -48,7 +48,9 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                UIHelpers.logoHorizontal(),
+                Align(
+                  alignment: Alignment.center,
+                  child: UIHelpers.logoHorizontal()),
                 UIHelpers.verticalSpace(20),
                 UIHelpers.verticalSpace(10),
                 Text('Login to your admin account',

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/config/app_text.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
+import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_status_bar_widget.dart';
@@ -41,131 +42,115 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       child: CustomScaffold(
         body: Center(
           child: SingleChildScrollView(
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  )
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  UIHelpers.logoHorizontal(),
+                  UIHelpers.verticalSpace(20),
+                  const Text(
+                    'Set New Password',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  UIHelpers.verticalSpace(20),
+            
+                  /// Email Field
+                  CustomTextFormWidget(
+                    controller: emailController,
+                    title: 'Your Email',
+                    hintText: 'Enter your email',
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Please enter email' : null,
+                    onChanged: (val) {
+                      context.read<LoginBloc>().add(EmailChanged(val!));
+                    },
+                  ),
+                  UIHelpers.verticalSpace(15),
+            
+                  /// New Password Field
+                  BlocBuilder<LoginBloc, LoginState>(
+                    builder: (context, state) {
+                      return CustomTextFormWidget(
+                        controller: newPasswordController,
+                        title: 'New Password',
+                        hintText: 'Enter new password',
+                        isObs: !state.isPasswordVisible,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter new password';
+                          }
+                          return null;
+                        },
+                        onChanged: (val) {
+                          context
+                              .read<LoginBloc>()
+                              .add(PasswordChanged(val!));
+                        },
+                        suffixWidget: InkWell(
+                          onTap: () {
+                            context.read<LoginBloc>().add(
+                                PasswordVisibilityChanged(
+                                    !state.isPasswordVisible));
+                          },
+                          child: Icon(
+                            state.isPasswordVisible
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  UIHelpers.verticalSpace(15),
+            
+                  /// Confirm Password Field
+                  BlocBuilder<LoginBloc, LoginState>(
+                    builder: (context, state) {
+                      return CustomTextFormWidget(
+                        controller: confirmPasswordController,
+                        title: 'Confirm Password',
+                        hintText: 'Confirm password',
+                        isObs: false,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm password';
+                          } else if (value != newPasswordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                        onChanged: (val) {
+                          // handle confirm password change if needed
+                        },
+                        suffixWidget: InkWell(
+                          onTap: () {
+                            
+                          },
+                          child: const Icon(
+                            false
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  UIHelpers.verticalSpace(25),
+                  /// Submit Button
+                  CustomButton(
+                    text: 'Update Password',
+                    ontap: () {
+                      if (_formKey.currentState!.validate()) {
+                        // Handle password reset
+                      }
+                    },
+                  ),
                 ],
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    UIHelpers.logoHorizontal(),
-                    UIHelpers.verticalSpace(20),
-                    const Text(
-                      'Set New Password',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    UIHelpers.verticalSpace(20),
-
-                    /// Email Field
-                    CustomTextFormWidget(
-                      controller: emailController,
-                      title: 'Your Email',
-                      hintText: 'Enter your email',
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Please enter email' : null,
-                      onChanged: (val) {
-                        context.read<LoginBloc>().add(EmailChanged(val!));
-                      },
-                    ),
-                    UIHelpers.verticalSpace(15),
-
-                    /// New Password Field
-                    BlocBuilder<LoginBloc, LoginState>(
-                      builder: (context, state) {
-                        return CustomTextFormWidget(
-                          controller: newPasswordController,
-                          title: 'New Password',
-                          hintText: 'Enter new password',
-                          isObs: !state.isPasswordVisible,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter new password';
-                            }
-                            return null;
-                          },
-                          onChanged: (val) {
-                            context
-                                .read<LoginBloc>()
-                                .add(PasswordChanged(val!));
-                          },
-                          suffixWidget: InkWell(
-                            onTap: () {
-                              context.read<LoginBloc>().add(
-                                  PasswordVisibilityChanged(
-                                      !state.isPasswordVisible));
-                            },
-                            child: Icon(
-                              state.isPasswordVisible
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    UIHelpers.verticalSpace(15),
-
-                    /// Confirm Password Field
-                    BlocBuilder<LoginBloc, LoginState>(
-                      builder: (context, state) {
-                        return CustomTextFormWidget(
-                          controller: confirmPasswordController,
-                          title: 'Confirm Password',
-                          hintText: 'Confirm password',
-                          isObs: false,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please confirm password';
-                            } else if (value != newPasswordController.text) {
-                              return 'Passwords do not match';
-                            }
-                            return null;
-                          },
-                          onChanged: (val) {
-                            // handle confirm password change if needed
-                          },
-                          suffixWidget: InkWell(
-                            onTap: () {
-                              
-                            },
-                            child: Icon(
-                              false
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    UIHelpers.verticalSpace(25),
-
-                    /// Submit Button
-                    CustomButton(
-                      text: 'Update Password',
-                      ontap: () {
-                        if (_formKey.currentState!.validate()) {
-                          // Handle password reset
-                        }
-                      },
-                    ),
-                  ],
-                ),
               ),
             ),
           ),

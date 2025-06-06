@@ -14,4 +14,9 @@ class UIHelpers {
         height: height,
         width: width,
       );
+  static Widget popIcon(BuildContext context) => IconButton(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      icon: Icon(Icons.arrow_back_ios_new));
 }

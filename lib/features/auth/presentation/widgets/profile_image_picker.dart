@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/main.dart';
 
 class ProfileImagePicker extends StatelessWidget {
   final XFile? selectedImage;
@@ -23,10 +24,11 @@ class ProfileImagePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double radius = screenWidth * 0.15; 
     return Stack(
       children: [
         CircleAvatar(
-          radius: 40,
+          radius: radius,
           backgroundColor: AppColors.primaryColor.withOpacity(0.2),
           backgroundImage: selectedImage != null
               ? Image.file(
@@ -39,8 +41,8 @@ class ProfileImagePicker extends StatelessWidget {
               : null,
         ),
         Positioned(
-          bottom: 0,
-          right: 0,
+          bottom: radius * 0.1,
+          right: radius * 0.1,
           child: GestureDetector(
             onTap: _pickImage,
             child: Container(

@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget{
         theme: RAppTheme.lightTheme, // Apply the custom light theme
         darkTheme: RAppTheme.lightTheme, // Apply the custom dark theme
         themeMode: ThemeMode.system, // Use the current theme mode from provider
-        home:   const ForgotPasswordScreen(),
+        home:   const SplashScreen(),
       ), 
     );
   }

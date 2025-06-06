@@ -6,13 +6,14 @@ class PatternBackground extends StatelessWidget {
   final List<BoxShadow>? boxShadow;
   final BorderRadius? borderRadius;
   final double? elevation;
+  final EdgeInsetsGeometry? padding;
 
   const PatternBackground(
       {super.key,
       required this.child,
       this.boxShadow,
       this.borderRadius,
-      this.elevation});
+      this.elevation, this.padding});
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +21,7 @@ class PatternBackground extends StatelessWidget {
       borderRadius:borderRadius?? BorderRadius.circular(12),
       elevation:elevation?? 1,
       child: Container(
+        padding: padding?? EdgeInsets.zero,
         decoration: BoxDecoration(
           image: const DecorationImage(
             image: AssetImage(AppAssets.background),

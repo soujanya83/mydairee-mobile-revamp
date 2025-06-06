@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mydiaree/core/utils/ui_helper.dart';
+import 'package:mydiaree/core/widgets/custom_status_bar_widget.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/use_type/user_state.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/use_type/user_type_bloc.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/use_type/user_type_event.dart';
@@ -11,90 +13,95 @@ import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 class UserType extends StatelessWidget {
   const UserType({super.key});
   @override
-  Widget build(BuildContext context) {
-    return CustomScaffold(
-      body: BlocBuilder<UserTypeBloc, UserTypeState>(
-        builder: (context, state) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.15),
-                const Text(
-                  "Welcome!",
-                  style: TextStyle(
-                    fontSize: 28.0,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
+  Widget build(BuildContext context){
+    return StatusBarCustom(
+      child: CustomScaffold(
+        body: BlocBuilder<UserTypeBloc, UserTypeState>(
+          builder: (context, state) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column( 
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                  UIHelpers.logoHorizontal(),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                  const Text(
+                    "Welcome!",
+                    style: TextStyle(
+                      fontSize: 28.0,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Select User Type",
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    color: Colors.black54,
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Select User Type",
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      color: Colors.black54,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 32),
-                _buildSelectableOption(
-                  context,
-                  "Admin",
-                  AppAssets.admin,
-                  state.selectedRole == "Admin",
-                ),
-                _buildSelectableOption(
-                  context,
-                  "Staff",
-                  AppAssets.staff,
-                  state.selectedRole == "Staff",
-                ),
-                _buildSelectableOption(
-                  context,
-                  "Parent",
-                  AppAssets.parent,
-                  state.selectedRole == "Parent",
-                ),
-                const Spacer(),
-                if (state.showNextButton)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 32.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor,
-                          borderRadius: BorderRadius.circular(200),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                          border: Border.all(
-                            color: AppColors.primaryColor.withOpacity(0.3),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
+                  const SizedBox(height: 32),
+                  _buildSelectableOption(
+                    context,
+                    "Admin",
+                    AppAssets.admin,
+                    state.selectedRole == "Admin",
+                  ),
+                  _buildSelectableOption(
+                    context,
+                    "Staff",
+                    AppAssets.staff,
+                    state.selectedRole == "Staff",
+                  ),
+                  _buildSelectableOption(
+                    context,
+                    "Parent",
+                    AppAssets.parent,
+                    state.selectedRole == "Parent",
+                  ),
+                  const Spacer(),
+                  if (state.showNextButton)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 32.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
                             borderRadius: BorderRadius.circular(200),
-                            onTap: () =>
-                                _navigateBasedOnSelection(context, state),
-                            splashColor: Colors.white.withOpacity(0.2),
-                            highlightColor: Colors.white.withOpacity(0.1),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              alignment: Alignment.center,
-                              child: const Text(
-                                "Next",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: AppColors.primaryColor.withOpacity(0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(200),
+                              onTap: () =>
+                                  _navigateBasedOnSelection(context, state),
+                              splashColor: Colors.white.withOpacity(0.2),
+                              highlightColor: Colors.white.withOpacity(0.1),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  "Next",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
@@ -102,11 +109,11 @@ class UserType extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          );
-        },
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
