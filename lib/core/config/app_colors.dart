@@ -13,6 +13,7 @@ class AppColors {
   static const Color black = Colors.black;
   static const Color textColor = Color(0xFF333333); // Main text color
   static const Color errorColor = Colors.redAccent;
+  static const Color successColor = Color(0xFF1ABB50); // Success color
   static const Color grey = Color(0xFFD9D9D9);
   static final Color greyShade = Colors.grey.shade400;
   static final Color greyShadeLight = Colors.grey.shade100;

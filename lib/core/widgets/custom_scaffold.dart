@@ -18,17 +18,15 @@ class CustomScaffold extends StatelessWidget {
           fit: BoxFit.cover,
         ),
       ),
-      Scaffold( 
-         extendBodyBehindAppBar: true,
-        appBar: appBar??
+      Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: appBar ??
             AppBar(
-              
               backgroundColor: Colors.transparent,
-              elevation: 0, 
+              elevation: 0,
               automaticallyImplyLeading: true,
               centerTitle: true,
-            )
-        ,
+            ),
         backgroundColor: Colors.transparent,
         body: body,
       )

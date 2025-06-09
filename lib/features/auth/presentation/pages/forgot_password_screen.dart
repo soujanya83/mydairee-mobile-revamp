@@ -81,7 +81,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ontap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return const ResetPasswordScreen();
+                        return   ResetPasswordScreen();
                       }));
                     },
                   ),
@@ -100,7 +100,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         onTap: () {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
-                            return const LoginScreen();
+                            return   LoginScreen();
                           }));
                         },
                         child: Text(
