@@ -7,7 +7,7 @@ import 'package:mydiaree/features/auth/presentation/bloc/use_type/user_type_bloc
 import 'package:mydiaree/features/auth/presentation/bloc/use_type/user_type_event.dart';
 import 'package:mydiaree/core/config/app_asset.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
-import 'package:mydiaree/features/auth/presentation/pages/login_screen.dart';
+import 'package:mydiaree/features/auth/presentation/pages/admin/login_screen.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 
 class UserType extends StatelessWidget {

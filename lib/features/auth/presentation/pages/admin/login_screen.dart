@@ -7,8 +7,8 @@ import 'package:mydiaree/features/auth/presentation/bloc/login/login_state.dart'
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/config/app_text.dart';
 import 'package:mydiaree/main.dart';
-import 'package:mydiaree/features/auth/presentation/pages/forgot_password_screen.dart';
-import 'package:mydiaree/features/auth/presentation/pages/sign_up_screen.dart';
+import 'package:mydiaree/features/auth/presentation/pages/admin/forgot_password_screen.dart';
+import 'package:mydiaree/features/auth/presentation/pages/admin/sign_up_screen.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_status_bar_widget.dart';

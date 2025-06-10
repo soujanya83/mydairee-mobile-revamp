@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mydiaree/features/auth/data/repositories/repository.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
+import 'package:mydiaree/features/auth/data/repositories/auth_repository.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/login/login_event.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/login/login_state.dart';
 
@@ -37,14 +38,18 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         emit(LoginLoading.fromState(state));
         await Future.delayed(const Duration(seconds: 2));
         try {
-          final loginData = await repository.loginUser(
+          final response = await repository.loginUser(
             event.email,
             event.password,
           );
-          emit(
-              LoginSuccess(message: "Login successful!", loginData: loginData));
-        } catch (e,s) {
-          emit(LoginError.fromState(state, e.toString()));
+          if (response.success) {
+            emit(LoginSuccess(
+                message: "Login successful!", loginData: response.data));
+          } else {
+            emit(LoginError.fromState(state, response.message.toString()));
+          }
+        } catch (e, s) {
+          emit(LoginError.fromState(state, defaultErrorMessage().toString()));
         }
         emit(LoginInitial.fromState(state));
       }

@@ -1,12 +1,19 @@
-import 'package:dio/dio.dart';
-class ApiServices{
+import 'dart:convert';
 
- static  Future<dynamic> fetchData(String url) async {
+import 'package:dio/dio.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
+import 'package:mydiaree/core/utils/helper_functions.dart';
+
+class ApiServices {
+  static Future<dynamic> fetchData(String url) async {
     final dio = Dio();
     try {
       final response = await dio.get(url);
       if (response.statusCode != 200) {
-        return {'error': 'Failed to load data', 'statusCode': response.statusCode};
+        return {
+          'error': 'Failed to load data',
+          'statusCode': response.statusCode
+        };
       }
       return response.data;
     } catch (e) {
@@ -14,11 +21,47 @@ class ApiServices{
     }
   }
 
- static Future<dynamic> postData(
+  static Future<ApiResponse> getData(
+    String url, {
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    final dio = Dio();
+    try {
+      Options? options;
+      if (headers != null) {
+        options = Options(headers: headers);
+      }
+
+      final response = await dio.get(
+        url,
+        queryParameters: queryParameters,
+        options: options,
+      );
+
+      if (validApiResponse(response)) {
+        return ApiResponse(
+          success: true,
+          data: response.data,
+          message: 'Success',
+        );
+      } else {
+        return ApiResponse(
+          success: false,
+          data: response.data,
+          message: getApiMessage(response.data),
+        );
+      }
+    } catch (e) {
+      return ApiResponse(success: false, message: 'Something Went Wrong');
+    }
+  }
+
+  static Future<ApiResponse> postData(
     String url,
     dynamic data, {
     Map<String, dynamic>? headers,
-    List<MultipartFile>? files,
+    List<String>? filesPath,
     String? fileField = 'file',
   }) async {
     final dio = Dio();
@@ -29,6 +72,16 @@ class ApiServices{
       }
 
       dynamic body = data;
+      List<MultipartFile>? files;
+
+      if (filesPath != null && filesPath.isNotEmpty) {
+        files = await Future.wait(
+          List.generate(filesPath.length, (index) {
+            return MultipartFile.fromFile(filesPath[index],
+                filename: filesPath[index].split('/').last);
+          }),
+        );
+      }
 
       // If files are provided, use FormData
       if (files != null && files.isNotEmpty) {
@@ -51,15 +104,42 @@ class ApiServices{
         data: body,
         options: options,
       );
-      if (response.statusCode != 200 && response.statusCode != 201) {
-        return {
-          'error': 'Failed to post data',
-          'statusCode': response.statusCode
-        };
+      if (validApiResponse(response)) {
+        return ApiResponse(
+            success: true,
+            data: response.data,
+            message: getApiMessage(response));
       }
-      return response.data;
+      return ApiResponse(
+          success: false,
+          data: response.data,
+          message: getApiMessage(response.data));
     } catch (e) {
-      return {'error': e.toString()};
+      return ApiResponse(success: false, message: 'Something Went Wrong');
     }
+  }
+
+  static Future<dynamic> fetchDataDummy(String url) async {
+    await Future.delayed(const Duration(seconds: 2));
+    return {
+      'statusCode': 200,
+      'message': 'Dummy fetch successful',
+      'data': {'url': url, 'result': 'This is dummy data'},
+    };
+  }
+
+  static Future<dynamic> postDataDummy(
+    String url,
+    dynamic data, {
+    Map<String, dynamic>? headers,
+    List<String>? filesPath,
+    String? fileField = 'file',
+  }) async {
+    await Future.delayed(const Duration(seconds: 4));
+    return {
+      'statusCode': 200,
+      'message': 'Dummy post successful',
+      'data': data,
+    };
   }
 }

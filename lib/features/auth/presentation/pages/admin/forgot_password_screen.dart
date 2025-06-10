@@ -4,8 +4,8 @@ import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/forgot_password/forgot_password_bloc.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/forgot_password/forgot_password_event.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/forgot_password/forgot_password_state.dart';
-import 'package:mydiaree/features/auth/presentation/pages/login_screen.dart';
-import 'package:mydiaree/features/auth/presentation/pages/reset_password_screen.dart';
+import 'package:mydiaree/features/auth/presentation/pages/admin/login_screen.dart';
+import 'package:mydiaree/features/auth/presentation/pages/admin/reset_password_screen.dart';
 import 'package:mydiaree/main.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
@@ -16,9 +16,7 @@ import 'package:mydiaree/core/config/app_asset.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   ForgotPasswordScreen({super.key});
-
   final _formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
@@ -54,32 +52,35 @@ class ForgotPasswordScreen extends StatelessWidget {
                         UIHelpers.verticalSpace(30),
                         Text(
                           "Recover my password",
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 18,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18,
+                                  ),
                         ),
                         UIHelpers.verticalSpace(12),
                         Text(
                           "Please enter your email address below to receive instructions(OTP) for resetting password.",
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.black87,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.black87,
+                                  ),
                         ),
                         UIHelpers.verticalSpace(20),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Enter Email",
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
                           ),
                         ),
                         UIHelpers.verticalSpace(8),
                         CustomTextFormWidget(
-                          hintText: "Enter Email address", 
+                          hintText: "Enter Email address",
                           validator: (val) {
                             if (val == null || val.isEmpty) {
                               return "Please enter a valid input";

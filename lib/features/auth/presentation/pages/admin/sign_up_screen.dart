@@ -14,8 +14,8 @@ import 'package:mydiaree/core/widgets/custom_text_field.dart'
 import 'package:mydiaree/features/auth/presentation/bloc/signup/signup_bloc.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/signup/signup_event.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/signup/signup_state.dart';
-import 'package:mydiaree/features/auth/presentation/pages/login_screen.dart';
-import 'package:mydiaree/features/auth/presentation/pages/otp_verify_screen.dart';
+import 'package:mydiaree/features/auth/presentation/pages/admin/login_screen.dart';
+import 'package:mydiaree/features/auth/presentation/pages/admin/otp_verify_screen.dart';
 import 'package:mydiaree/features/auth/presentation/widgets/profile_image_picker.dart';
 
 class SignUpScreen extends StatelessWidget {

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_asset.dart';
-import 'package:mydiaree/features/auth/presentation/pages/user_type_screen.dart';
+import 'package:mydiaree/features/auth/presentation/pages/admin/user_type_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

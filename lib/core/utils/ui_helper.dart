@@ -18,7 +18,7 @@ class UIHelpers {
       onPressed: () {
         Navigator.pop(context);
       },
-      icon: Icon(Icons.arrow_back_ios_new));
+      icon: const Icon(Icons.arrow_back_ios_new));
 
 
       static void showToast(

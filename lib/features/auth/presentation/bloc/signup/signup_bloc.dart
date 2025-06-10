@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:mydiaree/features/auth/data/repositories/repository.dart';
+import 'package:mydiaree/features/auth/data/repositories/auth_repository.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/signup/signup_event.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/signup/signup_state.dart';
 
@@ -42,17 +42,21 @@ class SignupBloc extends Bloc<SignupEvent, SignUpState> {
     on<SignupSubmitted>((event, emit) async {
       emit(SignUpLoading.fromState(state));
       try {
-        final signupData = await repository.registerUser(
+        final response = await repository.registerUser(
           name: state.name,
           username: state.username,
           email: state.email,
           password: state.password,
           contact: state.contact,
         );
-        emit(SignUpSuccess(
-          message: 'Signup successful',
-          signupData: signupData,
-        ));
+        if (response.success) {
+          emit(SignUpSuccess(
+            message: response.message,
+            signupData: response.data,
+          ));
+        } else {
+          emit(SignUpError.fromState(state, response.message.toString()));
+        }
       } catch (e) {
         emit(SignUpError.fromState(state, e.toString()));
       }
