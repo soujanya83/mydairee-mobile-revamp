@@ -11,7 +11,7 @@ import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/login/login_bloc.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/login/login_event.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/login/login_state.dart';
-import 'package:mydiaree/features/auth/presentation/bloc/resetpassowd/reset_passoword_bloc.dart';
+import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_passoword_bloc.dart';
 import 'package:mydiaree/main.dart' show screenWidth;
 
 class ResetPasswordScreen extends StatelessWidget {

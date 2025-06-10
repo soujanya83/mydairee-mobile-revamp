@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mydiaree/features/auth/presentation/bloc/resetpassowd/reset_password_event.dart';
-import 'package:mydiaree/features/auth/presentation/bloc/resetpassowd/reset_password_state.dart';
+import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_password_event.dart';
+import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_password_state.dart';
 
 class UpdatePasswordBloc extends Bloc<UpdatePasswordEvent, UpdatePasswordState> {
   UpdatePasswordBloc() : super(const UpdatePasswordInitial()) {
@@ -35,10 +35,7 @@ class UpdatePasswordBloc extends Bloc<UpdatePasswordEvent, UpdatePasswordState> 
         ));
         return;
       }
-
-      // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
-      // On success
       emit(UpdatePasswordSuccess(
         newPassword: state.newPassword,
         confirmPassword: state.confirmPassword,
