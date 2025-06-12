@@ -18,6 +18,7 @@ import 'package:mydiaree/features/auth/presentation/pages/admin/login_screen.dar
 import 'package:mydiaree/features/auth/presentation/pages/admin/otp_verify_screen.dart';
 import 'package:mydiaree/features/auth/presentation/widgets/profile_image_picker.dart';
 
+// ignore: must_be_immutable
 class SignUpScreen extends StatelessWidget {
   SignUpScreen({super.key});
 
@@ -29,6 +30,18 @@ class SignUpScreen extends StatelessWidget {
   ];
 
   final _formKey = GlobalKey<FormState>();
+  // TextEditingControllers for each input field
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController contactController = TextEditingController();
+  final TextEditingController dobController = TextEditingController();
+
+  // Other variables
+  String? gender = 'Select Gender';
+  XFile? profileImage;
+  bool isPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +53,13 @@ class SignUpScreen extends StatelessWidget {
             Navigator.push(
               // ignore: use_build_context_synchronously
               context,
-              MaterialPageRoute(
-                  builder: (context) => const OtpVerifyScreen()),
+              MaterialPageRoute(builder: (context) => const OtpVerifyScreen()),
             );
           });
         }
         if (state is SignUpError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage)),
+            SnackBar(content: Text(state.message)),
           );
         }
       },
@@ -73,26 +85,28 @@ class SignUpScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: Text(
                           'SuperAdmin Details',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ),
                     ),
                     UIHelpers.verticalSpace(40),
-                    Align(
-                      alignment: Alignment.center,
-                      child: ProfileImagePicker(
-                        selectedImage: state.profileImage,
-                        onImagePicked: (picked) {
-                          context
-                              .read<SignupBloc>()
-                              .add(SignupImageChanged(picked));
-                        },
-                      ),
+                    StatefulBuilder(
+                      builder: (context, setState) {
+                        return Align(
+                          alignment: Alignment.center,
+                          child: ProfileImagePicker(
+                            selectedImage: profileImage,
+                            onImagePicked: (picked) {
+                              setState(() {
+                                profileImage = picked;
+                              });
+                            },
+                          ),
+                        );
+                      },
                     ),
                     UIHelpers.verticalSpace(20),
                     Wrap(
@@ -102,87 +116,79 @@ class SignUpScreen extends StatelessWidget {
                         CustomTextFormWidget(
                           title: 'Name',
                           hintText: 'Enter your name',
-                          controller: TextEditingController(text: state.name),
-                          onChanged: (val) => context
-                              .read<SignupBloc>()
-                              .add(SignupNameChanged(val!)),
+                          controller: nameController,
+                          onChanged: (val) {},
                           validator: validateName,
                         ),
                         CustomTextFormWidget(
                           title: 'Username',
                           hintText: 'Enter your username',
-                          controller:
-                              TextEditingController(text: state.username),
-                          onChanged: (val) => context
-                              .read<SignupBloc>()
-                              .add(SignupUsernameChanged(val!)),
+                          controller: usernameController,
+                          onChanged: (val) {},
                           validator: validateUsername,
                         ),
                         CustomTextFormWidget(
                           title: 'Email ID',
                           hintText: 'Enter your email',
                           keyboardType: TextInputType.emailAddress,
-                          controller:
-                              TextEditingController(text: state.email),
-                          onChanged: (val) => context
-                              .read<SignupBloc>()
-                              .add(SignupEmailChanged(val!)),
+                          controller: emailController,
+                          onChanged: (val) {},
                           validator: validateEmail,
                         ),
-                        CustomTextFormWidget(
-                          title: 'Password',
-                          hintText: 'Enter your password',
-                          isObs: !(state.isPasswordVisible ?? false),
-                          controller:
-                              TextEditingController(text: state.password),
-                          onChanged: (val) => context
-                              .read<SignupBloc>()
-                              .add(SignupPasswordChanged(val!)),
-                          validator: validatePassword,
-                          suffixWidget: IconButton(
-                            onPressed: () => context.read<SignupBloc>().add(
-                                  SignupPasswordChanged(
-                                    state.password ?? '',
-                                  ),
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            return CustomTextFormWidget(
+                              title: 'Password',
+                              hintText: 'Enter your password',
+                              isObs: !isPasswordVisible,
+                              controller: passwordController,
+                              onChanged: (val) {},
+                              validator: validatePassword,
+                              suffixWidget: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    isPasswordVisible = !isPasswordVisible;
+                                  });
+                                },
+                                icon: Icon(
+                                  isPasswordVisible
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
                                 ),
-                            icon: Icon(
-                              state.isPasswordVisible ?? false
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                          ),
+                              ),
+                            );
+                          },
                         ),
                         CustomTextFormWidget(
                           title: 'Contact No',
                           hintText: 'Enter your phone number',
                           keyboardType: TextInputType.phone,
-                          controller:
-                              TextEditingController(text: state.contact),
-                          onChanged: (val) => context
-                              .read<SignupBloc>()
-                              .add(SignupContactChanged(val!)),
+                          controller: contactController,
+                          onChanged: (val) {},
                           validator: validateContact,
                         ),
                         Text(
                           'Gender',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
-                        CustomDropdownWidget(
-                          items: genderOptions,
-                          selectedValue: state.gender ?? 'Select',
-                          onChanged: (val) {
-                            context
-                                .read<SignupBloc>()
-                                .add(SignupGenderChanged(val ?? ''));
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            return CustomDropdownWidget(
+                              items: genderOptions,
+                              selectedValue: gender ?? 'Select Gender',
+                              onChanged: (val) {
+                                setState(() {
+                                  gender = val;
+                                });
+                              },
+                            );
                           },
                         ),
                         CustomTextFormWidget(
-                          controller: TextEditingController(text: state.dob),
+                          controller: dobController,
                           readOnly: true,
                           ontap: () async {
                             final picked = await showDatePicker(
@@ -192,10 +198,8 @@ class SignUpScreen extends StatelessWidget {
                               lastDate: DateTime.now(),
                             );
                             if (picked != null) {
-                              context.read<SignupBloc>().add(
-                                    SignupDobChanged(DateFormat('MM/dd/yyyy')
-                                        .format(picked)),
-                                  );
+                              dobController.text =
+                                  DateFormat('MM/dd/yyyy').format(picked);
                             }
                           },
                           title: 'Date of Birth',
@@ -212,11 +216,19 @@ class SignUpScreen extends StatelessWidget {
                       ontap: (state is SignUpLoading)
                           ? null
                           : () {
-                              // if (_formKey.currentState?.validate() ?? false)
-                              {
+                              if (_formKey.currentState?.validate() ?? false) {
                                 FocusScope.of(context).unfocus();
                                 context.read<SignupBloc>().add(
-                                      const SignupSubmitted(),
+                                      SignupSubmitted(
+                                        name: nameController.text,
+                                        username: usernameController.text,
+                                        email: emailController.text,
+                                        password: passwordController.text,
+                                        contact: contactController.text,
+                                        dob: dobController.text,
+                                        gender: gender ?? '',
+                                        profileImage: profileImage,
+                                      ),
                                     );
                               }
                             },

@@ -63,6 +63,7 @@ class ApiServices {
     Map<String, dynamic>? headers,
     List<String>? filesPath,
     String? fileField = 'file',
+    bool dummy = false
   }) async {
     final dio = Dio();
     try {
@@ -97,6 +98,14 @@ class ApiServices {
           formData.files.add(MapEntry(fileField!, file));
         }
         body = formData;
+      }
+
+      if (dummy){
+        await Future.delayed(const Duration(seconds: 3));
+        return ApiResponse(
+          success: true,
+          message: 'Dummy post successful',
+        );
       }
 
       final response = await dio.post(

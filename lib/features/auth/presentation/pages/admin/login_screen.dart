@@ -14,10 +14,15 @@ import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_status_bar_widget.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 
+// ignore: must_be_immutable
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
+  bool isPasswordVisible = false;
+  bool isRemembered = false;
   @override
   Widget build(BuildContext context) {
     return StatusBarCustom(
@@ -45,11 +50,10 @@ class LoginScreen extends StatelessWidget {
                     UIHelpers.verticalSpace(30),
                     CustomTextFormWidget(
                       title: AppTexts.emailHint,
+                      controller: emailController,
                       hintText: 'Enter your email',
                       keyboardType: TextInputType.emailAddress,
-                      onChanged: (val) {
-                        context.read<LoginBloc>().add(EmailChanged(val!));
-                      },
+                      onChanged: (val) {},
                       validator: (value) =>
                           value!.isEmpty ? 'Enter email' : null,
                     ),
@@ -59,30 +63,30 @@ class LoginScreen extends StatelessWidget {
                         return CustomTextFormWidget(
                           hintText: 'Enter your password',
                           title: AppTexts.passwordHint,
-                          isObs: !(state.isPasswordVisible ?? false),
+                          isObs: !isPasswordVisible,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter password';
                             }
                             return null;
                           },
-                          onChanged: (val) {
-                            print('Password changed: $val');
-                            context
-                                .read<LoginBloc>()
-                                .add(PasswordChanged(val!));
-                          },
-                          suffixWidget: InkWell(
-                            onTap: () {
-                              context.read<LoginBloc>().add(
-                                  PasswordVisibilityChanged(
-                                      !(state.isPasswordVisible ?? false)));
+                          controller: passwordController,
+                          onChanged: (val) {},
+                          suffixWidget: StatefulBuilder(
+                            builder: (context, setState) {
+                              return InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    isPasswordVisible = !isPasswordVisible;
+                                  });
+                                },
+                                child: Icon(
+                                  isPasswordVisible
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off,
+                                ),
+                              );
                             },
-                            child: Icon(
-                              (state.isPasswordVisible ?? false)
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off,
-                            ),
                           ),
                         );
                       },
@@ -90,18 +94,22 @@ class LoginScreen extends StatelessWidget {
                     UIHelpers.verticalSpace(10),
                     Row(
                       children: [
-                        Checkbox(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          value: state.isRemembered,
-                          onChanged: (value) {
-                            context
-                                .read<LoginBloc>()
-                                .add(RememberMeChanged(isRemembered: value!));
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            return Checkbox(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              value: isRemembered,
+                              onChanged: (value) {
+                                setState(() {
+                                  isRemembered = value!;
+                                });
+                              },
+                              fillColor: const WidgetStatePropertyAll(
+                                  AppColors.primaryColor),
+                            );
                           },
-                          fillColor: const WidgetStatePropertyAll(
-                              AppColors.primaryColor),
                         ),
                         Text(AppTexts.rememberMe,
                             style: Theme.of(context).textTheme.bodySmall),
@@ -110,7 +118,7 @@ class LoginScreen extends StatelessWidget {
                           onTap: () {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
-                              return   ForgotPasswordScreen();
+                              return ForgotPasswordScreen();
                             }));
                           },
                           child: Text(AppTexts.forgotPassword,
@@ -127,7 +135,7 @@ class LoginScreen extends StatelessWidget {
                       if (state is LoginError) {
                         UIHelpers.showToast(
                           context,
-                          message: state.errorMessage,
+                          message: state.message,
                           backgroundColor: AppColors.errorColor,
                         );
                       } else if (state is LoginSuccess) {
@@ -136,54 +144,17 @@ class LoginScreen extends StatelessWidget {
                           message: state.message,
                           backgroundColor: AppColors.successColor,
                         );
-                      }  
-
-                      // if (state is LoginSuccess) {
-                      //   ScaffoldMessenger.of(context).showSnackBar(
-                      //     SnackBar(content: Text(state.message)),
-                      //   );
-                      //   // Navigate to the next screen or perform any action
-                      // }
-
-                      //  if (state is LoginLoading) {
-                      //   ScaffoldMessenger.of(context).showSnackBar(
-                      //       SnackBar(content: Text('${state.toString()}')),
-                      //   );
-                      // } else if (state is LoginSuccess) {
-                      //   ScaffoldMessenger.of(context).showSnackBar(
-                      //     SnackBar(content: Text(state.message)),
-                      //   );
-                      //   // Navigate to the next screen or perform any action
-                      // } else if (state is LoginError) {
-                      //   ScaffoldMessenger.of(context).showSnackBar(
-                      //     SnackBar(content: Text(state.errorMessage)),
-                      //   );
-                      // } else
-                      // if (state is LoginInitial) {
-                      //   ScaffoldMessenger.of(context).showSnackBar(
-                      //     const SnackBar(content: Text('Login Initial State')),
-                      //   );
-                      // }
-
-                      // else if (state is LoginError) {
-                      //   ScaffoldMessenger.of(context).showSnackBar(
-                      //     SnackBar(content: Text(state.errorMessage)),
-                      //   );
-                      // }
+                      }
                     }, child: BlocBuilder<LoginBloc, LoginState>(
                             builder: (context, state) {
                       return CustomButton(
                         text: AppTexts.login,
                         isLoading: state is LoginLoading,
                         ontap: () {
-                          context
-                              .read<LoginBloc>()
-                              .add(PasswordChanged('password'));
-                          context.read<LoginBloc>().add(EmailChanged('email'));
                           {
                             context.read<LoginBloc>().add(LoginSubmitted(
-                                  email: state.email ?? '',
-                                  password: state.password ?? '',
+                                  email: emailController.text,
+                                  password: passwordController.text,
                                 ));
                           }
                         },
@@ -194,7 +165,7 @@ class LoginScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return  SignUpScreen();
+                          return SignUpScreen();
                         }));
                       },
                       child: Text(AppTexts.dontHaveAccount,

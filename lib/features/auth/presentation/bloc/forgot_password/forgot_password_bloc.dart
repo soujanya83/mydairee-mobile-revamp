@@ -1,22 +1,21 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mydiaree/features/auth/data/repositories/auth_repository.dart';
 import 'forgot_password_event.dart';
 import 'forgot_password_state.dart';
 
 class ForgotPasswordBloc
     extends Bloc<ForgotPasswordEvent, ForgotPasswordState> {
+  AuthenticationRepository repository = AuthenticationRepository();
   ForgotPasswordBloc() : super(ForgotPasswordInitial()) {
-    on<ForgotPasswordEmailChanged>((event, emit) {
-      // Update the state with the new email
-      if (state is ForgotPasswordInitial) {
-        final currentState = state as ForgotPasswordInitial;
-        emit(currentState.copyWith(email: event.email));
-      }
-    });
-
     on<ForgotPasswordSubmitted>((event, emit) async {
       emit(ForgotPasswordLoading());
       try {
-        await Future.delayed(const Duration(seconds: 2));
+        final response = await repository.forgotPassword(email: event.email);
+        if (response.success) {
+          emit(ForgotPasswordSuccess(message: response.message));
+        } else {
+          emit(ForgotPasswordFailure(error: response.message));
+        }
       } catch (e) {
         emit(ForgotPasswordFailure(error: e.toString()));
       }

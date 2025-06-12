@@ -22,20 +22,19 @@ class ForgotPasswordScreen extends StatelessWidget {
     return BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
       listener: (context, state) {
         if (state is ForgotPasswordSuccess) {
-          UIHelpers.showToast(context, message: "OTP sent to your email.");
+          UIHelpers.showToast(context, message: state.message);
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
           );
         }
         if (state is ForgotPasswordFailure) {
-          UIHelpers.showToast(context, message: state.error ?? "Error");
+          UIHelpers.showToast(context, message: state.error.toString());
         }
       },
       builder: (context, state) {
         String? email = '';
-        if (state is ForgotPasswordInitial) {
-          email = state.email ?? '';
+        if (state is ForgotPasswordInitial) { 
         }
         return StatusBarCustom(
           child: CustomScaffold(
@@ -87,17 +86,12 @@ class ForgotPasswordScreen extends StatelessWidget {
                             }
                             return null;
                           },
-                          onChanged: (val) {
-                            context
-                                .read<ForgotPasswordBloc>()
-                                .add(ForgotPasswordEmailChanged(val ?? ''));
-                          },
+                          onChanged: (val) {  },
                         ),
                         UIHelpers.verticalSpace(30),
                         CustomButton(
-                          text: state is ForgotPasswordLoading
-                              ? "Please wait..."
-                              : "RESET PASSWORD",
+                          isLoading: state is ForgotPasswordLoading,
+                          text: "RESET PASSWORD",
                           width: screenWidth * 0.7,
                           ontap: state is ForgotPasswordLoading
                               ? null

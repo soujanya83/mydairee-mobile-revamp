@@ -5,38 +5,11 @@ import 'package:mydiaree/features/auth/presentation/bloc/login/login_event.dart'
 import 'package:mydiaree/features/auth/presentation/bloc/login/login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  AuthenticationRepository repository =
-      AuthenticationRepository(); // Assuming you have a Repository class to handle data operations
-
-  LoginBloc() : super(const LoginInitial()) {
-    on<EmailChanged>((event, emit) {
-      if (state is LoginInitial) {
-        emit((state as LoginInitial).copyWith(email: event.email));
-      }
-    });
-
-    on<PasswordChanged>((event, emit) {
-      if (state is LoginInitial) {
-        emit((state as LoginInitial).copyWith(password: event.password));
-      }
-    });
-
-    on<PasswordVisibilityChanged>((event, emit) {
-      if (state is LoginInitial || state is LoginError) {
-        emit((state as LoginInitial)
-            .copyWith(isPasswordVisible: event.isVisible));
-      }
-    });
-    on<RememberMeChanged>((event, emit) {
-      if (state is LoginInitial) {
-        emit(
-            (state as LoginInitial).copyWith(isRemembered: event.isRemembered));
-      }
-    });
+  AuthenticationRepository repository = AuthenticationRepository();
+  LoginBloc() : super(LoginInitial()) {
     on<LoginSubmitted>((event, emit) async {
       if (state is LoginInitial || state is LoginError) {
-        emit(LoginLoading.fromState(state));
-        await Future.delayed(const Duration(seconds: 2));
+        emit(LoginLoading());
         try {
           final response = await repository.loginUser(
             event.email,
@@ -44,14 +17,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           );
           if (response.success) {
             emit(LoginSuccess(
-                message: "Login successful!", loginData: response.data));
+                message: response.message, loginData: response.data));
           } else {
-            emit(LoginError.fromState(state, response.message.toString()));
+            emit(LoginError(message: response.message));
           }
         } catch (e, s) {
-          emit(LoginError.fromState(state, defaultErrorMessage().toString()));
+          emit(LoginError(message: defaultErrorMessage()));
         }
-        emit(LoginInitial.fromState(state));
+        emit(LoginInitial());
       }
     });
   }

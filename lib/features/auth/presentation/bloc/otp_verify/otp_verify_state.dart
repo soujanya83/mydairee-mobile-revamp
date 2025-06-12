@@ -1,44 +1,16 @@
-import 'package:equatable/equatable.dart';
+abstract class OtpVerifyState {}
 
-abstract class OtpVerifyState extends Equatable {
-  final String? otp;
+class OtpVerifyInitial extends OtpVerifyState {}
 
-  const OtpVerifyState({
-    this.otp = '',
-  });
-
-  @override
-  List<Object?> get props => [
-        otp,
-      ];
-}
-
-class OtpVerifyInitial extends OtpVerifyState {
-  const OtpVerifyInitial({super.otp = ''}) : super();
-
-    OtpVerifyInitial copyWith({String? otp}) {
-    return OtpVerifyInitial(otp: this.otp);
-  }
-
-  factory OtpVerifyInitial.fromState(OtpVerifyState state) {
-    return OtpVerifyInitial(
-      otp: state.otp,
-    );
-  }
-}
-
-class OtpVerifyLoading extends OtpVerifyState {
-  const OtpVerifyLoading({super.otp});
+class OtpVerifyLoading extends OtpVerifyState {  
 }
 
 class OtpVerifySuccess extends OtpVerifyState {
-  const OtpVerifySuccess({super.otp});
+   final String message;
+  OtpVerifySuccess({required this.message});
 }
 
 class OtpVerifyFailure extends OtpVerifyState {
-  final String error;
-  const OtpVerifyFailure({required this.error, super.otp});
-
-  @override
-  List<Object?> get props => [otp, error];
+  final String message;
+  OtpVerifyFailure({required this.message});
 }

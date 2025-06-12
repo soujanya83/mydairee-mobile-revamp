@@ -16,6 +16,7 @@ class OtpVerifyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _formKey = GlobalKey<FormState>();
+    final TextEditingController _otpController = TextEditingController();
 
     return BlocConsumer<OtpVerifyBloc, OtpVerifyState>(
       listener: (context, state) {
@@ -24,7 +25,7 @@ class OtpVerifyScreen extends StatelessWidget {
           // Navigate to next screen or perform success action
         }
         if (state is OtpVerifyFailure) {
-          UIHelpers.showToast(context, message: state.error);
+          UIHelpers.showToast(context, message: state.message);
         }
       },
       builder: (context, state) {
@@ -60,8 +61,9 @@ class OtpVerifyScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        CustomTextFormWidget( 
+                        CustomTextFormWidget(
                           hintText: 'Enter OTP',
+                          controller: _otpController,
                           keyboardType: TextInputType.number,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -69,18 +71,20 @@ class OtpVerifyScreen extends StatelessWidget {
                             }
                             return null;
                           },
-                          onChanged: (val) {
-                            context.read<OtpVerifyBloc>().add(OtpChanged(val ?? ''));
-                          },
+                          onChanged: (val) {},
                         ),
                         const SizedBox(height: 24),
                         CustomButton(
-                          text: state is OtpVerifyLoading ? "Verifying..." : "Verify OTP",
+                          text: state is OtpVerifyLoading
+                              ? "Verifying..."
+                              : "Verify OTP",
                           ontap: state is OtpVerifyLoading
                               ? null
                               : () {
                                   if (_formKey.currentState!.validate()) {
-                                    context.read<OtpVerifyBloc>().add(OtpSubmitted(state.otp ?? ''));
+                                    context
+                                        .read<OtpVerifyBloc>()
+                                        .add(OtpSubmitted(_otpController.text));
                                   }
                                 },
                         ),
@@ -93,7 +97,9 @@ class OtpVerifyScreen extends StatelessWidget {
                               onTap: state is OtpVerifyLoading
                                   ? null
                                   : () {
-                                      context.read<OtpVerifyBloc>().add(const OtpResendRequested());
+                                      context
+                                          .read<OtpVerifyBloc>()
+                                          .add(const OtpResendRequested());
                                     },
                               child: const Text(
                                 "Resend",

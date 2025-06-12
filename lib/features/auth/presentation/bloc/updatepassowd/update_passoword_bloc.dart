@@ -1,45 +1,37 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
+import 'package:mydiaree/features/auth/data/repositories/auth_repository.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_password_event.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_password_state.dart';
 
-class UpdatePasswordBloc extends Bloc<UpdatePasswordEvent, UpdatePasswordState> {
-  UpdatePasswordBloc() : super(const UpdatePasswordInitial()) {
-    on<UpdatePasswordNewPasswordChanged>((event, emit) {
-      emit(state.copyWith(newPassword: event.newPassword));
-    });
-
-    on<UpdatePasswordConfirmPasswordChanged>((event, emit) {
-      emit(state.copyWith(confirmPassword: event.confirmPassword));
-    });
-    
+class UpdatePasswordBloc
+    extends Bloc<UpdatePasswordEvent, UpdatePasswordState> {
+  AuthenticationRepository repository = AuthenticationRepository();
+  UpdatePasswordBloc() : super(UpdatePasswordInitial()) {
     on<UpdatePasswordSubmitted>((event, emit) async {
-      emit(UpdatePasswordSubmitting(
-        newPassword: state.newPassword,
-        confirmPassword: state.confirmPassword,
-      ));
-
-      // Simple validation example
-      if ((state.newPassword ?? '').isEmpty || (state.confirmPassword ?? '').isEmpty) {
+      emit(UpdatePasswordSubmitting());
+      try {
+        final response = await repository.updatePassword(
+          email: event.email ?? '',
+          newPassword: event.newPassword ?? '',
+        );
+        if (response.success) {
+          emit(UpdatePasswordSuccess(
+            message: response.message,
+          ));
+          return;
+        } else {
+          emit(UpdatePasswordFailure(
+            message: response.message,
+          ));
+          return;
+        }
+      } catch (e) {
         emit(UpdatePasswordFailure(
-          errorMessage: 'Please fill all fields',
-          newPassword: state.newPassword,
-          confirmPassword: state.confirmPassword,
+          message: defaultErrorMessage(),
         ));
         return;
       }
-      if (state.newPassword != state.confirmPassword) {
-        emit(UpdatePasswordFailure(
-          errorMessage: 'Passwords do not match',
-          newPassword: state.newPassword,
-          confirmPassword: state.confirmPassword,
-        ));
-        return;
-      }
-      await Future.delayed(const Duration(seconds: 2));
-      emit(UpdatePasswordSuccess(
-        newPassword: state.newPassword,
-        confirmPassword: state.confirmPassword,
-      ));
     });
   }
 }

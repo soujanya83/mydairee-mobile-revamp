@@ -8,23 +8,17 @@ class ApiResponse<T> {
   final String message;
   final T? data;
 
-  ApiResponse({required this.success,required this.message, this.data});
+  ApiResponse({required this.success, required this.message, this.data});
 }
 
-Future<ApiResponse<T?>> postAndParse<T>(
-  String url,
-  Map<String, dynamic> data, {
-  T Function(dynamic json)? fromJson,
-  List<String>? filesPath,
-  String? fileField,
-}) async {
+Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
+    {T Function(dynamic json)? fromJson,
+    List<String>? filesPath,
+    String? fileField,
+    bool dummy = false}) async {
   try {
-    final response = await ApiServices.postData(
-      url,
-      data,
-      filesPath: filesPath,
-      fileField: fileField,
-    );
+    final response = await ApiServices.postData(url, data,
+        filesPath: filesPath, fileField: fileField, dummy: dummy);
     if (response.success) {
       return ApiResponse(
         success: true,
@@ -63,8 +57,6 @@ Future<ApiResponse<T?>> getAndParseData<T>(
   }
 }
 
-
-
 String getApiMessage(Response response) {
   try {
     return jsonDecode(response.data)['msg'].toString();
@@ -74,5 +66,5 @@ String getApiMessage(Response response) {
 }
 
 String defaultErrorMessage() {
-    return 'Something Went Wrong'; 
+  return 'Something Went Wrong';
 }

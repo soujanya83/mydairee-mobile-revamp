@@ -1,88 +1,30 @@
 import 'package:equatable/equatable.dart';
 
-abstract class UpdatePasswordState extends Equatable {
-  final String? newPassword;
-  final String? confirmPassword;
+abstract class UpdatePasswordState {}
 
-  const UpdatePasswordState(this.newPassword, this.confirmPassword);
+class UpdatePasswordInitial extends UpdatePasswordState {}
 
-  @override
-  List<Object?> get props => [newPassword, confirmPassword];
+class UpdatePasswordSubmitting extends UpdatePasswordState {
+  UpdatePasswordSubmitting(
+      {String? newPassword, String? confirmPassword, String? email});
+}
 
-  UpdatePasswordState copyWith({
+class UpdatePasswordSuccess extends UpdatePasswordState {
+  final String? message;
+  UpdatePasswordSuccess({
     String? newPassword,
+    this.message,
+    String? email,
     String? confirmPassword,
   });
 }
 
-class UpdatePasswordInitial extends UpdatePasswordState {
-  const UpdatePasswordInitial({String? newPassword, String? confirmPassword})
-      : super(newPassword, confirmPassword);
-
-  @override
-  UpdatePasswordInitial copyWith({
-    String? newPassword,
-    String? confirmPassword,
-  }) {
-    return UpdatePasswordInitial(
-      newPassword: newPassword ?? this.newPassword,
-      confirmPassword: confirmPassword ?? this.confirmPassword,
-    );
-  }
-}
-
-class UpdatePasswordSubmitting extends UpdatePasswordState {
-  const UpdatePasswordSubmitting({String? newPassword, String? confirmPassword})
-      : super(newPassword, confirmPassword);
-
-  @override
-  UpdatePasswordSubmitting copyWith({
-    String? newPassword,
-    String? confirmPassword,
-  }) {
-    return UpdatePasswordSubmitting(
-      newPassword: newPassword ?? this.newPassword,
-      confirmPassword: confirmPassword ?? this.confirmPassword,
-    );
-  }
-}
-
-class UpdatePasswordSuccess extends UpdatePasswordState {
-  const UpdatePasswordSuccess({String? newPassword, String? confirmPassword})
-      : super(newPassword, confirmPassword);
-
-  @override
-  UpdatePasswordSuccess copyWith({
-    String? newPassword,
-    String? confirmPassword,
-  }) {
-    return UpdatePasswordSuccess(
-      newPassword: newPassword ?? this.newPassword,
-      confirmPassword: confirmPassword ?? this.confirmPassword,
-    );
-  }
-}
-
 class UpdatePasswordFailure extends UpdatePasswordState {
-  final String? errorMessage;
-
-  const UpdatePasswordFailure(
-      {this.errorMessage, String? newPassword, String? confirmPassword})
-      : super(newPassword, confirmPassword);
-
-  @override
-  List<Object?> get props => [errorMessage, newPassword, confirmPassword];
-
-  @override
-  UpdatePasswordFailure copyWith({
+  final String? message;
+  UpdatePasswordFailure({
     String? newPassword,
+    this.message,
+    String? email,
     String? confirmPassword,
-    String? errorMessage,
-  }) {
-    return UpdatePasswordFailure(
-      errorMessage: errorMessage ?? this.errorMessage,
-      newPassword: newPassword ?? this.newPassword,
-      confirmPassword: confirmPassword ?? this.confirmPassword,
-    );
-  }
+  });
 }
