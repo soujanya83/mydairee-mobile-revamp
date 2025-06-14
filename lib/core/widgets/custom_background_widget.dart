@@ -7,21 +7,28 @@ class PatternBackground extends StatelessWidget {
   final BorderRadius? borderRadius;
   final double? elevation;
   final EdgeInsetsGeometry? padding;
+  final double? height;
+  final double? width;
 
   const PatternBackground(
       {super.key,
       required this.child,
       this.boxShadow,
       this.borderRadius,
-      this.elevation, this.padding});
+      this.elevation,
+      this.padding,
+      this.height,
+      this.width});
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      borderRadius:borderRadius?? BorderRadius.circular(12),
-      elevation:elevation?? 1,
+      borderRadius: borderRadius ?? BorderRadius.circular(12),
+      elevation: elevation ?? 1,
       child: Container(
-        padding: padding?? EdgeInsets.zero,
+        height: height,
+        width: width,
+        padding: padding ?? EdgeInsets.zero,
         decoration: BoxDecoration(
           image: const DecorationImage(
             image: AssetImage(AppAssets.background),

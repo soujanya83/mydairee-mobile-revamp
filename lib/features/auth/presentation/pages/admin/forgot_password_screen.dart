@@ -14,9 +14,17 @@ import 'package:mydiaree/core/widgets/custom_status_bar_widget.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/config/app_asset.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
-  ForgotPasswordScreen({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController emailController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
@@ -25,7 +33,10 @@ class ForgotPasswordScreen extends StatelessWidget {
           UIHelpers.showToast(context, message: state.message);
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
+            MaterialPageRoute(
+                builder: (context) => ResetPasswordScreen(
+                      email: emailController.text,
+                    )),
           );
         }
         if (state is ForgotPasswordFailure) {
@@ -34,8 +45,7 @@ class ForgotPasswordScreen extends StatelessWidget {
       },
       builder: (context, state) {
         String? email = '';
-        if (state is ForgotPasswordInitial) { 
-        }
+        if (state is ForgotPasswordInitial) {}
         return StatusBarCustom(
           child: CustomScaffold(
             body: Center(
@@ -51,11 +61,11 @@ class ForgotPasswordScreen extends StatelessWidget {
                         UIHelpers.verticalSpace(30),
                         Text(
                           "Recover my password",
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 18,
-                                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
+                                  fontWeight: FontWeight.w600, fontSize: 18),
                         ),
                         UIHelpers.verticalSpace(12),
                         Text(
@@ -79,14 +89,10 @@ class ForgotPasswordScreen extends StatelessWidget {
                         ),
                         UIHelpers.verticalSpace(8),
                         CustomTextFormWidget(
+                          controller: emailController,
                           hintText: "Enter Email address",
-                          validator: (val) {
-                            if (val == null || val.isEmpty) {
-                              return "Please enter a valid input";
-                            }
-                            return null;
-                          },
-                          onChanged: (val) {  },
+                          validator: validateEmail,
+                          onChanged: (val) {},
                         ),
                         UIHelpers.verticalSpace(30),
                         CustomButton(
@@ -98,7 +104,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                               : () {
                                   if (_formKey.currentState!.validate()) {
                                     context.read<ForgotPasswordBloc>().add(
-                                          ForgotPasswordSubmitted(email ?? ''),
+                                          ForgotPasswordSubmitted(email),
                                         );
                                   }
                                 },

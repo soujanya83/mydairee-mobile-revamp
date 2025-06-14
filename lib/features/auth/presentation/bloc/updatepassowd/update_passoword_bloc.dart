@@ -12,10 +12,10 @@ class UpdatePasswordBloc
       emit(UpdatePasswordSubmitting());
       try {
         final response = await repository.updatePassword(
-          email: event.email ?? '',
-          newPassword: event.newPassword ?? '',
+          email: event.email,
+          newPassword: event.newPassword
         );
-        if (response.success) {
+        if (response.success){
           emit(UpdatePasswordSuccess(
             message: response.message,
           ));

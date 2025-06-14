@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/core/utils/helper_functions.dart';
 
@@ -57,16 +58,14 @@ class ApiServices {
     }
   }
 
-  static Future<ApiResponse> postData(
-    String url,
-    dynamic data, {
-    Map<String, dynamic>? headers,
-    List<String>? filesPath,
-    String? fileField = 'file',
-    bool dummy = false
-  }) async {
+  static Future<ApiResponse> postData(String url, dynamic data,
+      {Map<String, dynamic>? headers,
+      List<String>? filesPath,
+      String? fileField = 'file',
+      bool dummy = false}) async {
     final dio = Dio();
     try {
+      print(filesPath.toString());
       Options? options;
       if (headers != null) {
         options = Options(headers: headers);
@@ -74,33 +73,36 @@ class ApiServices {
 
       dynamic body = data;
       List<MultipartFile>? files;
-
       if (filesPath != null && filesPath.isNotEmpty) {
-        files = await Future.wait(
-          List.generate(filesPath.length, (index) {
-            return MultipartFile.fromFile(filesPath[index],
-                filename: filesPath[index].split('/').last);
-          }),
-        );
+        try {
+          files = await Future.wait(
+            List.generate(filesPath.length, (index) {
+              return MultipartFile.fromFile(filesPath[index],
+                  filename: filesPath[index].split('/').last);
+            }),
+          );
+        } catch (e) {
+          debugPrint(e.toString());
+        }
       }
 
-      // If files are provided, use FormData
       if (files != null && files.isNotEmpty) {
+        debugPrint('running here');
         final formData = FormData();
-        // Add fields from data if it's a Map
         if (data is Map<String, dynamic>) {
           formData.fields.addAll(
             data.entries.map((e) => MapEntry(e.key, e.value.toString())),
           );
         }
-        // Add files
         for (var file in files) {
           formData.files.add(MapEntry(fileField!, file));
         }
         body = formData;
       }
 
-      if (dummy){
+      if (dummy) {
+        print(body);
+        print(options);
         await Future.delayed(const Duration(seconds: 3));
         return ApiResponse(
           success: true,
@@ -123,7 +125,9 @@ class ApiServices {
           success: false,
           data: response.data,
           message: getApiMessage(response.data));
-    } catch (e) {
+    } catch (e, s) {
+      debugPrint(e.toString());
+      debugPrint(s.toString());
       return ApiResponse(success: false, message: 'Something Went Wrong');
     }
   }

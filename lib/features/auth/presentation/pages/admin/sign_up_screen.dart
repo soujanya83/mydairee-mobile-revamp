@@ -19,9 +19,13 @@ import 'package:mydiaree/features/auth/presentation/pages/admin/otp_verify_scree
 import 'package:mydiaree/features/auth/presentation/widgets/profile_image_picker.dart';
 
 // ignore: must_be_immutable
-class SignUpScreen extends StatelessWidget {
-  SignUpScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
+  @override
+  State<SignUpScreen> createState() => _SignUpScreenState();
+}
 
+class _SignUpScreenState extends State<SignUpScreen> {
   final List<String> genderOptions = const [
     'Select Gender',
     'Male',
@@ -30,17 +34,25 @@ class SignUpScreen extends StatelessWidget {
   ];
 
   final _formKey = GlobalKey<FormState>();
+
   // TextEditingControllers for each input field
   final TextEditingController nameController = TextEditingController();
+
   final TextEditingController usernameController = TextEditingController();
+
   final TextEditingController emailController = TextEditingController();
+
   final TextEditingController passwordController = TextEditingController();
+
   final TextEditingController contactController = TextEditingController();
+
   final TextEditingController dobController = TextEditingController();
 
   // Other variables
   String? gender = 'Select Gender';
+
   XFile? profileImage;
+
   bool isPasswordVisible = false;
 
   @override
@@ -217,6 +229,17 @@ class SignUpScreen extends StatelessWidget {
                           ? null
                           : () {
                               if (_formKey.currentState?.validate() ?? false) {
+                                if (gender == null ||
+                                    gender == 'Select Gender') {
+                                  UIHelpers.showToast(context,
+                                      message: 'Please select a gender');
+                                  return;
+                                }
+                                // if (profileImage == null) {
+                                //   UIHelpers.showToast(context,
+                                //       message: 'Please select a profile image');
+                                //   return;
+                                // }
                                 FocusScope.of(context).unfocus();
                                 context.read<SignupBloc>().add(
                                       SignupSubmitted(

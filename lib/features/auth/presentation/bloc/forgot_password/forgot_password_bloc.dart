@@ -8,16 +8,18 @@ class ForgotPasswordBloc
   AuthenticationRepository repository = AuthenticationRepository();
   ForgotPasswordBloc() : super(ForgotPasswordInitial()) {
     on<ForgotPasswordSubmitted>((event, emit) async {
-      emit(ForgotPasswordLoading());
-      try {
-        final response = await repository.forgotPassword(email: event.email);
-        if (response.success) {
-          emit(ForgotPasswordSuccess(message: response.message));
-        } else {
-          emit(ForgotPasswordFailure(error: response.message));
+      if (state is ForgotPasswordInitial || state is ForgotPasswordFailure){
+        emit(ForgotPasswordLoading());
+        try {
+          final response = await repository.forgotPassword(email: event.email);
+          if (response.success) {
+            emit(ForgotPasswordSuccess(message: response.message));
+          } else {
+            emit(ForgotPasswordFailure(error: response.message));
+          }
+        } catch (e) {
+          emit(ForgotPasswordFailure(error: e.toString()));
         }
-      } catch (e) {
-        emit(ForgotPasswordFailure(error: e.toString()));
       }
     });
   }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mydiaree/core/services/api_services.dart';
 
 class ApiResponse<T> {
@@ -22,13 +23,15 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
     if (response.success) {
       return ApiResponse(
         success: true,
-        data: fromJson != null ? fromJson(response.data) : null,
-        message: response.message,
+        data: fromJson != null ? fromJson(response.data ?? {}) : null,
+        message: response.message
       );
     } else {
       return ApiResponse(success: false, message: response.message);
     }
-  } catch (e) {
+  } catch (e,s) {
+    debugPrint(e.toString());
+    debugPrint(s.toString());
     return ApiResponse(success: false, message: 'Something Went Wrong');
   }
 }

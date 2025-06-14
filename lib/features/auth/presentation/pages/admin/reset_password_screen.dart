@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
@@ -6,33 +8,40 @@ import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_status_bar_widget.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/login/login_bloc.dart';
+import 'package:mydiaree/features/auth/presentation/bloc/signup/signup_event.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_passoword_bloc.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_password_event.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_password_state.dart';
 
-class ResetPasswordScreen extends StatelessWidget {
-  ResetPasswordScreen({super.key});
+class ResetPasswordScreen extends StatefulWidget {
+  final String email;
+  const ResetPasswordScreen({super.key, required this.email});
+  @override
+  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+}
 
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   // Screen controller and variables
   final TextEditingController emailController = TextEditingController();
+
   final TextEditingController newPasswordController = TextEditingController();
+
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
   final ValueNotifier<bool> isNewPasswordObscured = ValueNotifier<bool>(true);
+
   final ValueNotifier<bool> isConfirmPasswordObscured =
       ValueNotifier<bool>(true);
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<UpdatePasswordBloc, UpdatePasswordState>(
         listener: (context, state) {
       if (state is UpdatePasswordSuccess) {
         UIHelpers.showToast(context, message: state.message ?? "");
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
-        );
       }
       if (state is UpdatePasswordFailure) {
         UIHelpers.showToast(context, message: state.message ?? '');
@@ -134,16 +143,25 @@ class ResetPasswordScreen extends StatelessWidget {
                     /// Submit Button
                     CustomButton(
                       text: 'Update Password',
-                      ontap: () {
-                        if (_formKey.currentState!.validate()) {
-                          context
-                              .read<UpdatePasswordBloc>()
-                              .add(UpdatePasswordSubmitted(
-                                email: emailController.text,
-                                newPassword: newPasswordController.text,
-                              ));
-                        }
-                      },
+                      isLoading: state is UpdatePasswordSubmitting,
+                      ontap: state is UpdatePasswordSubmitting
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                if (newPasswordController.text !=
+                                    confirmPasswordController.text) {
+                                  UIHelpers.showToast(context,
+                                      message: "Passwords do not match");
+                                  return;
+                                }
+                                context
+                                    .read<UpdatePasswordBloc>()
+                                    .add(UpdatePasswordSubmitted(
+                                      email: emailController.text,
+                                      newPassword: newPasswordController.text,
+                                    ));
+                              }
+                            },
                     ),
                   ],
                 ),

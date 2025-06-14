@@ -18,4 +18,6 @@ class AppColors {
   static final Color greyShade = Colors.grey.shade400;
   static final Color greyShadeLight = Colors.grey.shade100;
   static const Color greenLight = Color(0xFF1ABB50);
+  static final Color kGradient1 =   primaryColor;
+  static final Color kGradient2 = black.withOpacity(.8); 
 }

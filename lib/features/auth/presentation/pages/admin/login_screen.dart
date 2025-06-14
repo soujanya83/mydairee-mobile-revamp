@@ -15,33 +15,38 @@ import 'package:mydiaree/core/widgets/custom_status_bar_widget.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 
 // ignore: must_be_immutable
-class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   final TextEditingController emailController = TextEditingController();
+
   final TextEditingController passwordController = TextEditingController();
 
   bool isPasswordVisible = false;
+
   bool isRemembered = false;
+
   @override
   Widget build(BuildContext context) {
     return StatusBarCustom(
       child: CustomScaffold(
         body: Center(
           child: Container(
-            margin: EdgeInsets.symmetric(horizontal: screenWidth * .05),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child:
-                BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
-              return Form(
+              margin: EdgeInsets.symmetric(horizontal: screenWidth * .05),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+              child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Align(
-                        alignment: Alignment.center,
+                  children:[
+                    Align(alignment: Alignment.center,
                         child: UIHelpers.logoHorizontal()),
                     UIHelpers.verticalSpace(20),
                     UIHelpers.verticalSpace(10),
@@ -58,38 +63,30 @@ class LoginScreen extends StatelessWidget {
                           value!.isEmpty ? 'Enter email' : null,
                     ),
                     UIHelpers.verticalSpace(15),
-                    BlocBuilder<LoginBloc, LoginState>(
-                      builder: (context, state) {
-                        return CustomTextFormWidget(
-                          hintText: 'Enter your password',
-                          title: AppTexts.passwordHint,
-                          isObs: !isPasswordVisible,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter password';
-                            }
-                            return null;
-                          },
-                          controller: passwordController,
-                          onChanged: (val) {},
-                          suffixWidget: StatefulBuilder(
-                            builder: (context, setState) {
-                              return InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    isPasswordVisible = !isPasswordVisible;
-                                  });
-                                },
-                                child: Icon(
-                                  isPasswordVisible
-                                      ? Icons.visibility_outlined
-                                      : Icons.visibility_off,
-                                ),
-                              );
-                            },
-                          ),
-                        );
+                    CustomTextFormWidget(
+                      hintText: 'Enter your password',
+                      title: AppTexts.passwordHint,
+                      isObs: !isPasswordVisible,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter password';
+                        }
+                        return null;
                       },
+                      controller: passwordController,
+                      onChanged: (val) {},
+                      suffixWidget: InkWell(
+                        onTap: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                        child: Icon(
+                          isPasswordVisible
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off,
+                        ),
+                      ),
                     ),
                     UIHelpers.verticalSpace(10),
                     Row(
@@ -118,7 +115,7 @@ class LoginScreen extends StatelessWidget {
                           onTap: () {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
-                              return ForgotPasswordScreen();
+                              return const ForgotPasswordScreen();
                             }));
                           },
                           child: Text(AppTexts.forgotPassword,
@@ -176,9 +173,7 @@ class LoginScreen extends StatelessWidget {
                     )
                   ],
                 ),
-              );
-            }),
-          ),
+              )),
         ),
       ),
     );

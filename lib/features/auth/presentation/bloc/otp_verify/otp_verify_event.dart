@@ -4,7 +4,8 @@ abstract class OtpVerifyEvent {
 
 class OtpSubmitted extends OtpVerifyEvent {
   final String otp;
-  const OtpSubmitted(this.otp);
+  final String email;
+  const OtpSubmitted(this.otp, this.email);
 }
 
 class OtpResendRequested extends OtpVerifyEvent {

@@ -1,16 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mydiaree/features/auth/data/repositories/auth_repository.dart';
 import 'otp_verify_event.dart';
 import 'otp_verify_state.dart';
 
 class OtpVerifyBloc extends Bloc<OtpVerifyEvent, OtpVerifyState> {
+  AuthenticationRepository repository = AuthenticationRepository();
   OtpVerifyBloc() : super(OtpVerifyInitial()) {
     on<OtpSubmitted>((event, emit) async {
       emit(OtpVerifyLoading());
-      await Future.delayed(const Duration(seconds: 2));
-      if (event.otp == '123456') {
-        emit(OtpVerifySuccess(message: 'Successfull'));
+      final response =
+          await repository.otpVerify(email: event.email, otp: event.otp);
+      if (response.success) {
+        emit(OtpVerifySuccess(message: response.message));
       } else {
-        emit(OtpVerifyFailure(message: 'Invalid OTP'));
+        emit(OtpVerifyFailure(message: response.message));
       }
     });
 

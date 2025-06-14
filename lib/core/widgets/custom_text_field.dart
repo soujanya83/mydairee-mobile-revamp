@@ -10,7 +10,7 @@ class CustomTextFormWidget extends StatelessWidget {
     this.onChanged,
     this.controller,
     this.focusnode,
-    required this.validator,
+      this.validator,
     this.ontap,
     this.onTapOutside,
     this.ontSaved,

@@ -23,6 +23,7 @@ class SignupBloc extends Bloc<SignupEvent, SignUpState> {
             message: response.message,
             signupData: response.data,
           ));
+          return;
         } else {
           emit(SignUpError(message: response.message.toString()));
         }

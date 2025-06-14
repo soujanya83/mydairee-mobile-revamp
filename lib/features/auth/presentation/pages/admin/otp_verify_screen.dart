@@ -9,10 +9,16 @@ import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/otp_verify/otp_verify_bloc.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/otp_verify/otp_verify_event.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/otp_verify/otp_verify_state.dart';
+import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
 
-class OtpVerifyScreen extends StatelessWidget {
+class OtpVerifyScreen extends StatefulWidget {
   const OtpVerifyScreen({super.key});
 
+  @override
+  State<OtpVerifyScreen> createState() => _OtpVerifyScreenState();
+}
+
+class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
   @override
   Widget build(BuildContext context) {
     final _formKey = GlobalKey<FormState>();
@@ -22,6 +28,9 @@ class OtpVerifyScreen extends StatelessWidget {
       listener: (context, state) {
         if (state is OtpVerifySuccess) {
           UIHelpers.showToast(context, message: "OTP Verified!");
+          Navigator.push(context, MaterialPageRoute(builder: (context){
+            return DashboardScreen();
+          }));
           // Navigate to next screen or perform success action
         }
         if (state is OtpVerifyFailure) {
@@ -75,16 +84,15 @@ class OtpVerifyScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         CustomButton(
-                          text: state is OtpVerifyLoading
-                              ? "Verifying..."
-                              : "Verify OTP",
+                          isLoading: state is OtpVerifyLoading,
+                          text: "Verify OTP",
                           ontap: state is OtpVerifyLoading
                               ? null
                               : () {
                                   if (_formKey.currentState!.validate()) {
-                                    context
-                                        .read<OtpVerifyBloc>()
-                                        .add(OtpSubmitted(_otpController.text));
+                                    context.read<OtpVerifyBloc>().add(
+                                        OtpSubmitted(_otpController.text,
+                                            'v@gmail.com'));
                                   }
                                 },
                         ),
