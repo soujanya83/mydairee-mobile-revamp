@@ -16,20 +16,23 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
     {T Function(dynamic json)? fromJson,
     List<String>? filesPath,
     String? fileField,
-    bool dummy = false}) async {
+    bool dummy = false,
+    Map<String, dynamic>? dummyData}) async {
   try {
     final response = await ApiServices.postData(url, data,
-        filesPath: filesPath, fileField: fileField, dummy: dummy);
+        filesPath: filesPath,
+        fileField: fileField,
+        dummy: dummy,
+        dummyData: dummyData);
     if (response.success) {
       return ApiResponse(
-        success: true,
-        data: fromJson != null ? fromJson(response.data ?? {}) : null,
-        message: response.message
-      );
+          success: true,
+          data: fromJson != null ? fromJson(response.data ?? {}) : null,
+          message: response.message);
     } else {
       return ApiResponse(success: false, message: response.message);
     }
-  } catch (e,s) {
+  } catch (e, s) {
     debugPrint(e.toString());
     debugPrint(s.toString());
     return ApiResponse(success: false, message: 'Something Went Wrong');

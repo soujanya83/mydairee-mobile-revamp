@@ -62,7 +62,8 @@ class ApiServices {
       {Map<String, dynamic>? headers,
       List<String>? filesPath,
       String? fileField = 'file',
-      bool dummy = false}) async {
+      bool dummy = false,
+      Map<String, dynamic>? dummyData}) async {
     final dio = Dio();
     try {
       print(filesPath.toString());
@@ -105,6 +106,7 @@ class ApiServices {
         print(options);
         await Future.delayed(const Duration(seconds: 3));
         return ApiResponse(
+          data: dummyData,
           success: true,
           message: 'Dummy post successful',
         );

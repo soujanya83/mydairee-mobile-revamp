@@ -8,7 +8,7 @@ import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_pa
 import 'package:mydiaree/features/auth/presentation/bloc/use_type/user_type_bloc.dart';
 import 'package:mydiaree/core/config/app_theme.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
-import 'package:mydiaree/features/splash/splash_screen.dart';
+import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +20,6 @@ double screenWidth = 0;
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
@@ -41,13 +40,14 @@ class MyApp extends StatelessWidget {
         BlocProvider<SignupBloc>(create: (context) => SignupBloc()),
         BlocProvider<ForgotPasswordBloc>(
             create: (context) => ForgotPasswordBloc()),
+        BlocProvider<RoomListBloc>(create: (context) => RoomListBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: RAppTheme.lightTheme,
         darkTheme: RAppTheme.lightTheme,
         themeMode: ThemeMode.system,
-        home:   DashboardScreen(),
+        home: DashboardScreen(),
       ),
     );
   }
