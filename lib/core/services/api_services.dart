@@ -102,7 +102,8 @@ class ApiServices {
       }
 
       if (dummy) {
-        print(body);
+        print('dummy data');
+        print(dummyData);
         print(options);
         await Future.delayed(const Duration(seconds: 3));
         return ApiResponse(

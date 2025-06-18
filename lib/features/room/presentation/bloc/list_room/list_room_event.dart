@@ -18,5 +18,6 @@ class FetchRoomsEvent extends RoomListEvent {
 
 
 class DeleteSelectedRoomsEvent extends RoomListEvent {
-  const DeleteSelectedRoomsEvent();
+  final List<String> roomsId;
+  const DeleteSelectedRoomsEvent(this.roomsId);
 }

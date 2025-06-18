@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
+import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_state.dart';
+import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_list_screen.dart';
 import 'package:mydiaree/features/room/presentation/pages/room_list_screen.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -77,7 +79,11 @@ class AppDrawer extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.article, color: Colors.white),
               title: Text('Program Plans', style: drawerTextStyle),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context){
+                  return ProgramPlansListScreen();
+                }));
+              },
             ),
             Divider(color: Colors.white.withOpacity(0.8)),
             ListTile(

@@ -29,7 +29,7 @@ class CustomDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BorderRadiusGeometry? borderRadius = BorderRadius.all(Radius.circular(8));
+    BorderRadiusGeometry? borderRadius = const BorderRadius.all(Radius.circular(8));
     return Material(
       elevation: 1.2,
       borderRadius: borderRadius,

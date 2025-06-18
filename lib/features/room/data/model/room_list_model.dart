@@ -1,10 +1,10 @@
+import 'package:mydiaree/core/config/app_colors.dart';
+
 class RoomListModel {
   final List<RoomItem> rooms;
-  final List<CenterItem> centers;
 
   RoomListModel({
     required this.rooms,
-    required this.centers,
   });
 
   factory RoomListModel.fromJson(Map<String, dynamic> json) {
@@ -12,16 +12,12 @@ class RoomListModel {
       rooms: (json['rooms'] as List)
           .map((roomJson) => RoomItem.fromJson(roomJson))
           .toList(),
-      centers: (json['centers'] as List)
-          .map((centerJson) => CenterItem.fromJson(centerJson))
-          .toList(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'rooms': rooms.map((room) => room.toJson()).toList(),
-      'centers': centers.map((center) => center.toJson()).toList(),
     };
   }
 }
@@ -29,30 +25,43 @@ class RoomListModel {
 class RoomItem {
   final String id;
   final String name;
-  final String color;
-  final String userName;
+  final int capacity;
+  final int ageFrom;
+  final int ageTo;
   final String status;
-  final List<ChildItem> children;
+  final int color;
+  final List<String> educatorIds;
+  final String userName;
 
   RoomItem({
     required this.id,
     required this.name,
-    required this.color,
-    required this.userName,
+    required this.capacity,
+    required this.ageFrom,
+    required this.ageTo,
     required this.status,
-    required this.children,
+    required this.color,
+    required this.educatorIds,
+    required this.userName,
   });
 
   factory RoomItem.fromJson(Map<String, dynamic> json) {
+    // Convert hex color string to integer if needed
+    final colorValue = json['color'] is String
+        ? int.tryParse(json['color'].replaceFirst('#', '0xff')) ??
+            AppColors.primaryColor.value
+        : json['color'] ?? AppColors.primaryColor.value;
+
     return RoomItem(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
-      color: json['color'] ?? '#FFFFFF',
-      userName: json['userName'] ?? '',
+      capacity: json['capacity'] ?? 0,
+      ageFrom: json['ageFrom'] ?? 0,
+      ageTo: json['ageTo'] ?? 0,
       status: json['status'] ?? 'Active',
-      children: (json['child'] as List?)
-          ?.map((childJson) => ChildItem.fromJson(childJson))
-          .toList() ?? [],
+      color: colorValue,
+      educatorIds: (json['educatorIds'] as List?)?.cast<String>() ?? [],
+      userName: json['userName'] ?? '',
     );
   }
 
@@ -60,52 +69,13 @@ class RoomItem {
     return {
       'id': id,
       'name': name,
-      'color': color,
-      'userName': userName,
+      'capacity': capacity,
+      'ageFrom': ageFrom,
+      'ageTo': ageTo,
       'status': status,
-      'child': children.map((child) => child.toJson()).toList(),
-    };
-  }
-}
-
-class ChildItem {
-  final String name;
-
-  ChildItem({required this.name});
-
-  factory ChildItem.fromJson(Map<String, dynamic> json) {
-    return ChildItem(
-      name: json['name'] ?? '',
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-    };
-  }
-}
-
-class CenterItem {
-  final String id;
-  final String centerName;
-
-  CenterItem({
-    required this.id,
-    required this.centerName,
-  });
-
-  factory CenterItem.fromJson(Map<String, dynamic> json) {
-    return CenterItem(
-      id: json['id'] ?? '',
-      centerName: json['centerName'] ?? '',
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'centerName': centerName,
+      'color': color,
+      'educatorIds': educatorIds,
+      'userName': userName,
     };
   }
 }

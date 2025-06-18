@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mydiaree/core/cubit/global_data_cubit.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/forgot_password/forgot_password_bloc.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/login/login_bloc.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/otp_verify/otp_verify_bloc.dart';
@@ -8,6 +10,8 @@ import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_pa
 import 'package:mydiaree/features/auth/presentation/bloc/use_type/user_type_bloc.dart';
 import 'package:mydiaree/core/config/app_theme.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_bloc.dart';
+import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
 
 void main() {
@@ -26,6 +30,9 @@ class MyApp extends StatelessWidget {
     screenWidth = MediaQuery.of(context).size.width;
     return MultiBlocProvider(
       providers: [
+        BlocProvider(
+          create: (_) => GlobalDataCubit(GlobleRepository()),
+        ),
         BlocProvider<LoginBloc>(
           create: (context) => LoginBloc(),
         ),
@@ -41,6 +48,8 @@ class MyApp extends StatelessWidget {
         BlocProvider<ForgotPasswordBloc>(
             create: (context) => ForgotPasswordBloc()),
         BlocProvider<RoomListBloc>(create: (context) => RoomListBloc()),
+        BlocProvider<AddRoomBloc>(create: (context) => AddRoomBloc()),
+        BlocProvider<ProgramPlanBloc>(create: (context) => ProgramPlanBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
