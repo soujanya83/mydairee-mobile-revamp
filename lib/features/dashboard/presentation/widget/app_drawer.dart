@@ -80,8 +80,9 @@ class AppDrawer extends StatelessWidget {
               leading: const Icon(Icons.article, color: Colors.white),
               title: Text('Program Plans', style: drawerTextStyle),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context){
-                  return ProgramPlansListScreen();
+                print('hi');
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return   ProgramPlansListScreen();
                 }));
               },
             ),

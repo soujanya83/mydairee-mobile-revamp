@@ -75,6 +75,9 @@ class CustomTextFormWidget extends StatelessWidget {
   final TextStyle? hintStyle;
   final TextStyle? contentStyle;
   final TextStyle? titleStyle;
+
+
+  
   @override
   Widget build(BuildContext context) {
     double mw = MediaQuery.of(context).size.width;

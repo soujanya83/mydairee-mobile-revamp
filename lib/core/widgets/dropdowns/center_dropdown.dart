@@ -4,34 +4,28 @@ import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/cubit/global_data_cubit.dart';
 import 'package:mydiaree/core/cubit/globle_model/center_model.dart';
 
-class CenterDropdown extends StatefulWidget {
+class CenterDropdown extends StatelessWidget {
   final void Function(CenterData selectedCenter)? onChanged;
   final double height;
   final String hint;
+  final String? selectedCenterId;
 
   const CenterDropdown({
     super.key,
     this.onChanged,
     this.height = 40,
     this.hint = 'Select Center',
+    this.selectedCenterId,
   });
-
-  @override
-  State<CenterDropdown> createState() => _CenterDropdownState();
-}
-
-class _CenterDropdownState extends State<CenterDropdown> {
-  CenterData? selectedCenter;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GlobalDataCubit, GlobalDataState>(
       builder: (context, state) {
         final centers = state.centersData?.data ?? [];
-
         if (centers.isEmpty) {
           return Container(
-            height: widget.height,
+            height: height,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
@@ -47,20 +41,23 @@ class _CenterDropdownState extends State<CenterDropdown> {
 
         return DropdownButtonHideUnderline(
           child: Container(
-            height: widget.height,
+            height: height,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.primaryColor),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Builder(builder: (context) {
+            child: Builder(builder: (context){
+              print('=================${selectedCenterId.toString()}=========');
               try {
                 return DropdownButton<CenterData>(
                   isExpanded: true,
-                  value: centers.any((c) => c.id == selectedCenter?.id)
-                      ? selectedCenter
+                  value: centers
+                          .any((center) => center.id == selectedCenterId)
+                      ? centers.firstWhere(
+                          (center) => center.id == selectedCenterId)
                       : null,
-                  hint: Text(widget.hint),
+                  hint: Text(hint),
                   items: centers.map((center) {
                     return DropdownMenuItem<CenterData>(
                       value: center,
@@ -69,15 +66,17 @@ class _CenterDropdownState extends State<CenterDropdown> {
                   }).toList(),
                   onChanged: (value) {
                     if (value != null) {
-                      setState(() {
-                        selectedCenter = value;
-                      });
-                      widget.onChanged?.call(value);
+                      print('===========');
+                      print(value.name.toString());
+                      onChanged?.call(value);
                     }
                   },
                 );
-              } catch (e) {
-                return const SizedBox();
+              } catch (e, s) {
+                print(e.toString());
+                print('==============');
+                print(centers.toString());
+                return Text(e.toString());
               }
             }),
           ),

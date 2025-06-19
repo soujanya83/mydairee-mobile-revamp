@@ -6,13 +6,15 @@ import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_bloc.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_event.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_state.dart';
+import 'package:mydiaree/features/program_plan/presentation/pages/create_program_plan_screen.dart';
 import 'package:mydiaree/features/program_plan/presentation/widget/plan_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+// ignore: must_be_immutable
 class ProgramPlansListScreen extends StatelessWidget {
-  final String selectedCenterId = '1';
+  ProgramPlansListScreen({super.key});
 
-  const ProgramPlansListScreen({super.key});
+  String selectedCenterId = '';
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class ProgramPlansListScreen extends StatelessWidget {
     });
     return CustomScaffold(
       appBar: AppBar(
-        title: Text('Program Plan',
+        title: Text('Program Plan $selectedCenterId',
             style: Theme.of(context).textTheme.headlineSmall),
         backgroundColor: AppColors.primaryColor,
       ),
@@ -37,14 +39,36 @@ class ProgramPlansListScreen extends StatelessWidget {
                 Text('Program Plan',
                     style: Theme.of(context).textTheme.headlineSmall),
                 const Spacer(),
-                UIHelpers.addButton(context: context, ontap: () {}),
+                UIHelpers.addButton(
+                    context: context,
+                    ontap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => CreateProgramPlanScreen(
+                                    centerId: selectedCenterId,
+                                    screenType: 'add',
+                                  )));
+                    }),
               ],
             ),
           ),
-          const SizedBox(height: 10),
           Padding(
               padding: const EdgeInsets.all(12.0),
-              child: CenterDropdown(onChanged: (value) {})),
+              child: StatefulBuilder(builder: (context, stateChange) {
+                return CenterDropdown(
+                    selectedCenterId: selectedCenterId,
+                    onChanged: (value) {
+                      stateChange(() {});
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        context.read<ProgramPlanBloc>().add(
+                            FetchProgramPlansEvent(centerId: selectedCenterId));
+                      });
+                      print('--------${value.id.toString()}------------');
+                      selectedCenterId = value.id;
+                      print('====$selectedCenterId=======');
+                    });
+              })),
           const SizedBox(height: 10),
           Expanded(
             child: BlocBuilder<ProgramPlanBloc, ProgramPlanListState>(

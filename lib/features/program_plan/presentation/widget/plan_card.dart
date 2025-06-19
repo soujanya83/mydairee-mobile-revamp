@@ -36,31 +36,14 @@ class PlanCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return PatternBackground(
-      elevation: 3,
+      elevation:1.5,
       boxShadow: [
         BoxShadow(
+          // ignore: deprecated_member_use
           color: Colors.black.withOpacity(0.2),
           blurRadius: 12,
           spreadRadius: 2,
-          offset: Offset(0, 4), // down shadow
-        ),
-        BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          blurRadius: 10,
-          spreadRadius: 2,
-          offset: Offset(0, -2), // top shadow
-        ),
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 8,
-          spreadRadius: 2,
-          offset: Offset(-2, 0), // left shadow
-        ),
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 8,
-          spreadRadius: 2,
-          offset: Offset(2, 0), // right shadow
+          offset: const Offset(0, 4), // down shadow
         ),
       ],
       child: Padding(
