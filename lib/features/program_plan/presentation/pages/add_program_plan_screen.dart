@@ -6,14 +6,15 @@ import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_multiline_text_field.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
+import 'package:mydiaree/core/widgets/dropdowns/room_dropdown.dart';
 import 'package:mydiaree/features/program_plan/presentation/widget/add_plan_widgets.dart';
 
-class CreateProgramPlanScreen extends StatefulWidget {
+class AddProgramPlanScreen extends StatefulWidget {
   final String centerId;
   final Map<String, dynamic>? programPlan;
   final String screenType;
 
-  const CreateProgramPlanScreen({
+  const AddProgramPlanScreen({
     super.key,
     required this.centerId,
     this.programPlan,
@@ -21,17 +22,18 @@ class CreateProgramPlanScreen extends StatefulWidget {
   });
 
   @override
-  State<CreateProgramPlanScreen> createState() =>
-      _CreateProgramPlanScreenState();
+  State<AddProgramPlanScreen> createState() => _AddProgramPlanScreenState();
 }
 
-class _CreateProgramPlanScreenState extends State<CreateProgramPlanScreen> {
+class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Dropdown values
-  String? selectedMonth;
-  String? selectedYear;
+  String? selectedMonth = 'January';
+  String? selectedYear = '2025';
   String? selectedRoom;
+
+  String? selectedRoomId;
 
   // Text controllers
   final TextEditingController focusAreasController = TextEditingController();
@@ -173,10 +175,6 @@ class _CreateProgramPlanScreenState extends State<CreateProgramPlanScreen> {
               '';
           print('===================00eir0ir0====================');
           practicalLifeController.text += '**• **$subActivity.\n';
-          // practicalLifeController.text +=
-          //     (("${practicalLifeData?.activity[parentIndex].title} -") +
-          //             (practicalLifeData?.activity[parentIndex].subActivity[childIndex].title ??'')) +
-          //         '\n';
         }
       }
     }
@@ -250,15 +248,15 @@ class _CreateProgramPlanScreenState extends State<CreateProgramPlanScreen> {
                 // Room selection
                 Text('Room', style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 6),
-                CustomDropdown(
-                  height: 45,
-                  value: selectedRoom,
-                  items: rooms,
-                  onChanged: (val) {
-                    setState(() => selectedRoom = val!);
-                    // TODO: Load educators and children for selected room
+                RoomDropdown(
+                  selectedRoomId: selectedRoomId,
+                  onChanged: (room) {
+                    setState(() {
+                      selectedRoomId = room.id;
+                    });
                   },
                 ),
+
                 const SizedBox(height: 16),
 
                 // Educators selection
@@ -396,41 +394,23 @@ class _CreateProgramPlanScreenState extends State<CreateProgramPlanScreen> {
                   },
                 ),
 
-                const SizedBox(height: 16),
 
                 // EYLF
-                Text('EYLF', style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 6),
-                GestureDetector(
-                  onTap: _showEylfSelectionDialog,
-                  child: Container(
-                    height: 100,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        eylfController.text.isEmpty
-                            ? 'Tap to select EYLF'
-                            : eylfController.text,
-                        style: TextStyle(
-                          color: eylfController.text.isEmpty
-                              ? AppColors.grey
-                              : Colors.black,
-                        ),
-                      ),
-                    ),
-                  ),
+                CustomMultilineTextField(
+                  title: 'EYLF',
+                  context: context,
+                  controller: eylfController,
+                  onTap: () {
+                    showPracticalLifeDialog(context, practicalLifeData, () {});
+                  },
                 ),
                 const SizedBox(height: 16),
 
                 // Additional Experiences
                 Text('Additional Experiences',
-                    style: Theme.of(context).textTheme.bodyMedium),
+                    style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: 16),
-
                 CustomTextFormWidget(
                   controller: outdoorExperiencesController,
                   hintText: 'Outdoor Experiences',
@@ -529,65 +509,4 @@ class _CreateProgramPlanScreenState extends State<CreateProgramPlanScreen> {
     cultureController.dispose();
     super.dispose();
   }
-}
-
-void showPracticalLifeDialog(
-    BuildContext context,
-    MontessariSubjectModel? practicalLifeData,
-    Function() assignPracticalLifeInController) {
-  showDialog(
-    context: context,
-    builder: (ctx) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            contentPadding: EdgeInsets.all(20),
-            backgroundColor: AppColors.white,
-            insetPadding: EdgeInsets.zero,
-            title: Text(
-              'Select Practical Life',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            content: Container(
-              color: AppColors.white,
-              width: double.maxFinite,
-              height: 500,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    SingleChildScrollView(
-                      child: Column(
-                        children: List.generate(
-                          practicalLifeData?.activity.length ?? 0,
-                          (parentIndex) {
-                            return montessoriExpansionTile(
-                              context,
-                              parentIndex,
-                              practicalLifeData,
-                              setState,
-                              assignPracticalLifeInController,
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              CustomButton(
-                  height: 45,
-                  width: 100,
-                  text: 'SAVE',
-                  isLoading: false, // TODO: Add loading state
-                  ontap: () {
-                    Navigator.pop(context);
-                  })
-            ],
-          );
-        },
-      );
-    },
-  );
 }

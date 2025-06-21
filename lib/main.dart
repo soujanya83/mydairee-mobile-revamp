@@ -9,6 +9,7 @@ import 'package:mydiaree/features/auth/presentation/bloc/signup/signup_bloc.dart
 import 'package:mydiaree/features/auth/presentation/bloc/updatepassowd/update_passoword_bloc.dart';
 import 'package:mydiaree/features/auth/presentation/bloc/use_type/user_type_bloc.dart';
 import 'package:mydiaree/core/config/app_theme.dart';
+import 'package:mydiaree/features/auth/presentation/pages/admin/user_type_screen.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
@@ -56,7 +57,7 @@ class MyApp extends StatelessWidget {
         theme: RAppTheme.lightTheme,
         darkTheme: RAppTheme.lightTheme,
         themeMode: ThemeMode.system,
-        home: DashboardScreen(),
+        home: const UserTypeScreen(),
       ),
     );
   }

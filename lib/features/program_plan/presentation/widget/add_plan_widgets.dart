@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/widgets/custom_buton.dart';
 
 Widget montessoriExpansionTile(
   BuildContext context,
@@ -233,4 +234,65 @@ class SubActivity {
         "added_at": addedAt.toIso8601String(),
         "extras": List<dynamic>.from(extras.map((x) => x)),
       };
+}
+
+void showPracticalLifeDialog(
+    BuildContext context,
+    MontessariSubjectModel? practicalLifeData,
+    Function() assignPracticalLifeInController) {
+  showDialog(
+    context: context,
+    builder: (ctx) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.all(20),
+            backgroundColor: AppColors.white,
+            insetPadding: EdgeInsets.zero,
+            title: Text(
+              'Select Practical Life',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            content: Container(
+              color: AppColors.white,
+              width: double.maxFinite,
+              height: 500,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    SingleChildScrollView(
+                      child: Column(
+                        children: List.generate(
+                          practicalLifeData?.activity.length ?? 0,
+                          (parentIndex) {
+                            return montessoriExpansionTile(
+                              context,
+                              parentIndex,
+                              practicalLifeData,
+                              setState,
+                              assignPracticalLifeInController,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              CustomButton(
+                  height: 45,
+                  width: 100,
+                  text: 'SAVE',
+                  isLoading: false, // TODO: Add loading state
+                  ontap: () {
+                    Navigator.pop(context);
+                  })
+            ],
+          );
+        },
+      );
+    },
+  );
 }

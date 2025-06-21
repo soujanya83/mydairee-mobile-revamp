@@ -26,6 +26,60 @@ class ProgramPlanRepository {
     );
   }
 
+  Future<ApiResponse> addOrEditPlan({
+    String? planId,
+    required String month,
+    required String year,
+    required String roomId,
+    required List<String> educators,
+    required List<String> children,
+    required String focusArea,
+    required String outdoorExperiences,
+    required String inquiryTopic,
+    required String sustainabilityTopic,
+    required String specialEvents,
+    required String childrenVoices,
+    required String familiesInput,
+    required String groupExperience,
+    required String spontaneousExperience,
+    required String mindfulnessExperience,
+    required String eylf,
+    required String practicalLife,
+    required String sensorial,
+    required String math,
+    required String language,
+    required String culture,
+  }) async {
+    return postAndParse(
+      AppUrls.addPlan,
+      dummy: true,
+      {
+        if (planId != null) 'id': planId,
+        'month': month,
+        'year': year,
+        'room_id': roomId,
+        'educators': educators,
+        'children': children,
+        'focus_area': focusArea,
+        'outdoor_experiences': outdoorExperiences,
+        'inquiry_topic': inquiryTopic,
+        'sustainability_topic': sustainabilityTopic,
+        'special_events': specialEvents,
+        'children_voices': childrenVoices,
+        'families_input': familiesInput,
+        'group_experience': groupExperience,
+        'spontaneous_experience': spontaneousExperience,
+        'mindfulness_experiences': mindfulnessExperience,
+        'eylf': eylf,
+        'practical_life': practicalLife,
+        'sensorial': sensorial,
+        'math': math,
+        'language': language,
+        'culture': culture,
+      },
+    );
+  }
+
   Future<bool> deletePlan({required String planId}) async {
     await Future.delayed(const Duration(milliseconds: 500));
     return true; // simulate success

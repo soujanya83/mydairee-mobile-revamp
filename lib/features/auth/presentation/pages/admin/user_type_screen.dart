@@ -9,21 +9,21 @@ import 'package:mydiaree/core/config/app_asset.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/features/auth/presentation/pages/admin/login_screen.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
+import 'package:mydiaree/features/auth/presentation/pages/staff/staff_login_screen.dart';
 
-class UserType extends StatelessWidget {
-  const UserType({super.key});
+class UserTypeScreen extends StatelessWidget {
+  const UserTypeScreen({super.key});
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return StatusBarCustom(
       child: CustomScaffold(
         body: BlocBuilder<UserTypeBloc, UserTypeState>(
           builder: (context, state) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column( 
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  
                   SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                   UIHelpers.logoHorizontal(),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.05),
@@ -93,7 +93,8 @@ class UserType extends StatelessWidget {
                               splashColor: Colors.white.withOpacity(0.2),
                               highlightColor: Colors.white.withOpacity(0.1),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 alignment: Alignment.center,
                                 child: const Text(
                                   "Next",
@@ -124,14 +125,13 @@ class UserType extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: AppColors.white,
-         boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(.3),
-              blurRadius: 1,
-              offset: const Offset(0, 1),
-            ),
-            
-          ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.3),
+            blurRadius: 1,
+            offset: const Offset(0, 1),
+          ),
+        ],
         borderRadius: BorderRadius.circular(200),
       ),
       child: AnimatedContainer(
@@ -151,7 +151,6 @@ class UserType extends StatelessWidget {
                 )
               : null,
           borderRadius: BorderRadius.circular(200),
-         
           border: Border.all(
             color: isSelected
                 ? AppColors.primaryColor.withOpacity(0.5)
@@ -237,10 +236,12 @@ class UserType extends StatelessWidget {
   void _navigateBasedOnSelection(BuildContext context, UserTypeState state) {
     switch (state.selectedRole) {
       case "Admin":
-        Navigator.push(context, MaterialPageRoute(builder: (_) =>   LoginScreen()));
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => LoginScreen()));
         break;
       case "Staff":
-        // Navigator.pushNamed(context, StaffLogin.Tag);r
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => StaffLoginScreen()));
         break;
       case "Parent":
         // Navigator.pushNamed(context, ParentLogin.Tag);

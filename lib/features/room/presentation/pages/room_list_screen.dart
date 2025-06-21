@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/utils/helper_functions.dart';
-import 'package:mydiaree/core/utils/hexconversion.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
-import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
@@ -59,7 +56,6 @@ class RoomsListScreen extends StatelessWidget {
 
     final TextEditingController searchController = TextEditingController();
     bool permissionAdd = true;
-
     return CustomScaffold(
       appBar: const CustomAppBar(title: "Rooms"),
       body: BlocConsumer<RoomListBloc, RoomListState>(

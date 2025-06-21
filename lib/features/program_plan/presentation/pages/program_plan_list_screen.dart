@@ -6,7 +6,7 @@ import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_bloc.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_event.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_state.dart';
-import 'package:mydiaree/features/program_plan/presentation/pages/create_program_plan_screen.dart';
+import 'package:mydiaree/features/program_plan/presentation/pages/add_program_plan_screen.dart';
 import 'package:mydiaree/features/program_plan/presentation/widget/plan_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,6 +15,29 @@ class ProgramPlansListScreen extends StatelessWidget {
   ProgramPlansListScreen({super.key});
 
   String selectedCenterId = '';
+  Map<String, dynamic> programDetaiJson = {
+    "month": "June",
+    "year": "2025",
+    "room_id": "room_123",
+    "focus_area": "Physical development",
+    "outdoor_experiences": "Water play, sand pit",
+    "inquiry_topic": "Life cycle of a butterfly",
+    "sustainability_topic": "Recycling",
+    "special_events": "Father’s Day celebration",
+    "children_voices": "We want more time outside",
+    "families_input": "Parents suggested a garden day",
+    "group_experience": "Circle time and story telling",
+    "spontaneous_experience": "Bird spotted during play",
+    "mindfulness_experiences": "Breathing exercises after lunch",
+    "eylf": "Outcome 1: Children have a strong sense of identity",
+    "practical_life": "Pouring, sweeping",
+    "sensorial": "Sound boxes, pink tower",
+    "math": "Counting beads, number rods",
+    "language": "Letter tracing, sandpaper letters",
+    "culture": "Globe, continent puzzle",
+    "educators": ["educator_1", "educator_2"],
+    "children": ["child_1", "child_2", "child_3"]
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +68,7 @@ class ProgramPlansListScreen extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => CreateProgramPlanScreen(
+                              builder: (context) => AddProgramPlanScreen(
                                     centerId: selectedCenterId,
                                     screenType: 'add',
                                   )));
@@ -106,7 +129,16 @@ class ProgramPlansListScreen extends StatelessWidget {
                           specialEvents: plan.specialActivity,
                           createdAt: plan.createdAt,
                           updatedAt: plan.endDate,
-                          onEditPressed: () {},
+                          onEditPressed: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return AddProgramPlanScreen(
+                                centerId: selectedCenterId,
+                                screenType: 'edit',
+                                programPlan: programDetaiJson,
+                              );
+                            }));
+                          },
                           onDeletePressed: () {},
                         ),
                       );
