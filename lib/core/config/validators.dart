@@ -39,3 +39,11 @@ String? validateDob(String? value) {
   if (value == null || value.isEmpty) return 'Select date of birth';
   return null;
 }
+
+String? validatePin(String? value) {
+  if (value == null || value.isEmpty) return 'Enter PIN';
+  if (value.length != 4) {
+    return 'Enter 4-digit PIN';
+  }
+  return null;
+}

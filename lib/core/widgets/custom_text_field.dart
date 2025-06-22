@@ -10,7 +10,7 @@ class CustomTextFormWidget extends StatelessWidget {
     this.onChanged,
     this.controller,
     this.focusnode,
-      this.validator,
+    this.validator,
     this.ontap,
     this.onTapOutside,
     this.ontSaved,
@@ -76,8 +76,6 @@ class CustomTextFormWidget extends StatelessWidget {
   final TextStyle? contentStyle;
   final TextStyle? titleStyle;
 
-
-  
   @override
   Widget build(BuildContext context) {
     double mw = MediaQuery.of(context).size.width;
@@ -111,8 +109,8 @@ class CustomTextFormWidget extends StatelessWidget {
             onEditingComplete: () {
               FocusScope.of(context).unfocus();
             },
-            style:
-                contentStyle ?? Theme.of(context).textTheme.bodyMedium!.copyWith(),
+            style: contentStyle ??
+                Theme.of(context).textTheme.bodyMedium!.copyWith(),
             onFieldSubmitted: onFieldSubmitted ??
                 (value) {
                   FocusScope.of(context).nextFocus();
@@ -129,13 +127,15 @@ class CustomTextFormWidget extends StatelessWidget {
               border: border ??
                   OutlineInputBorder(
                     borderSide: borderSide ??
-                        const BorderSide(color: AppColors.primaryColor, width: 1),
+                        const BorderSide(
+                            color: AppColors.primaryColor, width: 1),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
               focusedBorder: focusedBorder ??
                   OutlineInputBorder(
                     borderSide: borderSide ??
-                        const BorderSide(color: AppColors.primaryColor, width: 1),
+                        const BorderSide(
+                            color: AppColors.primaryColor, width: 1),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
               enabled: enable ?? true,
@@ -179,7 +179,7 @@ class CustomTextFormWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8.0),
               ),
             ),
-        
+
             validator: validator,
             onChanged: onChanged,
             onTapOutside: onTapOutside ??
