@@ -27,10 +27,10 @@ class RoomListBloc extends Bloc<RoomListEvent, RoomListState> {
           roomsData: response.data!,
         ));
       } else {
-        emit(RoomListError(message: response.message));
+        emit(AnnounceListError(message: response.message));
       }
     } catch (e) {
-      emit(RoomListError(message: 'Failed to fetch rooms: $e'));
+      emit(AnnounceListError(message: 'Failed to fetch rooms: $e'));
     }
   }
 
@@ -44,12 +44,12 @@ class RoomListBloc extends Bloc<RoomListEvent, RoomListState> {
           await roomRepository.deleteMultipleRooms(roomIds: event.roomsId);
       if (response.success) {
         _onFetchRooms;
-        emit(RoomListError(message: response.message));
+        emit(AnnounceListError(message: response.message));
       } else {
-        emit(RoomListError(message: response.message));
+        emit(AnnounceListError(message: response.message));
       }
     } catch (e) {
-      emit(const RoomListError(message: 'Failed to delete rooms'));
+      emit(const AnnounceListError(message: 'Failed to delete rooms'));
     }
   }
 }

@@ -9,7 +9,7 @@ import 'package:mydiaree/core/config/app_asset.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/features/auth/admin/presentation/pages/admin/login_screen.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
-import 'package:mydiaree/features/auth/parent/presentation/pages/staff_login_screen.dart';
+import 'package:mydiaree/features/auth/parent/presentation/pages/parent_login_screen.dart';
 import 'package:mydiaree/features/auth/staff/presentation/pages/staff_login_screen.dart';
 
 class UserTypeScreen extends StatelessWidget {

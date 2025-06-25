@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/cubit/global_data_cubit.dart';
 import 'package:mydiaree/core/cubit/globle_repository.dart';
+import 'package:mydiaree/features/annaunce/presentation/bloc/add_announcement/add_announce_bloc.dart';
+import 'package:mydiaree/features/annaunce/presentation/bloc/list_announcement/list_anounce_bloc.dart';
 import 'package:mydiaree/features/auth/admin/presentation/bloc/forgot_password/forgot_password_bloc.dart';
 import 'package:mydiaree/features/auth/admin/presentation/bloc/login/login_bloc.dart';
 import 'package:mydiaree/features/auth/admin/presentation/bloc/otp_verify/otp_verify_bloc.dart';
@@ -10,12 +12,14 @@ import 'package:mydiaree/features/auth/admin/presentation/bloc/updatepassowd/upd
 import 'package:mydiaree/features/auth/admin/presentation/bloc/use_type/user_type_bloc.dart';
 import 'package:mydiaree/core/config/app_theme.dart';
 import 'package:mydiaree/features/auth/admin/presentation/pages/admin/user_type_screen.dart';
-import 'package:mydiaree/features/auth/parent/presentation/bloc/login/staff_login_bloc.dart';
+import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_login_bloc.dart';
 import 'package:mydiaree/features/auth/staff/presentation/bloc/login/staff_login_bloc.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_bloc.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
+import 'package:mydiaree/features/splash/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -55,13 +59,16 @@ class MyApp extends StatelessWidget {
         BlocProvider<ProgramPlanBloc>(create: (context) => ProgramPlanBloc()),
         BlocProvider<StaffLoginBloc>(create: (context) => StaffLoginBloc()),
         BlocProvider<ParentLoginBloc>(create: (context) => ParentLoginBloc()),
+        BlocProvider<AddPlanBloc>(create: (context) => AddPlanBloc()),
+        BlocProvider<AnnounceListBloc>(create: (context) => AnnounceListBloc()),
+        BlocProvider<AnnounceBloc>(create: (context) => AnnounceBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: RAppTheme.lightTheme,
         darkTheme: RAppTheme.lightTheme,
         themeMode: ThemeMode.system,
-        home: const UserTypeScreen(),
+        home: SplashScreen(),
       ),
     );
   }

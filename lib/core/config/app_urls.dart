@@ -21,4 +21,5 @@ class AppUrls {
   static const getChildrenList = "$baseApiUrl/api/children";
   static const getEducators = "$baseApiUrl/api/educators";
   static const String addPlan = '$baseApiUrl/api/plans/add';
+  static const String addAnnouncement = '$baseApiUrl/api/announcement/add';
 }

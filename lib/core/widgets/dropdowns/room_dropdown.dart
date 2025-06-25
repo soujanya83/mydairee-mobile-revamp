@@ -19,15 +19,17 @@ class RoomDropdown extends StatelessWidget {
     this.onChanged,
     this.height = 40,
     this.hint = 'Select Room',
-     this.centerId,
+    this.centerId,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<RoomListBloc, RoomListState>(
-      builder: (context, state) { 
-        if(state is RoomListInitial){
-           context.read<RoomListBloc>().add( FetchRoomsEvent(centerId: centerId?? '1'));
+      builder: (context, state) {
+        if (state is RoomListInitial) {
+          context
+              .read<RoomListBloc>()
+              .add(FetchRoomsEvent(centerId: centerId ?? '1'));
         }
         if (state is RoomListLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -35,17 +37,22 @@ class RoomDropdown extends StatelessWidget {
           final rooms = state.roomsData.rooms;
 
           if (rooms.isEmpty) {
-            return Container(
-              height: height,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.grey.shade200,
-              ),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text("No rooms available"),
+            return Material(
+            elevation: 1.2,
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(8),
+              child: Container(
+                height: height,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey.shade200,
+                ),
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("No rooms available"),
+                ),
               ),
             );
           }
@@ -58,32 +65,38 @@ class RoomDropdown extends StatelessWidget {
           }
 
           return DropdownButtonHideUnderline(
-            child: Container(
-              height: height,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.primaryColor),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: DropdownButton<RoomItem>(
-                isExpanded: true,
-                value: selectedRoom,
-                hint: Text(hint),
-                items: rooms.map((room) {
-                  return DropdownMenuItem<RoomItem>(
-                    value: room,
-                    child: Text(room.name),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    onChanged?.call(value);
-                  }
-                },
+            child: Material(
+              elevation: 1.2,
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                height: height,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  border: Border.all(color: AppColors.primaryColor),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: DropdownButton<RoomItem>(
+                  isExpanded: true,
+                  value: selectedRoom,
+                  hint: Text(hint),
+                  items: rooms.map((room) {
+                    return DropdownMenuItem<RoomItem>(
+                      value: room,
+                      child: Text(room.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      onChanged?.call(value);
+                    }
+                  },
+                ),
               ),
             ),
           );
-        } else if (state is RoomListError) {
+        } else if (state is AnnounceListError) {
           return Text(state.message);
         }
 

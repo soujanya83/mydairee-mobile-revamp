@@ -11,7 +11,7 @@ class LoginModel {
     this.name,
   });
 
-  factory LoginModel.fromJson(Map<String, dynamic>? json) {
+  factory LoginModel.fromJson(Map<dynamic, dynamic>? json) {
     if (json == null) return LoginModel();
     return LoginModel(
       token: json['token'] as String?,

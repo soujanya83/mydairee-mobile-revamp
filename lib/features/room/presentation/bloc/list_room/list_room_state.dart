@@ -14,10 +14,10 @@ class RoomListInitial extends RoomListState {}
 
 class RoomListLoading extends RoomListState {}
 
-class RoomListError extends RoomListState {
+class AnnounceListError extends RoomListState {
   final String message;
 
-  const RoomListError({required this.message});
+  const AnnounceListError({required this.message});
 
   @override
   List<Object> get props => [message];

@@ -7,9 +7,9 @@ import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_status_bar_widget.dart';
-import 'package:mydiaree/features/auth/parent/presentation/bloc/login/staff_event.dart';
-import 'package:mydiaree/features/auth/parent/presentation/bloc/login/staff_login_bloc.dart';
-import 'package:mydiaree/features/auth/parent/presentation/bloc/login/staff_login_state.dart';
+import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_event.dart';
+import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_login_bloc.dart';
+import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_login_state.dart';
 import 'package:mydiaree/main.dart';
 
 class ParentLoginScreen extends StatefulWidget {
@@ -54,6 +54,7 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        UIHelpers.verticalSpace(screenHeight * .03),
                         UIHelpers.logoHorizontal(),
                         UIHelpers.verticalSpace(30),
                         Text(

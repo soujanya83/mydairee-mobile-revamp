@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/features/auth/parent/data/repositories/staff_auth_repo.dart';
-import 'package:mydiaree/features/auth/parent/presentation/bloc/login/staff_event.dart';
-import 'package:mydiaree/features/auth/parent/presentation/bloc/login/staff_login_state.dart';
+import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_event.dart';
+import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_login_state.dart';
 
 class ParentLoginBloc extends Bloc<ParentLoginEvent, ParentLoginState> {
   ParentAuthenticationRepository repository = ParentAuthenticationRepository();

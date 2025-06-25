@@ -83,7 +83,7 @@ class RoomRepository {
     required String ageTo,
     required String roomStatus,
     required String color,
-    required String educators,
+    required dynamic educators,
   }) async {
     return postAndParse(
       AppUrls.addRoom,
@@ -128,8 +128,6 @@ class RoomRepository {
   //     },
   //   );
   // }
-
-
 
   // Batch delete rooms
   Future<ApiResponse> deleteMultipleRooms({

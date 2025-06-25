@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_dropdown.dart';
@@ -7,6 +9,9 @@ import 'package:mydiaree/core/widgets/custom_multiline_text_field.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/dropdowns/room_dropdown.dart';
+import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_bloc.dart';
+import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_event.dart';
+import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_state.dart';
 import 'package:mydiaree/features/program_plan/presentation/widget/add_plan_widgets.dart';
 
 class AddProgramPlanScreen extends StatefulWidget {
@@ -394,7 +399,6 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                   },
                 ),
 
-
                 // EYLF
                 const SizedBox(height: 6),
                 CustomMultilineTextField(
@@ -426,10 +430,6 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                   maxLines: 3,
                 ),
                 const SizedBox(height: 16),
-
-                // Add more additional experience fields as needed
-
-                // Save/Cancel buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -439,12 +439,82 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                           style: TextStyle(color: Colors.black)),
                     ),
                     const SizedBox(width: 16),
-                    CustomButton(
-                      height: 45,
-                      width: 100,
-                      text: 'SAVE',
-                      isLoading: false, // TODO: Add loading state
-                      ontap: _submitForm,
+                    BlocListener<AddPlanBloc, AddPlanState>(
+                      listener: (context, state) {
+                        if (state is AddPlanFailure) {
+                          UIHelpers.showToast(
+                            context,
+                            message: state.message,
+                            backgroundColor: AppColors.errorColor,
+                          );
+                        } else if (state is AddPlanSuccess) {
+                          UIHelpers.showToast(
+                            context,
+                            message: state.message,
+                            backgroundColor: AppColors.successColor,
+                          );
+                          Navigator.pop(
+                              context); // or go to another screen if needed
+                        }
+                      },
+                      child: BlocBuilder<AddPlanBloc, AddPlanState>(
+                        builder: (context, state) {
+                          return CustomButton(
+                            height: 45,
+                            width: 100,
+                            text: 'SAVE',
+                            isLoading: state is AddPlanLoading,
+                            ontap: () {
+                              try {
+                                context.read<AddPlanBloc>().add(
+                                      SubmitAddPlanEvent(
+                                        planId: (widget.screenType == 'edit')
+                                            ? 'id'
+                                            : null,
+                                        month: selectedMonth ?? '',
+                                        year: selectedYear ?? '',
+                                        roomId: selectedRoom ?? '',
+                                        educators: selectedEducators,
+                                        children: selectedChildren,
+                                        focusArea: focusAreasController.text,
+                                        outdoorExperiences:
+                                            outdoorExperiencesController.text,
+                                        inquiryTopic:
+                                            inquiryTopicController.text,
+                                        sustainabilityTopic:
+                                            sustainabilityTopicController.text,
+                                        specialEvents:
+                                            specialEventsController.text,
+                                        childrenVoices:
+                                            childrenVoicesController.text,
+                                        familiesInput:
+                                            familiesInputController.text,
+                                        groupExperience:
+                                            groupExperienceController.text,
+                                        spontaneousExperience:
+                                            spontaneousExperienceController
+                                                .text,
+                                        mindfulnessExperience:
+                                            mindfulnessExperienceController
+                                                .text,
+                                        eylf: eylfController
+                                            .text, 
+                                        practicalLife:
+                                            practicalLifeController.text,
+                                        sensorial: sensorialController.text,
+                                        math: mathController.text,
+                                        language: languageController.text,
+                                        culture: cultureController.text,
+                                      ),
+                                    );
+                              } catch (e, s) {
+                                print('Error: $e');
+                                print('StackTrace: $s');
+                              }
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),

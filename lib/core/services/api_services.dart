@@ -66,9 +66,8 @@ class ApiServices {
       Map<String, dynamic>? dummyData}) async {
     final dio = Dio();
     try {
-      print(filesPath.toString());
       Options? options;
-      if (headers != null) {
+      if (headers != null){
         options = Options(headers: headers);
       }
 

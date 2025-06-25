@@ -19,7 +19,8 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
     bool dummy = false,
     Map<String, dynamic>? dummyData}) async {
   try {
-    final response = await ApiServices.postData(url, data,
+    final response = await ApiServices.postData(
+        url, data,
         filesPath: filesPath,
         fileField: fileField,
         dummy: dummy,
@@ -32,7 +33,7 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
     } else {
       return ApiResponse(success: false, message: response.message);
     }
-  } catch (e, s) {
+  } catch (e, s){
     debugPrint(e.toString());
     debugPrint(s.toString());
     return ApiResponse(success: false, message: 'Something Went Wrong');

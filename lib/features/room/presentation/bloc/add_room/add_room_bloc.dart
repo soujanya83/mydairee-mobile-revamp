@@ -24,7 +24,9 @@ class AddRoomBloc extends Bloc<AddRoomEvent, AddRoomState> {
         } else {
           emit(AddRoomFailure(response.message));
         }
-      } catch (e) {
+      } catch (e,s) {
+        print(s.toString());
+        print(e.toString());
         emit(AddRoomFailure(e.toString()));
       }
     });

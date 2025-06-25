@@ -14,7 +14,6 @@ import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_event.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_state.dart';
-import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
 
 class AddRoomScreen extends StatefulWidget {
   final String screenType;
@@ -303,7 +302,7 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                         Navigator.pop(context);
                       }
                     }, child: BlocBuilder<AddRoomBloc, AddRoomState>(
-                            builder: (context, state) {
+                        builder: (context, state) {
                       return CustomButton(
                         height: 45,
                         width: 100,
@@ -311,19 +310,29 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                         isLoading: state is AddRoomLoading,
                         ontap: () {
                           {
-                            context.read<AddRoomBloc>().add(SubmitAddRoomEvent(
-                                id: (widget.screenType == 'edit')
-                                    ? (widget.room?['id'])
-                                    : null,
-                                centerId:
-                                    widget.room?['centerId'].toString() ?? '',
-                                name: name.text,
-                                capacity: capacity.text,
-                                ageFrom: ageFrom.text,
-                                ageTo: ageTo.text,
-                                roomStatus: _chosenStatus,
-                                color: currentColor.toString(),
-                                educators: selectedEducators));
+                            try {
+                              context.read<AddRoomBloc>().add(
+                                  SubmitAddRoomEvent(
+                                      id: (widget.screenType == 'edit')
+                                          ? (widget.room?['id'])
+                                          : null,
+                                      centerId:
+                                          widget.room?['centerId'].toString() ??
+                                              '',
+                                      name: name.text,
+                                      capacity: capacity.text,
+                                      ageFrom: ageFrom.text,
+                                      ageTo: ageTo.text,
+                                      roomStatus: _chosenStatus,
+                                      color: currentColor.toString(),
+                                      educators: List.generate(
+                                          selectedEducators.length,
+                                          (index) =>
+                                              selectedEducators[index]?.id)));
+                            } catch (e, s) {
+                              print(e.toString());
+                              print(s.toString());
+                            }
                           }
                         },
                       );

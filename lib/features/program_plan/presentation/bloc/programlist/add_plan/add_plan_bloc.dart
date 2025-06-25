@@ -4,12 +4,11 @@ import 'add_plan_event.dart';
 import 'add_plan_state.dart'; // Update path as per your structure
 
 class AddPlanBloc extends Bloc<AddPlanEvent, AddPlanState> {
-  final ProgramPlanRepository repository;
+   ProgramPlanRepository repository = ProgramPlanRepository();
 
-  AddPlanBloc({required this.repository}) : super(AddPlanInitial()) {
+  AddPlanBloc() : super(AddPlanInitial()) {
     on<SubmitAddPlanEvent>((event, emit) async {
-      emit(AddPlanLoading());
-
+      emit(AddPlanLoading()); 
       try {
         final response = await repository.addOrEditPlan(
           planId: event.planId,
