@@ -34,6 +34,7 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
       return ApiResponse(success: false, message: response.message);
     }
   } catch (e, s){
+    print('error in postAndParse function');
     debugPrint(e.toString());
     debugPrint(s.toString());
     return ApiResponse(success: false, message: 'Something Went Wrong');

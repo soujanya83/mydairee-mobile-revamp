@@ -497,8 +497,7 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                                         mindfulnessExperience:
                                             mindfulnessExperienceController
                                                 .text,
-                                        eylf: eylfController
-                                            .text, 
+                                        eylf: eylfController.text,
                                         practicalLife:
                                             practicalLifeController.text,
                                         sensorial: sensorialController.text,

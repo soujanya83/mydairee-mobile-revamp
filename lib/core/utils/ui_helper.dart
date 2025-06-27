@@ -92,6 +92,8 @@ class UIHelpers {
                   .copyWith(color: AppColors.white))),
     );
   }
+
+  
 }
 
 enum ToastGravity { top, bottom }

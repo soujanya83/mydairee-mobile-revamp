@@ -6,7 +6,7 @@ import 'package:mydiaree/core/config/app_fonts.dart';
 class CustomTextFormWidget extends StatelessWidget {
   CustomTextFormWidget({
     super.key,
-    required this.hintText,
+      this.hintText,
     this.onChanged,
     this.controller,
     this.focusnode,
@@ -31,6 +31,7 @@ class CustomTextFormWidget extends StatelessWidget {
     this.isObs,
     this.suffixWidget,
     this.maxLines,
+    this.minLines,
     this.contentpadding,
     this.titlePadding,
     this.readOnly,
@@ -50,7 +51,7 @@ class CustomTextFormWidget extends StatelessWidget {
   final void Function(String?)? ontSaved;
   final int? maxLength;
   double c = 0;
-  final String hintText;
+  final String? hintText;
   final TextInputType? keyboardType;
   final Function(String)? onFieldSubmitted;
   final Color? fillColor;
@@ -69,6 +70,7 @@ class CustomTextFormWidget extends StatelessWidget {
   final bool? isDense;
   final bool? enable;
   final int? maxLines;
+  final int? minLines;
   final EdgeInsetsGeometry? contentpadding;
   final double? titlePadding;
   final bool? readOnly;
@@ -101,6 +103,7 @@ class CustomTextFormWidget extends StatelessWidget {
           child: TextFormField(
             readOnly: readOnly ?? false,
             maxLines: maxLines ?? 1,
+            minLines: minLines??1,
             obscureText: isObs ?? false,
             cursorColor: Colors.black,
             controller: controller,

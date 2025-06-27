@@ -14,7 +14,6 @@ import 'package:mydiaree/features/room/presentation/pages/add_room_screen.dart';
 import 'package:mydiaree/features/room/presentation/widget/room_list_custom_widgets.dart';
 import 'package:mydiaree/main.dart';
 
-// ignore: must_be_immutable
 class RoomsListScreen extends StatelessWidget {
   RoomsListScreen({super.key});
 

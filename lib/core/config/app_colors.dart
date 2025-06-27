@@ -20,4 +20,5 @@ class AppColors {
   static const Color greenLight = Color(0xFF1ABB50);
   static final Color kGradient1 =   primaryColor;
   static final Color kGradient2 = black.withOpacity(.8); 
+  static final Color transparent = Colors.transparent; 
 }

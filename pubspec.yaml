@@ -45,6 +45,10 @@ dependencies:
   dio: ^5.8.0+1
   equatable: ^2.0.7
   auto_size_text: ^3.0.0
+  cached_network_image: ^3.4.1
+  file_picker: ^10.2.0
+  reorderable_grid_view: ^2.2.8
+  dotted_border: ^3.0.1
   
 
 dev_dependencies:

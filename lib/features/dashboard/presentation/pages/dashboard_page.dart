@@ -262,12 +262,12 @@ class DashboardScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       ListView.builder(
                         shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: admissionList.length,
                         itemBuilder: (context, index) {
                           final item = admissionList[index];
                           return Padding(
-                            padding: EdgeInsetsGeometry.symmetric(vertical: 10),
+                            padding: const EdgeInsetsGeometry.symmetric(vertical: 10),
                             child: PatternBackground(
                               child: Padding(
                                 padding: const EdgeInsets.all(16),

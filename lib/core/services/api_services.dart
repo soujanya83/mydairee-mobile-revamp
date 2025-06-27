@@ -67,7 +67,7 @@ class ApiServices {
     final dio = Dio();
     try {
       Options? options;
-      if (headers != null){
+      if (headers != null) {
         options = Options(headers: headers);
       }
 
@@ -128,6 +128,7 @@ class ApiServices {
           data: response.data,
           message: getApiMessage(response.data));
     } catch (e, s) {
+      print('error in postData function');
       debugPrint(e.toString());
       debugPrint(s.toString());
       return ApiResponse(success: false, message: 'Something Went Wrong');

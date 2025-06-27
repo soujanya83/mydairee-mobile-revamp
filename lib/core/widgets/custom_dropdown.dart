@@ -29,7 +29,7 @@ class CustomDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BorderRadiusGeometry? borderRadius = const BorderRadius.all(Radius.circular(8));
+    BorderRadius? borderRadius = const BorderRadius.all(Radius.circular(8));
     return Material(
       elevation: 1.2,
       borderRadius: borderRadius,
@@ -43,26 +43,29 @@ class CustomDropdown<T> extends StatelessWidget {
             borderRadius: borderRadius,
           ),
           child: Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8),
-            child: Center(
-              child: DropdownButton<T>(
-                isExpanded: true,
-                value: items.contains(value) ? value : null,
-                iconEnabledColor: dropdownIconColor ?? AppColors.primaryColor,
-                hint: hint != null ? Text(hint!) : null,
-                items: items.map((T item) {
-                  return DropdownMenuItem<T>(
-                    value: item,
-                    child: Text(
-                      displayItem != null
-                          ? displayItem!(item)
-                          : item.toString(),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: onChanged,
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: DropdownButton<T>(
+              isExpanded: true,
+              value: items.contains(value) ? value : null,
+              iconEnabledColor: dropdownIconColor ?? AppColors.primaryColor,
+              hint: hint != null ? Text(hint!) : null,
+              items: items.map((T item) {
+                return DropdownMenuItem<T>(
+                  value: item,
+                  child: Text(
+                    displayItem != null
+                        ? displayItem!(item)
+                        : item.toString(),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).toList(),
+              onChanged: onChanged,
+              dropdownColor: dropdownColor ?? AppColors.white,
+              borderRadius: borderRadius,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.black,
+                  ),
             ),
           ),
         ),

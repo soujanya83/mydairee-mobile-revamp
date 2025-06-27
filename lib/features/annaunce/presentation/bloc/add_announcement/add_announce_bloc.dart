@@ -9,9 +9,9 @@ class AnnounceBloc extends Bloc<AddAnnouncementEvent, AddAnnounceState> {
   AnnounceBloc() : super(AddAnnounceInitial()) {
     on<SubmitAddAnnouncementEvent>((event, emit) async {
       emit(AddAnnounceLoading());
-
       try {
         final response = await repository.addOrEditAnnouncement(
+          
           id: event.id,
           title: event.title,
           text: event.text,
@@ -19,7 +19,6 @@ class AnnounceBloc extends Bloc<AddAnnouncementEvent, AddAnnounceState> {
           status: event.status,
           createdBy: event.createdBy,
         );
-
         if (response.success) {
           emit(AddAnnounceSuccess(response.message));
         } else {

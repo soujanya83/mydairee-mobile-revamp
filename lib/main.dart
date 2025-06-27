@@ -19,7 +19,7 @@ import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
-import 'package:mydiaree/features/splash/splash_screen.dart';
+import 'package:mydiaree/features/service_detail/presentation/bloc/add_room/service_detail_bloc.dart';
 
 void main() {
   runApp(const MyApp());
@@ -62,13 +62,14 @@ class MyApp extends StatelessWidget {
         BlocProvider<AddPlanBloc>(create: (context) => AddPlanBloc()),
         BlocProvider<AnnounceListBloc>(create: (context) => AnnounceListBloc()),
         BlocProvider<AnnounceBloc>(create: (context) => AnnounceBloc()),
+        BlocProvider<ServiceDetailBloc>(create: (context) => ServiceDetailBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: RAppTheme.lightTheme,
         darkTheme: RAppTheme.lightTheme,
         themeMode: ThemeMode.system,
-        home: SplashScreen(),
+        home: DashboardScreen(),
       ),
     );
   }

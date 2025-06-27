@@ -11,12 +11,9 @@ import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_multi_selected_dialog.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
-import 'package:mydiaree/features/observation/presentation/bloc/list_room/list_room_bloc.dart';
-import 'package:mydiaree/features/room/data/model/room_list_model.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_event.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_state.dart';
-import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_state.dart';
 
 class AddRoomScreen extends StatefulWidget {
   final String screenType;
@@ -39,12 +36,12 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
   Color currentColor = AppColors.primaryColor;
 
   List<EducatorItem?> selectedEducators = [];
-  List<RoomItem?> selectedRooms = [];
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
+
     if (widget.room != null && widget.screenType == 'edit') {
       name.text = widget.room!['name'] ?? '';
       capacity.text = widget.room!['capacity']?.toString() ?? '';
@@ -83,6 +80,7 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
 
   void _showEducatorDialog() async {
     final globalState = context.read<GlobalDataCubit>().state;
+
     await showDialog<List<Map<String, String>>>(
       context: context,
       builder: (context) => CustomMultiSelectDialog(
@@ -107,38 +105,6 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
             final educators = globalState.educatorsData?.educators ?? [];
             selectedEducators =
                 educators.where((e) => selectedIds.contains(e.id)).toList();
-          });
-        },
-      ),
-    );
-  }
-
-  void _showRoomDialog() async {
-    final roomListState = context.read<RoomListLoaded>();
-    await showDialog<List<Map<String, String>>>(
-      context: context,
-      builder: (context) => CustomMultiSelectDialog(
-        itemsId: List.generate(
-          roomListState.roomsData.rooms.length,
-          (index) {
-            return roomListState.roomsData.rooms[index].id;
-          },
-        ),
-        itemsName: List.generate(
-          roomListState.roomsData.rooms.length,
-          (index) {
-            return roomListState.roomsData.rooms[index].name;
-          },
-        ),
-        initiallySelectedIds: List.generate(selectedRooms.length, (index) {
-          return selectedRooms[index]?.id ?? '';
-        }),
-        title: 'Select Educator',
-        onItemTap: (selectedIds) {
-          setState(() {
-            final rooms = roomListState.roomsData.rooms;
-            selectedRooms =
-                rooms.where((e) => selectedIds.contains(e.id)).toList();
           });
         },
       ),
@@ -274,9 +240,7 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                 Text('Educator', style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 6),
                 GestureDetector(
-                  onTap: () {
-                    _showEducatorDialog();
-                  },
+                  onTap: _showEducatorDialog,
                   child: Container(
                     width: 180,
                     height: 38,
@@ -338,7 +302,7 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                         Navigator.pop(context);
                       }
                     }, child: BlocBuilder<AddRoomBloc, AddRoomState>(
-                            builder: (context, state) {
+                        builder: (context, state) {
                       return CustomButton(
                         height: 45,
                         width: 100,

@@ -76,6 +76,7 @@ class AnnoucementRepository {
     required String createdBy,
   }) async {
     return await postAndParse(
+      dummy: true,
       AppUrls.addAnnouncement,
       {
         if (id != null) 'id': id,

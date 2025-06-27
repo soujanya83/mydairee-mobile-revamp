@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 
 class CustomMultiSelectDialog extends StatefulWidget {
-  final List<String> educatorIds;
-  final List<String> educatorNames;
+  final List<String> itemsId;
+  final List<String> itemsName;
   final List<String> initiallySelectedIds;
   final String title;
-  final Function(List<String>) onItemTap; // <-- Add this
+  final Function(List<String>) onItemTap;
 
   const CustomMultiSelectDialog({
     super.key,
-    required this.educatorIds,
-    required this.educatorNames,
+    required this.itemsId,
+    required this.itemsName,
     this.initiallySelectedIds = const [],
     required this.title,
-    required this.onItemTap, // <-- Add this
-  });
+    required this.onItemTap,
+ });
 
   @override
   State<CustomMultiSelectDialog> createState() =>
@@ -55,10 +55,10 @@ class _CustomMultiSelectDialogState extends State<CustomMultiSelectDialog> {
                 thumbVisibility: true,
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: widget.educatorIds.length,
+                  itemCount: widget.itemsId.length,
                   itemBuilder: (context, index) {
-                    final id = widget.educatorIds[index];
-                    final name = widget.educatorNames[index];
+                    final id = widget.itemsId[index];
+                    final name = widget.itemsName[index];
                     final isChecked = selectedIds.contains(id);
                     return CheckboxListTile(
                       value: isChecked,

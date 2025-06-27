@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 
+import 'package:intl/intl.dart';
 bool validApiResponse(Response response) {
   if ((response.statusCode == 200) || (response.statusCode == 201)) {
     return true;
@@ -39,4 +40,14 @@ int getColorValue(dynamic color) {
     ];
     int index = int.tryParse(month ?? '') ?? 0;
     return (index >= 1 && index <= 12) ? months[index - 1] : '-';
+  }
+
+    String formattedDate(String? dateString) {
+    try {
+      if (dateString == null) return '';
+      return DateFormat('dd-MM-yyyy – kk:mm')
+          .format(DateTime.parse(dateString));
+    } catch (_) {
+      return dateString ?? '';
+    }
   }
