@@ -15,8 +15,12 @@ import 'package:mydiaree/features/auth/admin/presentation/pages/admin/user_type_
 import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_login_bloc.dart';
 import 'package:mydiaree/features/auth/staff/presentation/bloc/login/staff_login_bloc.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:mydiaree/features/observation/presentation/bloc/add_room/view_observation_bloc.dart';
+import 'package:mydiaree/features/observation/presentation/bloc/list_room/obsevation_list_bloc.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_bloc.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_bloc.dart';
+import 'package:mydiaree/features/reflection/presentation/bloc/add_relection/add_reflection_bloc.dart';
+import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflection_list_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
 import 'package:mydiaree/features/service_detail/presentation/bloc/add_room/service_detail_bloc.dart';
@@ -62,7 +66,17 @@ class MyApp extends StatelessWidget {
         BlocProvider<AddPlanBloc>(create: (context) => AddPlanBloc()),
         BlocProvider<AnnounceListBloc>(create: (context) => AnnounceListBloc()),
         BlocProvider<AnnounceBloc>(create: (context) => AnnounceBloc()),
-        BlocProvider<ServiceDetailBloc>(create: (context) => ServiceDetailBloc()),
+        BlocProvider<ServiceDetailBloc>(
+            create: (context) => ServiceDetailBloc()),
+        BlocProvider<ObservationListBloc>(
+            create: (context) => ObservationListBloc()),
+        BlocProvider<ViewObservationBloc>(
+            create: (context) => ViewObservationBloc()),
+        BlocProvider<ReflectionListBloc>(
+            create: (context) => ReflectionListBloc()),
+        BlocProvider<AddReflectionBloc>(
+            create: (context) => AddReflectionBloc( 
+            )), 
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

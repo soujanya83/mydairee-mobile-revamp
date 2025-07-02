@@ -4,7 +4,9 @@ import 'package:mydiaree/core/utils/helper_functions.dart';
 import 'package:mydiaree/core/utils/hexconversion.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_network_image.dart';
+
 class ObservationModel {
+  final String id;
   final String title;
   final String userName;
   final String dateAdded;
@@ -14,6 +16,7 @@ class ObservationModel {
   final String status;
 
   ObservationModel({
+    required this.id,
     required this.title,
     required this.userName,
     required this.dateAdded,
@@ -25,6 +28,7 @@ class ObservationModel {
 
   factory ObservationModel.fromJson(Map<String, dynamic> json) {
     return ObservationModel(
+      id: json['id'],
       title: json['title'],
       userName: json['userName'],
       dateAdded: json['dateAdded'],
@@ -36,13 +40,26 @@ class ObservationModel {
   }
 }
 
-// Your exact ObservationCard widget
 class ObservationCard extends StatelessWidget {
-  final dynamic observation;
+  final String title;
+  final String author;
+  final String approvedBy;
+  final String dateAdded;
+  final String? mediaUrl;
+  final int? montessoriCount;
+  final int? eylfCount;
+  final String status;
   final VoidCallback onTap;
 
   const ObservationCard({
-    required this.observation,
+    required this.title,
+    required this.author,
+    required this.approvedBy,
+    required this.dateAdded,
+    this.mediaUrl,
+    this.montessoriCount,
+    this.eylfCount,
+    required this.status,
     required this.onTap,
     Key? key,
   }) : super(key: key);
@@ -58,21 +75,20 @@ class ObservationCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, // Prevent vertical overflow
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (observation.title != null)
+              if (title.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Text(
-                    observation.title,
+                    title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontSize: 18,
                         ),
-                    maxLines: 2, // Limit title to 2 lines
-                    overflow: TextOverflow.ellipsis, // Add ellipsis if overflow
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-
               // Author and Approver row
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -84,67 +100,59 @@ class ObservationCard extends StatelessWidget {
                       constraints: BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width * 0.8,
                       ),
-                      child: _infoRow("Author:", observation.userName),
+                      child: _infoRow("Author:", author),
                     ),
                     ConstrainedBox(
                       constraints: BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width * 0.8,
                       ),
-                      child: _infoRow("Approved by:", observation.userName),
+                      child: _infoRow("Approved by:", approvedBy),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 6),
-
               // Date row
-              _infoRow("Created on:", formattedDate(observation.dateAdded)),
+              _infoRow("Created on:", formattedDate(dateAdded)),
               const SizedBox(height: 12),
-
               // Media
-              if ((observation.observationsMedia) != null)
+              if (mediaUrl != null && mediaUrl!.isNotEmpty)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     decoration: BoxDecoration(
-                      //     gradient: LinearGradient(colors: [
-                      //   AppColors.black.withOpacity(.2),
-                      //   AppColors.transparent
-                      // ]
-                      // )
                       color: AppColors.black.withOpacity(.1),
                     ),
                     child: CustomNetworkImage(
                       placeholder: SizedBox(),
                       errorWidget: SizedBox(),
-                      imageUrl: observation.observationsMedia!.toString(),
+                      imageUrl: mediaUrl!,
                     ),
                   ),
                 ),
               const SizedBox(height: 12),
-
               // Chips row
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    if (observation.montessoricount != null)
+                    if (montessoriCount != null)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: _buildChip(
-                          "Montessori: ${observation.montessoricount}",
+                          "Montessori: $montessoriCount",
                           Theme.of(context).primaryColor,
                         ),
                       ),
-                    if (observation.eylfcount != null)
+                    if (eylfCount != null)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: _buildChip(
-                          "EYLF: ${observation.eylfcount}",
+                          "EYLF: $eylfCount",
                           Theme.of(context).primaryColor,
                         ),
                       ),
-                    _buildStatusChip(observation.status),
+                    _buildStatusChip(status),
                   ],
                 ),
               ),
@@ -224,6 +232,115 @@ class ObservationCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class SmallObservationCard extends StatelessWidget {
+  final String id;
+  final String title;
+  final String userName;
+  final String? observationsMedia;
+  final bool isSelected;
+  final bool isLinked;
+  final VoidCallback onTap;
+
+  const SmallObservationCard({
+    super.key,
+    required this.id,
+    required this.title,
+    required this.userName,
+    this.observationsMedia,
+    this.isSelected = false,
+    this.isLinked = false,
+    required this.onTap,
+  });
+
+  String get fullImageUrl =>
+      (observationsMedia != null && observationsMedia!.isNotEmpty)
+          ? (observationsMedia!.startsWith('http')
+              ? observationsMedia!
+              : 'https://mydiaree.com.au$observationsMedia')
+          : '';
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: PatternBackground(
+        elevation: 2,
+        border: isSelected
+            ? Border.all(
+                color: AppColors.primaryColor,
+                width: 1,
+              )
+            : null,
+        borderRadius: BorderRadius.circular(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AspectRatio(
+              aspectRatio: 1.1,
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(10)),
+                child: (fullImageUrl.isNotEmpty)
+                    ? Image.network(
+                        fullImageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.broken_image),
+                        ),
+                      )
+                    : Container(
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.image_not_supported),
+                      ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    'By: $userName',
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // if (!isLinked)
+                  Row(
+                    children: [
+                      Checkbox(
+                        fillColor: MaterialStateProperty.all(
+                          AppColors.primaryColor,
+                        ),
+                        value: isSelected,
+                        onChanged: (_) => onTap(),
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      const Text('Select', style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

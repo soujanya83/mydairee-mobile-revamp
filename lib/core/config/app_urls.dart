@@ -21,6 +21,17 @@ class AppUrls {
   static const getChildrenList = "$baseApiUrl/api/children";
   static const getEducators = "$baseApiUrl/api/educators";
   static const String addPlan = '$baseApiUrl/api/plans/add';
-  static const String addAnnouncement = '$baseApiUrl/api/announcement/add';//
-  static const String submitServiceDetails = '$baseApiUrl/api/submitServiceDetails';
+  static const String addAnnouncement = '$baseApiUrl/api/announcement/add'; //
+  static const String submitServiceDetails =
+      '$baseApiUrl/api/submitServiceDetails';
+  static const String getObservations = '$baseApiUrl/api/observations/list';
+  static const String viewObservation = '$baseApiUrl/api/observations/view';
+  static const String addOrEditObservation =
+      '$baseApiUrl/api/observations/add-or-edit';
+  static const String deleteObservations =
+      '$baseApiUrl/api/observations/delete';
+
+  static const String getReflections = '$baseApiUrl/reflection/list';
+  static const String deleteReflections = '$baseApiUrl/reflection/delete';
+  static const String addReflection = '$baseApiUrl/reflection/add';
 }

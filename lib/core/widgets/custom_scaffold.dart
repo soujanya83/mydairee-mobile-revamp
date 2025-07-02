@@ -22,10 +22,12 @@ class CustomScaffold extends StatelessWidget {
         ),
       ),
       Scaffold(
+        
         drawer: drawer,
         extendBodyBehindAppBar: extendBodyBehindAppBar??false,
         appBar: appBar ??
             AppBar(
+              
               backgroundColor: Colors.transparent,
               elevation: 0,
               automaticallyImplyLeading: true,

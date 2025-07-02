@@ -5,6 +5,7 @@ import 'package:mydiaree/main.dart';
 class CustomButton extends StatelessWidget {
   const CustomButton({
     super.key,
+    this.icon,
     this.color,
     this.height,
     this.width,
@@ -30,6 +31,7 @@ class CustomButton extends StatelessWidget {
   final bool? isLoading;
   final Widget? loading;
   final bool? isArrowButton;
+  final Icon? icon;
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -72,7 +74,29 @@ class CustomButton extends StatelessWidget {
                           : const SizedBox(),
                       SizedBox(
                         width: width ?? screenWidth * .8,
-                        child: Text(
+                        child:
+                        icon != null
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  icon!,
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    isLowerCase != null
+                                        ? text.toLowerCase()
+                                        : text,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium!
+                                        .copyWith(color: AppColors.white),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              )
+                            :
+                         Text(
                           isLowerCase != null ? text : text,
                           style: Theme.of(context)
                               .textTheme

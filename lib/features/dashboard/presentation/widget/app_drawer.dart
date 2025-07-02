@@ -6,6 +6,7 @@ import 'package:mydiaree/features/annaunce/presentation/pages/announcement_list_
 import 'package:mydiaree/features/observation/presentation/pages/observation_list_screen.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_state.dart';
 import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_list_screen.dart';
+import 'package:mydiaree/features/reflection/presentation/pages/reflection_list_screen.dart';
 import 'package:mydiaree/features/room/presentation/pages/room_list_screen.dart';
 import 'package:mydiaree/features/service_detail/presentation/pages/service_detail_screen.dart';
 
@@ -234,7 +235,11 @@ class AppDrawer extends StatelessWidget {
               contentPadding: contentPadding,
               leading: const Icon(Icons.refresh, color: Colors.white),
               title: Text('Reflection', style: titleTextStyle),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return ReflectionListScreen();
+                }));
+              },
             ),
             divider,
             Theme(

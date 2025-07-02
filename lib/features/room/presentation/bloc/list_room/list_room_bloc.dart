@@ -8,7 +8,6 @@ class RoomListBloc extends Bloc<RoomListEvent, RoomListState> {
   RoomRepository roomRepository = RoomRepository();
   RoomListBloc({req}) : super(RoomListInitial()) {
     on<FetchRoomsEvent>(_onFetchRooms);
-
     on<DeleteSelectedRoomsEvent>(_onDeleteRoom);
   }
 

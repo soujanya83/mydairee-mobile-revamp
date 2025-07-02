@@ -11,7 +11,6 @@ import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_multi_selected_dialog.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
-import 'package:mydiaree/features/observation/presentation/bloc/list_room/list_room_bloc.dart';
 import 'package:mydiaree/features/room/data/model/room_list_model.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_event.dart';

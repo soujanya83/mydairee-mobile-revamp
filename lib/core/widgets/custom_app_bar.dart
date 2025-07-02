@@ -8,25 +8,29 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final PreferredSizeWidget? bottom;
   final List<Widget>? actions;
+  final double toolbarHeight;
 
-  const CustomAppBar(
-      {super.key,
-      this.onMenuPressed,
-      this.showNotifications,
-      this.notificationCount,
-      this.title,
-      this.bottom,
-      this.actions});
+  const CustomAppBar({
+    super.key,
+    this.toolbarHeight = kToolbarHeight,
+    this.onMenuPressed,
+    this.showNotifications,
+    this.notificationCount,
+    this.title,
+    this.bottom,
+    this.actions,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      actionsIconTheme: IconThemeData(color: AppColors.white),
-      iconTheme: const IconThemeData(
-          color: AppColors.white // Change this to your desired color
-          ),
+      toolbarHeight: toolbarHeight, // ✅ Use dynamic height
+      centerTitle: true,
+      titleSpacing: 0,
+      actionsIconTheme: const IconThemeData(color: AppColors.white),
+      iconTheme: const IconThemeData(color: AppColors.white),
       flexibleSpace: Container(
-        decoration: BoxDecoration(
+        decoration:   BoxDecoration(
           gradient: LinearGradient(
             colors: [AppColors.kGradient1, AppColors.kGradient2],
             begin: Alignment.topLeft,
@@ -34,20 +38,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       ),
-
       backgroundColor: AppColors.primaryColor,
       elevation: 0,
-      // leading: onMenuPressed != null
-      //     ? IconButton(
-      //         icon: const Icon(Icons.menu, color: Colors.white),
-      //         onPressed: onMenuPressed,
-      //       )
-      //     : null,
-      title: Text(title ?? '',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.white,
-                fontSize: 20,
-              )),
+      title: Text(
+        title ?? '',
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: AppColors.white,
+              fontSize: 20,
+            ),
+      ),
       bottom: bottom,
       actions: actions ??
           [
@@ -55,9 +54,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               Stack(
                 children: [
                   IconButton(
-                      icon:
-                          const Icon(Icons.notifications, color: Colors.white),
-                      onPressed: () {}),
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: () => showNotifications!(context),
+                  ),
                   if (notificationCount != null && notificationCount! > 0)
                     Positioned(
                       right: 8,
@@ -89,5 +88,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => Size.fromHeight(
+        toolbarHeight + (bottom?.preferredSize.height ?? 0), // ✅ Use dynamic height
+      );
 }

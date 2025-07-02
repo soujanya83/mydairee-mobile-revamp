@@ -9,10 +9,12 @@ class PatternBackground extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final double? height;
   final double? width;
+  final BoxBorder? border;
 
   const PatternBackground(
       {super.key,
       required this.child,
+      this.border,
       this.boxShadow,
       this.borderRadius,
       this.elevation,
@@ -30,6 +32,15 @@ class PatternBackground extends StatelessWidget {
         width: width,
         padding: padding ?? EdgeInsets.zero,
         decoration: BoxDecoration(
+          border: border,
+          // margin: const EdgeInsets.all(6),
+          // shape: RoundedRectangleBorder(
+          //   borderRadius: BorderRadius.circular(10),
+          //   side: isSelected
+          //       ? const BorderSide(color: AppColors.primaryColor, width: 2)
+          //       : BorderSide.none,
+          // ),
+
           image: const DecorationImage(
             image: AssetImage(AppAssets.background),
             fit: BoxFit.cover,
