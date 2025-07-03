@@ -32,15 +32,32 @@ class RoomDropdown extends StatelessWidget {
               .add(FetchRoomsEvent(centerId: centerId ?? '1'));
         }
         if (state is RoomListLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Material(
+            elevation: 1.2,
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              height: height,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.primaryColor),
+                borderRadius: BorderRadius.circular(8),
+                color: AppColors.white,
+              ),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Loading rooms..."),
+              ),
+            ),
+          );
         } else if (state is RoomListLoaded) {
           final rooms = state.roomsData.rooms;
 
           if (rooms.isEmpty) {
             return Material(
-            elevation: 1.2,
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(8),
+              elevation: 1.2,
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(8),
               child: Container(
                 height: height,
                 padding: const EdgeInsets.symmetric(horizontal: 12),

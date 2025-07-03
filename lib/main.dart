@@ -14,6 +14,9 @@ import 'package:mydiaree/core/config/app_theme.dart';
 import 'package:mydiaree/features/auth/admin/presentation/pages/admin/user_type_screen.dart';
 import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_login_bloc.dart';
 import 'package:mydiaree/features/auth/staff/presentation/bloc/login/staff_login_bloc.dart';
+import 'package:mydiaree/features/daily_journal/accident/presentation/bloc/accident_list/accident_list_bloc.dart';
+import 'package:mydiaree/features/daily_journal/accident/presentation/bloc/add_accident/add_accident_bloc.dart';
+import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/bloc/accident_list/sleepcheks_list_bloc.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:mydiaree/features/observation/presentation/bloc/add_room/view_observation_bloc.dart';
 import 'package:mydiaree/features/observation/presentation/bloc/list_room/obsevation_list_bloc.dart';
@@ -77,6 +80,15 @@ class MyApp extends StatelessWidget {
         BlocProvider<AddReflectionBloc>(
             create: (context) => AddReflectionBloc( 
             )), 
+        BlocProvider<AccidentBloc>(
+            create: (context) => AccidentBloc( 
+            )), 
+        BlocProvider<AddAccidentBloc>(
+            create: (context) => AddAccidentBloc( 
+            )),
+        BlocProvider<SleepChecklistBloc>(
+            create: (context) => SleepChecklistBloc( 
+            )),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

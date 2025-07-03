@@ -34,4 +34,9 @@ class AppUrls {
   static const String getReflections = '$baseApiUrl/reflection/list';
   static const String deleteReflections = '$baseApiUrl/reflection/delete';
   static const String addReflection = '$baseApiUrl/reflection/add';
+  static const String addAccident = '$baseApiUrl/accident/add';
+  static const String accidentList = '$baseApiUrl/accident/list';
+  static const String deleteSleepChecklist = '$baseApiUrl/sleep-checklist/delete';
+  static const String getSleepChecklist = '$baseApiUrl/sleep-checklist/list';
+  static const String addSleepChecklist = '$baseApiUrl/sleep-addSleepChecklist';
 }

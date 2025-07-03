@@ -40,7 +40,7 @@ class ObservationListScreen extends StatelessWidget {
                           Text('Observations',
                               style: Theme.of(context).textTheme.headlineSmall),
                           const Spacer(),
-                          if (true) // Replace with your permission check
+                          if (true)
                             UIHelpers.addButton(
                               context: context,
                               ontap: () {

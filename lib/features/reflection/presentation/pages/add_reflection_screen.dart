@@ -3,14 +3,19 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/cubit/global_data_cubit.dart';
+import 'package:mydiaree/core/cubit/globle_model/children_model.dart';
+import 'package:mydiaree/core/cubit/globle_model/educator_model.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
+import 'package:mydiaree/core/widgets/custom_multi_selected_dialog.dart';
 import 'package:mydiaree/core/widgets/custom_multiline_text_field.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/dropdowns/room_dropdown.dart';
+import 'package:mydiaree/features/program_plan/presentation/widget/add_plan_widgets.dart';
 import 'package:mydiaree/features/reflection/presentation/bloc/add_relection/add_reflection_bloc.dart';
 import 'package:mydiaree/features/reflection/presentation/bloc/add_relection/add_reflection_event.dart';
 import 'package:mydiaree/features/reflection/presentation/bloc/add_relection/add_reflection_state.dart';
@@ -44,8 +49,8 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
 
   // Selected values
   String? selectedRoomId;
-  List<String> selectedChildren = [];
-  List<String> selectedEducators = [];
+  List<ChildIten> selectedChildren = [];
+  List<EducatorItem> selectedEducators = [];
   List<String> selectedMedia = [];
 
   @override
@@ -63,26 +68,16 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
     eylfController.text = data['eylf'] ?? '';
     selectedRoomId = data['room_id'];
     if (data['children'] is List) {
-      selectedChildren =
-          List<String>.from(data['children'].map((c) => c['name']));
+      selectedChildren = List<ChildIten>.from(data['children']
+          .map((c) => ChildIten(id: c['id'] ?? '', name: c['name'] ?? '')));
     }
     if (data['educators'] is List) {
       selectedEducators =
-          List<String>.from(data['educators'].map((e) => e['name']));
+          List<EducatorItem>.from(data['educators'].map((e) => e['name']));
     }
     if (data['images'] is List) {
       selectedMedia = List<String>.from(data['images']);
     }
-  }
-
-  void _showChildrenSelectionDialog() {
-    // TODO: Implement children selection dialog
-    // Similar to AddProgramPlanScreen's _showChildrenSelectionDialog
-  }
-
-  void _showEducatorSelectionDialog() {
-    // TODO: Implement educator selection dialog
-    // Similar to AddProgramPlanScreen's _showEducatorSelectionDialog
   }
 
   void _showRoomSelectionDialog() {
@@ -90,9 +85,54 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
     // Can use RoomDropdown widget directly
   }
 
+  assignPracticalLifeInController() {
+    print('assigning here');
+    eylfController.text = '';
+    print(
+        '======================PracticalLifeController===========================');
+    for (int parentIndex = 0;
+        parentIndex < (practicalLifeData?.activity.length ?? 0);
+        parentIndex++) {
+      String activity = practicalLifeData?.activity[parentIndex].title ?? '';
+      bool isDone = false;
+      print(
+          '====================*******i*****=$parentIndex============================');
+      for (int childIndex = 0;
+          childIndex <
+              (practicalLifeData?.activity[parentIndex].subActivity.length ??
+                  0);
+          childIndex++) {
+        print(
+            '====================##########j##########=$childIndex===($parentIndex)=========================');
+        print(
+            '======value=${practicalLifeData?.activity[parentIndex].subActivity[childIndex].choosen ?? false}==========');
+
+        if (practicalLifeData
+                ?.activity[parentIndex].subActivity[childIndex].choosen ??
+            false) {
+          if (!isDone) {
+            eylfController.text += '**$activity** - \n';
+            isDone = true;
+          }
+
+          String subActivity = practicalLifeData
+                  ?.activity[parentIndex].subActivity[childIndex].title ??
+              '';
+          print('===================00eir0ir0====================');
+          eylfController.text += '**• **$subActivity.\n';
+        }
+      }
+    }
+    Future.delayed(Duration(seconds: 3), () {
+      print('text file is the ===========');
+      print(eylfController.text);
+    });
+  }
+
   void _showEylfSelectionDialog() {
-    // TODO: Implement EYLF selection dialog
-    // Similar to AddProgramPlanScreen's _showEylfSelectionDialog
+    assignPracticalLifeData();
+    showPracticalLifeDialog(
+        context, practicalLifeData, assignPracticalLifeInController);
   }
 
   Future<void> _pickMedia() async {
@@ -126,6 +166,76 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
     }
   }
 
+  void _showChildrenSelectionDialog() async {
+    final globalState = context.read<GlobalDataCubit>().state;
+    await showDialog<List<String>>(
+      context: context,
+      builder: (context) => CustomMultiSelectDialog(
+        itemsId: List.generate(
+          globalState.childrenData?.data.length ?? 0,
+          (index) {
+            return globalState.childrenData?.data[index].id ?? '';
+          },
+        ),
+        itemsName: List.generate(
+          globalState.childrenData?.data.length ?? 0,
+          (index) {
+            return globalState.childrenData?.data[index].name ?? '';
+          },
+        ),
+        initiallySelectedIds: List.generate(selectedChildren.length, (index) {
+          final child = globalState.childrenData?.data.firstWhere(
+            (c) => c.name == selectedChildren[index].name,
+            orElse: () {
+              return ChildIten(id: '', name: '');
+            },
+          );
+          return child?.id ?? '';
+        }),
+        title: 'Select Children',
+        onItemTap: (selectedIds) {
+          setState(() {
+            final children = globalState.childrenData?.data ?? [];
+            selectedChildren =
+                children.where((c) => selectedIds.contains(c.id)).toList();
+          });
+        },
+      ),
+    );
+  }
+
+  void _showEducatorDialog() async {
+    final globalState = context.read<GlobalDataCubit>().state;
+    await showDialog<List<Map<String, String>>>(
+      context: context,
+      builder: (context) => CustomMultiSelectDialog(
+        itemsId: List.generate(
+          globalState.educatorsData?.educators.length ?? 0,
+          (index) {
+            return globalState.educatorsData?.educators[index].id ?? '';
+          },
+        ),
+        itemsName: List.generate(
+          globalState.educatorsData?.educators.length ?? 0,
+          (index) {
+            return globalState.educatorsData?.educators[index].name ?? '';
+          },
+        ),
+        initiallySelectedIds: List.generate(selectedEducators.length, (index) {
+          return selectedEducators[index]?.id ?? '';
+        }),
+        title: 'Select Educator',
+        onItemTap: (selectedIds) {
+          setState(() {
+            final educators = globalState.educatorsData?.educators ?? [];
+            selectedEducators =
+                educators.where((e) => selectedIds.contains(e.id)).toList();
+          });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
@@ -148,16 +258,17 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                 CustomTextFormWidget(
                   title: 'Title',
                   controller: titleController,
-                  maxLines: 1,
                 ),
                 const SizedBox(height: 16),
 
                 // Reflection
                 CustomMultilineTextField(
                   title: 'Reflection',
+                  readOnly: false,
                   context: context,
                   controller: reflectionController,
                   maxLines: 5,
+                  onTap: () {},
                 ),
                 const SizedBox(height: 16),
 
@@ -212,7 +323,7 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                     spacing: 8,
                     children: selectedChildren
                         .map((child) => Chip(
-                              label: Text(child),
+                              label: Text(child.name),
                               onDeleted: () {
                                 setState(() {
                                   selectedChildren.remove(child);
@@ -228,7 +339,7 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                     style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 6),
                 GestureDetector(
-                  onTap: _showEducatorSelectionDialog,
+                  onTap: _showEducatorDialog,
                   child: Container(
                     width: 180,
                     height: 38,
@@ -253,7 +364,7 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                     spacing: 8,
                     children: selectedEducators
                         .map((edu) => Chip(
-                              label: Text(edu),
+                              label: Text(edu.name),
                               onDeleted: () {
                                 setState(() {
                                   selectedEducators.remove(edu);
@@ -285,9 +396,9 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                             borderRadius: BorderRadius.circular(8),
                             color: Colors.white,
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(Icons.add_a_photo, color: Colors.black54),
                               SizedBox(width: 8),
                               Text(
@@ -428,8 +539,12 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                                         about: reflectionController.text,
                                         eylf: eylfController.text,
                                         roomId: selectedRoomId ?? '',
-                                        children: selectedChildren,
-                                        educators: selectedEducators,
+                                        children: selectedChildren
+                                            .map((c) => c.id)
+                                            .toList(),
+                                        educators: selectedEducators
+                                            .map((e) => e.id)
+                                            .toList(),
                                         media: selectedMedia,
                                       ),
                                     );

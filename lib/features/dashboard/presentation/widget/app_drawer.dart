@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mydiaree/core/config/app_colors.dart';
-import 'package:mydiaree/core/widgets/custom_app_bar.dart';
+import 'package:mydiaree/core/config/app_colors.dart'; 
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/features/annaunce/presentation/pages/announcement_list_screen.dart';
-import 'package:mydiaree/features/observation/presentation/pages/observation_list_screen.dart';
-import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_state.dart';
+import 'package:mydiaree/features/daily_journal/accident/presentation/pages/accident/accident_list_screen.dart';
+import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/pages/accident/sleepcheck_list_screen.dart';
+import 'package:mydiaree/features/observation/presentation/pages/observation_list_screen.dart'; 
 import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_list_screen.dart';
 import 'package:mydiaree/features/reflection/presentation/pages/reflection_list_screen.dart';
 import 'package:mydiaree/features/room/presentation/pages/room_list_screen.dart';
@@ -50,7 +50,7 @@ class AppDrawer extends StatelessWidget {
               leading: const Icon(Icons.graphic_eq, color: Colors.white),
               title: Text('Observations', style: titleTextStyle),
               onTap: () {
-                 Navigator.push(context, MaterialPageRoute(builder: (context) {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return ObservationListScreen();
                 }));
               },
@@ -221,11 +221,21 @@ class AppDrawer extends StatelessWidget {
                   ),
                   ListTile(
                     title: Text('Sleep Checklist', style: childrenTextStyle),
-                    onTap: () {},
+                    onTap: () {
+                        Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return const SleepCheckListScreen();
+                      }));
+                    },
                   ),
                   ListTile(
                     title: Text('Accident', style: childrenTextStyle),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return   AccidentListScreen();
+                      }));
+                    },
                   ),
                 ],
               ),

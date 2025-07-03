@@ -1,6 +1,6 @@
 class ChildModel {
   final bool success;
-  final List<ChildData> data;
+  final List<ChildIten> data;
 
   ChildModel({required this.success, required this.data});
 
@@ -8,20 +8,20 @@ class ChildModel {
     return ChildModel(
       success: json['success'] ?? false,
       data: (json['data'] as List<dynamic>)
-          .map((e) => ChildData.fromJson(e))
+          .map((e) => ChildIten.fromJson(e))
           .toList(),
     );
   }
 }
 
-class ChildData {
+class ChildIten {
   final String id;
   final String name;
 
-  ChildData({required this.id, required this.name});
+  ChildIten({required this.id, required this.name});
 
-  factory ChildData.fromJson(Map<String, dynamic> json) {
-    return ChildData(
+  factory ChildIten.fromJson(Map<String, dynamic> json) {
+    return ChildIten(
       id: json['id'].toString(),
       name: json['name'] ?? '',
     );

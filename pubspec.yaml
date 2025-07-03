@@ -51,7 +51,9 @@ dependencies:
   dotted_border: ^3.0.1
   carousel_slider: ^5.1.1
   modal_bottom_sheet: ^3.0.0  
-  
+  signature: ^6.3.0
+  image_painter: ^0.7.1
+  open_file: ^3.5.10
 
 dev_dependencies:
   flutter_test:

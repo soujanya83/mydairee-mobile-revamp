@@ -10,4 +10,5 @@ class AppAssets {
   static const String staff = 'assets/images/staff.png';
   static const String parent = 'assets/images/parent.png';
   static const String room = 'assets/images/room.png';
+  static const String accident = 'assets/images/accident.jpeg';
 }
