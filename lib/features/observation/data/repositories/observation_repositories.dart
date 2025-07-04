@@ -9,29 +9,64 @@ Map<String, dynamic> dummyObservationListData = {
     {
       "id": "1",
       "title": "Observation A",
-      "description": "Child was very active today.",
-      "date": "2024-06-01",
-      "childName": "Child 1",
-      "educatorName": "John Doe",
-      "status": "Active"
+      "notes": "Child was very active and engaged.",
+      "reflection": "Great improvement in social skills.",
+      "childVoice": "I like playing with my friends.",
+      "futurePlan": "Encourage more group activities.",
+      "dateAdded": "2024-06-01",
+      "userName": "John Doe",
+      "approverName": "Jane Smith",
+      "status": "Published",
+      "children": [
+      {
+        "childId": "c1",
+        "childName": "Child 1",
+        "imageUrl": "https://example.com/images/child1.jpg"
+      },
+      {
+        "childId": "c2",
+        "childName": "Child 2",
+        "imageUrl": "https://example.com/images/child2.jpg"
+      }
+      ]
     },
     {
       "id": "2",
       "title": "Observation B",
-      "description": "Participated well in group activities.",
-      "date": "2024-06-02",
-      "childName": "Child 2",
-      "educatorName": "Jane Smith",
-      "status": "Active"
+      "notes": "Participated well in group activities.",
+      "reflection": "Shows leadership in groups.",
+      "childVoice": "I like helping my friends.",
+      "futurePlan": "Give more leadership opportunities.",
+      "dateAdded": "2024-06-02",
+      "userName": "Jane Smith",
+      "approverName": null,
+      "status": "Published",
+      "children": [
+      {
+        "childId": "c3",
+        "childName": "Child 3",
+        "imageUrl": "https://example.com/images/child3.jpg"
+      }
+      ]
     },
     {
       "id": "3",
       "title": "Observation C",
-      "description": "Needs improvement in sharing.",
-      "date": "2024-06-03",
-      "childName": "Child 3",
-      "educatorName": "Mike Johnson",
-      "status": "Inactive"
+      "notes": "Needs improvement in sharing.",
+      "reflection": "Struggles with turn-taking.",
+      "childVoice": "I want to play first.",
+      "futurePlan": "Practice sharing games.",
+      "dateAdded": "2024-06-03",
+      "userName": "Mike Johnson",
+      "approverName": null,
+      "status": "Draft",
+      "children": [
+      {
+        "childId": "c4",
+        "childName": "Child 4",
+        "imageUrl": "https://example.com/images/child4.jpg"
+      }
+      ]
     }
   ]
 };
@@ -46,7 +81,7 @@ Map<String, dynamic> dummyObservationData = {
   "dateAdded": "2024-06-01",
   "userName": "John Doe",
   "approverName": "Jane Smith",
-  "status": "Active",
+  "status": "Published",
   "children": [
     {
       "childId": "c1",
@@ -58,8 +93,7 @@ Map<String, dynamic> dummyObservationData = {
       "childName": "Child 2",
       "imageUrl": "https://example.com/images/child2.jpg"
     }
-  ]
-  ,
+  ],
   "mediaFiles": [
     "https://example.com/media/file1.jpg",
     "https://example.com/media/file2.mp4"

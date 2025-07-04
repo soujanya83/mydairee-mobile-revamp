@@ -1,11 +1,9 @@
 import 'dart:async';
+// ignore: depend_on_referenced_packages
 import 'package:bloc/bloc.dart';
 import 'package:mydiaree/features/observation/data/repositories/observation_repositories.dart';
 import 'package:mydiaree/features/observation/presentation/bloc/list_room/observation_list_event.dart';
 import 'package:mydiaree/features/observation/presentation/bloc/list_room/observation_list_state.dart';
-import 'package:mydiaree/features/room/data/repositories/room_repositories.dart';
-import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_event.dart';
-import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_state.dart';
 
 class ObservationListBloc
     extends Bloc<ObservationListEvent, ObservationListState> {

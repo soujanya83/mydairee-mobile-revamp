@@ -49,7 +49,12 @@ class CustomNetworkImage extends StatelessWidget {
         fit: fit,
         placeholder: (context, url) {
           return placeholder ??
-              const Center(child: Icon(Icons.image,size: 40,color: AppColors.grey,)
+              const Center(
+                  child: Icon(
+                Icons.image,
+                size: 40,
+                color: AppColors.grey,
+              )
                   //     Image.asset(
                   //   AppAssets.paropkarLogo,
                   //   fit: BoxFit.contain,
@@ -61,7 +66,7 @@ class CustomNetworkImage extends StatelessWidget {
         },
         errorWidget: (context, url, error) {
           return errorWidget ??
-              Center(child: Icon(Icons.image,size: 40,color: AppColors.grey)
+              const Center(child: Icon(Icons.image, size: 40, color: AppColors.grey)
                   //      Image.asset(
                   //   AppAssets.paropkarLogo,
                   //   fit: BoxFit.contain,

@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mydiaree/core/config/app_asset.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/config/app_fonts.dart';
 import 'package:mydiaree/core/cubit/global_data_cubit.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/features/dashboard/presentation/widget/app_drawer.dart';
-import 'package:mydiaree/features/dashboard/presentation/widget/custom_card.dart';
-import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
-import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_event.dart';
+import 'package:mydiaree/features/dashboard/presentation/widget/dashboard_custom_widget.dart';
 import 'package:mydiaree/main.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 // ignore: must_be_immutable
 class DashboardScreen extends StatelessWidget {
@@ -94,147 +91,236 @@ class DashboardScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Stats Cards Row
+            // Stats Cards Column
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Wrap(
-                spacing: 16,
-                runSpacing: 16,
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.0,
+                ),
+                itemCount: 8,
+                itemBuilder: (context, index) {
+                  final statCards = [
+                    {
+                      'icon': Icons.people,
+                      'iconColor': Colors.blue,
+                      'title': 'Total Users',
+                      'value': '256',
+                    },
+                    {
+                      'icon': Icons.admin_panel_settings,
+                      'iconColor': Colors.red,
+                      'title': 'Total SuperAdmin',
+                      'value': '21',
+                    },
+                    {
+                      'icon': Icons.family_restroom,
+                      'iconColor': Colors.green,
+                      'title': 'Total Parents',
+                      'value': '201',
+                    },
+                    {
+                      'icon': Icons.badge,
+                      'iconColor': Colors.orange,
+                      'title': 'Total Staff',
+                      'value': '34',
+                    },
+                    {
+                      'icon': Icons.apartment,
+                      'iconColor': Colors.green,
+                      'title': 'Total Centers',
+                      'value': '282',
+                    },
+                    {
+                      'icon': Icons.meeting_room,
+                      'iconColor': Colors.red,
+                      'title': 'Total Rooms',
+                      'value': '31',
+                    },
+                    {
+                      'icon': Icons.receipt_long,
+                      'iconColor': Colors.grey,
+                      'title': 'Total Recipes',
+                      'value': '94',
+                    },
+                    {
+                      'icon': Icons.mood,
+                      'iconColor': Colors.green,
+                      'title': 'Happy Clients',
+                      'value': '111',
+                    },
+                  ];
+                  return PatternBackground(
+                    elevation: 0,
+                    border: Border.all(color: AppColors.primaryColor,width: .2),
+                    boxShadow: [
+                      BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset:const Offset(0, 4),
+                      ),
+                       BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                      ),
+                    ],
+                    child: StatCard(
+                      icon: statCards[index]['icon'] as IconData,
+                      iconColor: statCards[index]['iconColor'] as Color,
+                      title: statCards[index]['title'] as String,
+                      value: statCards[index]['value'] as String,
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Weather and Department Charts
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
                 children: [
-                  _buildStatCard(
-                    icon: Icons.people,
-                    iconColor: Colors.blue,
-                    title: 'Total Users',
-                    value: '256',
+                  const SizedBox(height: 16),
+                  PatternBackground(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Science Department',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          Text(
+                            '(All Earnings are in million \$)',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                    // ignore: deprecated_member_use
+                                    color: AppColors.black.withOpacity(.3),
+                                    fontFamily: AppFonts.medium),
+                          ),
+                          CustomPaint(
+                            size: const Size(300, 200),
+                            painter: DepartmentLineChartPainter(
+                              chartColor: AppColors.primaryColor,
+                              chartData: const {
+                                '2015': '900',
+                                '2016': '200',
+                                '2017': '2,000',
+                                '2018': '1,800',
+                                '2019': '500',
+                                '2020': '2,700',
+                                '2021': '3,100',
+                                '2022': '1400',
+                                '2023': '3,800',
+                                '2024': '4,200',
+                                '2025': '1000',
+                                'Overall': '7,500',
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  _buildStatCard(
-                    icon: Icons.admin_panel_settings,
-                    iconColor: Colors.red,
-                    title: 'Total SuperAdmin',
-                    value: '21',
-                  ),
-                  _buildStatCard(
-                    icon: Icons.family_restroom,
-                    iconColor: Colors.green,
-                    title: 'Total Parents',
-                    value: '201',
-                  ),
-                  _buildStatCard(
-                    icon: Icons.badge,
-                    iconColor: Colors.orange,
-                    title: 'Total Staff',
-                    value: '34',
-                  ),
-                  _buildStatCard(
-                    icon: Icons.apartment,
-                    iconColor: Colors.green,
-                    title: 'Total Centers',
-                    value: '282',
-                  ),
-                  _buildStatCard(
-                    icon: Icons.meeting_room,
-                    iconColor: Colors.red,
-                    title: 'Total Rooms',
-                    value: '31',
-                  ),
-                  _buildStatCard(
-                    icon: Icons.receipt_long,
-                    iconColor: Colors.grey,
-                    title: 'Total Recipes',
-                    value: '94',
-                  ),
-                  _buildStatCard(
-                    icon: Icons.mood,
-                    iconColor: Colors.green,
-                    title: 'Happy Clients',
-                    value: '111',
+                  const SizedBox(height: 16),
+                  PatternBackground(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Commerce Department',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          Text(
+                            '(All Earnings are in million \$)',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                    // ignore: deprecated_member_use
+                                    color: AppColors.black.withOpacity(.3),
+                                    fontFamily: AppFonts.medium),
+                          ),
+                          CustomPaint(
+                            size: const Size(300, 200),
+                            painter: DepartmentChartPainter(
+                              chartType: 'bar',
+                              chartColor: AppColors.primaryColor,
+                              chartData: const {
+                                '2015': '900',
+                                '2016': '200',
+                                '2017': '2,000',
+                                '2018': '1,800',
+                                '2019': '500',
+                                '2020': '2,700',
+                                '2021': '3,100',
+                                '2022': '1400',
+                                '2023': '3,800',
+                                '2024': '4,200',
+                                '2025': '1000',
+                                'Overall': '7,500',
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            // Weather and Department Charts
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 16),
-            //   child: Column(
-            //     children: [
-            //       Row(
-            //         children: [
-            //           Expanded(
-            //             flex: 4,
-            //             child: Container(
-            //               height: 300,
-            //               decoration: BoxDecoration(
-            //                 border: Border.all(color: Colors.grey.shade300),
-            //                 borderRadius: BorderRadius.circular(4),
-            //               ),
-            //               child: const Center(
-            //                 child: Text('Weather Panel Placeholder'),
-            //               ),
-            //             ),
-            //           ),
-            //           const SizedBox(width: 16),
-            //           Expanded(
-            //             flex: 4,
-            //             child: _buildDepartmentCard(
-            //               title: 'Science Department',
-            //               subtitle: 'All Earnings are in million \$',
-            //               chartType: 'line',
-            //               stats: {
-            //                 'Overall': '7,000',
-            //                 '2016': '2,000',
-            //                 '2017': '5,000',
-            //               },
-            //             ),
-            //           ),
-            //           const SizedBox(width: 16),
-            //           Expanded(
-            //             flex: 4,
-            //             child: _buildDepartmentCard(
-            //               title: 'Commerce Department',
-            //               subtitle: 'All Earnings are in million \$',
-            //               chartType: 'bar',
-            //               stats: {
-            //                 'Overall': '3,200',
-            //                 '2016': '1,200',
-            //                 '2017': '2,000',
-            //               },
-            //             ),
-            //           ),
-            //         ],
-            //       ),
-            //     ],
-            //   ),
-            // ),
 
             // University Survey
             Padding(
               padding: const EdgeInsets.all(16),
               child: PatternBackground(
+                width: screenWidth * .9,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'University Survey',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        spacing: 16,
                         children: [
-                          _buildSurveyStat('\$231', "Today's"),
-                          _buildSurveyStat('\$1,254', "This Week's"),
+                          SurveyStat(
+                            value: '\$231',
+                            label: "Today's",
+                          ),
+                          SurveyStat(
+                            value: '\$1,254',
+                            label: "This Week's",
+                          ),
                         ],
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      const SizedBox(height: 16),
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        spacing: 16,
                         children: [
-                          _buildSurveyStat('\$3,298', "This Month's"),
-                          _buildSurveyStat('\$9,208', "This Year's"),
+                          SurveyStat(
+                            value: '\$3,298',
+                            label: "This Month's",
+                          ),
+                          SurveyStat(
+                            value: '\$9,208',
+                            label: "This Year's",
+                          ),
                         ],
                       ),
                     ],
@@ -252,689 +338,392 @@ class DashboardScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'New Admission List',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'New Admission List',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: admissionList.length,
-                        itemBuilder: (context, index) {
-                          final item = admissionList[index];
-                          return Padding(
-                            padding: const EdgeInsetsGeometry.symmetric(vertical: 10),
-                            child: PatternBackground(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundColor: AppColors
-                                              .primaryColor
-                                              .withOpacity(.3),
-                                          child: Text(item['name'][0]),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          columns: [
+                            DataColumn(
+                                label: Text('ID',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge)),
+                            DataColumn(
+                                label: Text('Name',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge)),
+                            DataColumn(
+                                label: Text('Age',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge)),
+                            DataColumn(
+                                label: Text('Address',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge)),
+                            DataColumn(
+                                label: Text('Number',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge)),
+                            DataColumn(
+                                label: Text('Department',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge)),
+                          ],
+                          rows: admissionList
+                              .map((item) => DataRow(
+                                    cells: [
+                                      DataCell(Text(item['id'],
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium)),
+                                      DataCell(Text(item['name'],
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium)),
+                                      DataCell(Text(item['age'],
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium)),
+                                      DataCell(
+                                        SizedBox(
+                                          width: 150,
                                           child: Text(
-                                            item['name'],
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            item['address'],
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
+                                      ),
+                                      DataCell(Text(item['number'],
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium)),
+                                      DataCell(
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 4),
+                                              horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            // color:  AppColors.primaryColor.withOpacity(.3),
+                                            color:
+                                                item['color'].withOpacity(0.2),
                                             borderRadius:
-                                                BorderRadius.circular(8),
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Text(
                                             item['department'],
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .bodyMedium,
+                                                .bodyMedium!
+                                                .copyWith(
+                                                  color: item['color'],
+                                                ),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _buildInfoRow("ID", item['id']),
-                                    _buildInfoRow("Age", item['age']),
-                                    _buildInfoRow("Address", item['address']),
-                                    _buildInfoRow("Phone", item['number']),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      )
+                                      ),
+                                    ],
+                                  ))
+                              .toList(),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
 
-            // // Satisfaction and Location Row
-            // Padding(
-            //   padding: const EdgeInsets.all(16),
-            //   child: Row(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       Expanded(
-            //         flex: 3,
-            //         child: Column(
-            //           children: [
-            //             _buildKnobCard('Satisfaction Rate', '66', Colors.green),
-            //             const SizedBox(height: 16),
-            //             _buildKnobCard(
-            //                 'Admission in Commerce', '26', Colors.purple),
-            //             const SizedBox(height: 16),
-            //             _buildKnobCard(
-            //                 'Admission in Science', '76', Colors.orange),
-            //           ],
-            //         ),
-            //       ),
-            //       const SizedBox(width: 16),
-            //       Expanded(
-            //         flex: 7,
-            //         child: Card(
-            //           child: Padding(
-            //             padding: const EdgeInsets.all(16),
-            //             child: Column(
-            //               crossAxisAlignment: CrossAxisAlignment.start,
-            //               children: [
-            //                 const Text(
-            //                   'Our Location',
-            //                   style: TextStyle(
-            //                     fontSize: 18,
-            //                     fontWeight: FontWeight.bold,
-            //                   ),
-            //                 ),
-            //                 const SizedBox(height: 16),
-            //                 Wrap(
-            //                   spacing: 16,
-            //                   runSpacing: 16,
-            //                   children: [
-            //                     _buildLocationStat('America', '53'),
-            //                     _buildLocationStat('Canada', '23'),
-            //                     _buildLocationStat('UK', '17'),
-            //                     _buildLocationStat('India', '102'),
-            //                     _buildLocationStat('Australia', '27'),
-            //                     _buildLocationStat('Other', '13'),
-            //                   ],
-            //                 ),
-            //                 const SizedBox(height: 20),
-            //                 Container(
-            //                   height: 300,
-            //                   decoration: BoxDecoration(
-            //                     border: Border.all(color: Colors.grey.shade300),
-            //                     borderRadius: BorderRadius.circular(4),
-            //                   ),
-            //                   child: const Center(
-            //                     child: Text('World Map Placeholder'),
-            //                   ),
-            //                 ),
-            //               ],
-            //             ),
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // Padding(
-            //   padding: const EdgeInsets.all(16),
-            //   child: Row(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       Expanded(
-            //         child: Card(
-            //           child: Padding(
-            //             padding: const EdgeInsets.all(16),
-            //             child: Column(
-            //               crossAxisAlignment: CrossAxisAlignment.start,
-            //               children: [
-            //                 const Text(
-            //                   'Exam Toppers',
-            //                   style: TextStyle(
-            //                     fontSize: 18,
-            //                     fontWeight: FontWeight.bold,
-            //                   ),
-            //                 ),
-            //                 const SizedBox(height: 16),
-            //                 DataTable(
-            //                   columns: const [
-            //                     DataColumn(label: Text('First Name')),
-            //                     DataColumn(label: Text('Charts')),
-            //                   ],
-            //                   rows: [
-            //                     _buildExamTopperRow(
-            //                         'Dean Otto', '5,8,6,3,-5,9,2'),
-            //                     _buildExamTopperRow(
-            //                         'K. Thornton', '10,-8,-9,3,5,8,5'),
-            //                     _buildExamTopperRow('Kane D.', '7,5,9,3,5,2,5'),
-            //                     _buildExamTopperRow(
-            //                         'Jack Bird', '10,8,1,-3,-3,-8,7'),
-            //                     _buildExamTopperRow(
-            //                         'Hughe L.', '2,8,9,8,5,1,5'),
-            //                   ],
-            //                 ),
-            //               ],
-            //             ),
-            //           ),
-            //         ),
-            //       ),
-            //       const SizedBox(width: 16),
-            //       Expanded(
-            //         child: Card(
-            //           child: Padding(
-            //             padding: const EdgeInsets.all(16),
-            //             child: Column(
-            //               crossAxisAlignment: CrossAxisAlignment.start,
-            //               children: [
-            //                 const Text(
-            //                   'Timeline',
-            //                   style: TextStyle(
-            //                     fontSize: 18,
-            //                     fontWeight: FontWeight.bold,
-            //                   ),
-            //                 ),
-            //                 const SizedBox(height: 16),
-            //                 Container(
-            //                     decoration: BoxDecoration(
-            //                       color: Colors.blue.shade50,
-            //                       borderRadius: BorderRadius.circular(8),
-            //                     ),
-            //                     child: Column(children: [
-            //                       Container(
-            //                         padding: const EdgeInsets.all(16),
-            //                         decoration: BoxDecoration(
-            //                           color: Colors.blue,
-            //                           borderRadius: const BorderRadius.vertical(
-            //                               top: Radius.circular(8)),
-            //                         ),
-            //                         child: const Row(
-            //                           children: [
-            //                             Text(
-            //                               '8',
-            //                               style: TextStyle(
-            //                                 fontSize: 24,
-            //                                 color: Colors.white,
-            //                                 fontWeight: FontWeight.bold,
-            //                               ),
-            //                             ),
-            //                             SizedBox(width: 8),
-            //                             Column(
-            //                               crossAxisAlignment:
-            //                                   CrossAxisAlignment.start,
-            //                               children: [
-            //                                 Text(
-            //                                   'Monday',
-            //                                   style: TextStyle(
-            //                                     color: Colors.white,
-            //                                     fontWeight: FontWeight.bold,
-            //                                   ),
-            //                                 ),
-            //                                 Text(
-            //                                   'February 2018',
-            //                                   style: TextStyle(
-            //                                     color: Colors.white,
-            //                                     fontSize: 12,
-            //                                   ),
-            //                                 ),
-            //                               ],
-            //                             ),
-            //                           ],
-            //                         ),
-            //                       ),
-            //                     ])),
-            //                 Padding(
-            //                   padding: const EdgeInsets.all(16),
-            //                   child: Column(
-            //                     children: [
-            //                       _buildTimelineItem(
-            //                         Colors.pink,
-            //                         '11am',
-            //                         'Attendance',
-            //                         'Computer Class',
-            //                       ),
-            //                       _buildTimelineItem(
-            //                         Colors.green,
-            //                         '12pm',
-            //                         'Design Team',
-            //                         'Hangouts',
-            //                       ),
-            //                       _buildTimelineItem(
-            //                         Colors.orange,
-            //                         '1:30pm',
-            //                         'Lunch Break',
-            //                         '',
-            //                       ),
-            //                       _buildTimelineItem(
-            //                         Colors.green,
-            //                         '2pm',
-            //                         'Finish',
-            //                         'Go to Home',
-            //                       ),
-            //                     ],
-            //                   ),
-            //                 )
-            //               ],
-            //             ),
-            //           ),
-            //         ),
-            //       ),
-            //       const SizedBox(width: 16),
-            //       Expanded(
-            //         child: Card(
-            //           child: Padding(
-            //             padding: const EdgeInsets.all(16),
-            //             child: Column(
-            //               crossAxisAlignment: CrossAxisAlignment.start,
-            //               children: [
-            //                 const Text(
-            //                   'Attendance',
-            //                   style: TextStyle(
-            //                     fontSize: 18,
-            //                     fontWeight: FontWeight.bold,
-            //                   ),
-            //                 ),
-            //                 const SizedBox(height: 16),
-            //                 Column(
-            //                   children: [
-            //                     _buildAttendanceItem(
-            //                         'Mark Otto', '21%', Colors.blue),
-            //                     _buildAttendanceItem(
-            //                         'Jacob Thornton', '50%', Colors.purple),
-            //                     _buildAttendanceItem(
-            //                         'Jacob Thornton', '90%', Colors.green),
-            //                     _buildAttendanceItem(
-            //                         'M. Arthur', '75%', Colors.blue),
-            //                     _buildAttendanceItem(
-            //                         'Jacob Thornton', '60%', Colors.orange),
-            //                     _buildAttendanceItem(
-            //                         'M. Arthur', '91%', Colors.green),
-            //                   ],
-            //                 ),
-            //               ],
-            //             ),
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
+            // Satisfaction and Location
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  PatternBackground(
+                    width: screenWidth * .9,
+                    child: const Column(
+                      children: [
+                        SizedBox(height: 20),
+                        KnobCard(
+                          title: 'Satisfaction Rate',
+                          value: '66',
+                          color: Colors.green,
+                        ),
+                        SizedBox(height: 16),
+                        KnobCard(
+                          title: 'Admission in Commerce',
+                          value: '26',
+                          color: Colors.purple,
+                        ),
+                        SizedBox(height: 16),
+                        KnobCard(
+                          title: 'Admission in Science',
+                          value: '76',
+                          color: Colors.orange,
+                        ),
+                        SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  PatternBackground(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Our Location',
+                                style:
+                                    Theme.of(context).textTheme.headlineSmall,
+                              ),
+                              PopupMenuButton(
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 1,
+                                    child: Text('Action'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 2,
+                                    child: Text('Another Action'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 3,
+                                    child: Text('Something else'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          const Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: [
+                              LocationStat(location: 'America', count: '53'),
+                              LocationStat(location: 'Canada', count: '23'),
+                              LocationStat(location: 'UK', count: '17'),
+                              LocationStat(location: 'India', count: '102'),
+                              LocationStat(location: 'Australia', count: '27'),
+                              LocationStat(location: 'Other', count: '13'),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-            // // Footer
-            // Container(
-            //   padding: const EdgeInsets.all(16),
-            //   decoration: BoxDecoration(
-            //     color: Colors.white,
-            //     border: Border(top: BorderSide(color: Colors.grey.shade300)),
-            //   ),
-            //   child: const Center(
-            //     child: Text('© 2025 Mydiaree. All rights reserved.'),
-            //   ),
-            // )
+            // Bottom Row (Exam Toppers, Timeline, Attendance)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  PatternBackground(
+                    width: screenWidth * .9,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Exam Toppers',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 16),
+                          DataTable(
+                            columns: [
+                              DataColumn(
+                                  label: Text('First Name',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge)),
+                              DataColumn(
+                                  label: Text('Charts',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge)),
+                            ],
+                            rows: [
+                              ExamTopperRow(
+                                  name: 'Dean Otto', chartData: '5,8,'),
+                              ExamTopperRow(
+                                  name: 'K. Thornton',
+                                  chartData: '10,-8,-9,3,5,8,5'),
+                              ExamTopperRow(
+                                  name: 'Kane D.', chartData: '7,5,9,3,5,2,5'),
+                              ExamTopperRow(
+                                  name: 'Jack Bird',
+                                  chartData: '10,8,1,-3,-3,-8,7'),
+                              ExamTopperRow(
+                                  name: 'Hughe L.', chartData: '2,8,9,8,5,1,5'),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  PatternBackground(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Timeline',
+                                style:
+                                    Theme.of(context).textTheme.headlineSmall,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          PatternBackground(
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.primaryColor,
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(8)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '8',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineMedium!
+                                            .copyWith(color: Colors.white),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Monday',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleLarge!
+                                                .copyWith(color: Colors.white),
+                                          ),
+                                          Text(
+                                            'February 2018',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelMedium!
+                                                .copyWith(color: Colors.white),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                TimelineProgressList(
+                                  currentTime: TimeOfDay
+                                      .now(), // you can set static time for testing
+                                  events: [
+                                    TimelineEvent(
+                                        time: "11am",
+                                        title: "Attendance",
+                                        subtitle: "Computer Class",
+                                        color: Colors.pink),
+                                    TimelineEvent(
+                                        time: "12pm",
+                                        title: "Design Team",
+                                        subtitle: "Hangouts",
+                                        color: Colors.green),
+                                    TimelineEvent(
+                                        time: "1:30pm",
+                                        title: "Lunch Break",
+                                        color: Colors.orange),
+                                    TimelineEvent(
+                                        time: "2pm",
+                                        title: "Finish",
+                                        subtitle: "Go to Home",
+                                        color: Colors.green),
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  PatternBackground(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Attendance',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 16),
+                          const Column(
+                            children: [
+                              AttendanceItem(
+                                  name: 'Mark Otto',
+                                  percentage: '21%',
+                                  color: Colors.blue),
+                              AttendanceItem(
+                                  name: 'Jacob Thornton',
+                                  percentage: '50%',
+                                  color: Colors.purple),
+                              AttendanceItem(
+                                  name: 'Jacob Thornton',
+                                  percentage: '90%',
+                                  color: Colors.green),
+                              AttendanceItem(
+                                  name: 'M. Arthur',
+                                  percentage: '75%',
+                                  color: Colors.blue),
+                              AttendanceItem(
+                                  name: 'Jacob Thornton',
+                                  percentage: '60%',
+                                  color: Colors.orange),
+                              AttendanceItem(
+                                  name: 'M. Arthur',
+                                  percentage: '91%',
+                                  color: Colors.green),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
-}
-
-Widget _buildStatCard({
-  required IconData icon,
-  required Color iconColor,
-  required String title,
-  required String value,
-}) {
-  return PatternBackground(
-    width: (screenWidth / 2) - 24, // 2 cards per row with spacing
-    height: 150,
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(icon, color: iconColor, size: 28),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryColor,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _buildDepartmentCard({
-  required String title,
-  required String subtitle,
-  required String chartType,
-  required Map<String, String> stats,
-}) {
-  return Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            height: 100,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Center(
-              child: Text(
-                '${chartType.toUpperCase()} Chart Placeholder',
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: stats.entries
-                .map((e) => Column(
-                      children: [
-                        Text(
-                          e.key,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        Text(
-                          e.value,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ))
-                .toList(),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _buildSurveyStat(String value, String label) {
-  return Column(
-    children: [
-      Text(
-        value,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Colors.grey,
-        ),
-      ),
-    ],
-  );
-}
-
-DataRow _buildDataRow(
-  String id,
-  String name,
-  String age,
-  String address,
-  String number,
-  String department,
-  Color badgeColor,
-) {
-  return DataRow(
-    cells: [
-      DataCell(Text(id)),
-      DataCell(Text(name)),
-      DataCell(Text(age)),
-      DataCell(Text(address)),
-      DataCell(Text(number)),
-      DataCell(
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: badgeColor.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            department,
-            style: TextStyle(
-              color: badgeColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    ],
-  );
-}
-
-Widget _buildKnobCard(String title, String value, Color color) {
-  return Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: color,
-                width: 2,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                '$value%',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _buildLocationStat(String location, String count) {
-  return SizedBox(
-    width: 120,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.location_on, size: 16),
-            const SizedBox(width: 4),
-            Text(location),
-          ],
-        ),
-        Text(
-          count,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-DataRow _buildExamTopperRow(String name, String chartData) {
-  return DataRow(
-    cells: [
-      DataCell(Text(name)),
-      DataCell(
-        Container(
-          height: 20,
-          width: 100,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Text(
-              chartData,
-              style: const TextStyle(fontSize: 10),
-            ),
-          ),
-        ),
-      ),
-    ],
-  );
-}
-
-Widget _buildTimelineItem(
-  Color bulletColor,
-  String time,
-  String title,
-  String subtitle,
-) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          margin: const EdgeInsets.only(top: 4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: bulletColor,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          time,
-          style: const TextStyle(fontSize: 12),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (subtitle.isNotEmpty)
-                Text(
-                  subtitle,
-                  style: const TextStyle(fontSize: 12),
-                ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildAttendanceItem(String name, String percentage, Color color) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(name),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            percentage,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildInfoRow(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.only(top: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(width: 80, child: Text("$label:")),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-        ),
-      ],
-    ),
-  );
 }

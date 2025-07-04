@@ -6,7 +6,8 @@ class SlipChecksChildListModel {
   factory SlipChecksChildListModel.fromJson(List<dynamic> jsonList) {
     return SlipChecksChildListModel(
       children: jsonList
-          .map((json) => SlipChecksChildModel.fromJson(json as Map<String, dynamic>))
+          .map((json) =>
+              SlipChecksChildModel.fromJson(json as Map<String, dynamic>))
           .toList(),
     );
   }
@@ -15,6 +16,7 @@ class SlipChecksChildListModel {
     return children.map((child) => child.toJson()).toList();
   }
 }
+
 class SlipChecksChildModel {
   final String id;
   final String name;
@@ -47,14 +49,14 @@ class SlipChecksChildModel {
   });
 
   factory SlipChecksChildModel.fromJson(Map<String, dynamic> json) {
-    var sleepChecksList = <SleepCheckModel>[];
-    if (json['sleepChecks'] != null) {
+    List<SleepCheckModel> sleepChecksList = [];
+    if (json['sleepChecks'] != null && json['sleepChecks'] is List) {
       sleepChecksList = (json['sleepChecks'] as List)
           .map((e) => SleepCheckModel.fromJson(e))
           .toList();
     }
 
-    return SlipChecksChildModel( 
+    return SlipChecksChildModel(
       id: json['id'],
       name: json['name'],
       lastname: json['lastname'],
@@ -79,7 +81,7 @@ class SlipChecksChildModel {
       'dob': dob,
       'startDate': startDate,
       'room': room,
-      'imageUrl': imageUrl, 
+      'imageUrl': imageUrl,
       'gender': gender,
       'status': status,
       'daysAttending': daysAttending,
@@ -101,7 +103,7 @@ class SleepCheckModel {
   String breathing;
   String bodyTemperature;
   String notes;
-  String createdBy; 
+  String createdBy;
   String createdAt;
 
   // New variables to track previous values
@@ -135,8 +137,8 @@ class SleepCheckModel {
       notes: json['notes'],
       createdBy: json['createdBy'],
       createdAt: json['createdAt'],
-      previousBreathing: json['previousBreathing'], // optional
-      previousBodyTemperature: json['previousBodyTemperature'], // optional
+      previousBreathing: json['previousBreathing'],
+      previousBodyTemperature: json['previousBodyTemperature'],
     );
   }
 
@@ -167,4 +169,3 @@ class SleepCheckModel {
     }
   }
 }
-

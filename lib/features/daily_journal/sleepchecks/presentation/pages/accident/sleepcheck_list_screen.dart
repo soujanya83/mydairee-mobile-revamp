@@ -83,12 +83,12 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
       final bloc = context.read<SleepChecklistBloc>();
       // if (selectedCenterId != null && selectedRoomId != null && date != null)
       {
-        bloc.add(FetchSleepChecklistEvent(
-          userId: '',
-          centerId: '',
-          roomId: '',
-          date: DateTime.now(),
-        ));
+        // bloc.add(FetchSleepChecklistEvent(
+        //   userId: '',
+        //   centerId: '',
+        //   roomId: '',
+        //   date: DateTime.now(),
+        // ));
       }
     });
     return CustomScaffold(
@@ -197,7 +197,7 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
                       itemCount: state.sleepChecks.length,
                       itemBuilder: (context, parentalIndex) {
                         final child = state.sleepChecks[parentalIndex];
-                        return Card(
+                        return PatternBackground(
                           child: Column(
                             children: [
                               Padding(
@@ -250,191 +250,198 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
                                       TextEditingController notesController =
                                           TextEditingController(
                                               text: sleepCheck.notes);
-                                      return Card(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              CustomTimePicker(
-                                                title: 'Time',
-                                                selectedHour: sleepHour,
-                                                selectedMinute: sleepMinute,
-                                                hours: hours,
-                                                minutes: minutes,
-                                                onHourChanged: (value) {
-                                                  sleepCheck.time =
-                                                      formatTimeString(
-                                                          '$value:${sleepMinute.replaceAll('m', '')}');
-                                                  setState(() {});
-                                                },
-                                                onMinuteChanged: (value) {
-                                                  sleepCheck.time =
-                                                      formatTimeString(
-                                                          '$sleepHour:${value!.replaceAll('m', '')}');
-                                                  setState(() {});
-                                                },
-                                              ),
-                                              const SizedBox(height: 15),
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text('Breathing',
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .bodyMedium),
-                                                        const SizedBox(
-                                                            height: 5),
-                                                        CustomDropdown(
-                                                          height: 40,
-                                                          value: breathingOptions
-                                                                  .contains(
-                                                                      sleepCheck
-                                                                          .breathing)
-                                                              ? sleepCheck
-                                                                  .breathing
-                                                              : null,
-                                                          items:
-                                                              breathingOptions,
-                                                          hint: 'Select',
-                                                          onChanged: (value) {
-                                                            sleepCheck
-                                                                    .breathing =
-                                                                value!;
-                                                            setState(() {});
-                                                          },
-                                                        ),
-                                                      ],
+                                      return Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: PatternBackground(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(12.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                CustomTimePicker(
+                                                  title: 'Time',
+                                                  selectedHour: sleepHour,
+                                                  selectedMinute: sleepMinute,
+                                                  hours: hours,
+                                                  minutes: minutes,
+                                                  onHourChanged: (value) {
+                                                    sleepCheck.time =
+                                                        formatTimeString(
+                                                            '$value:${sleepMinute.replaceAll('m', '')}');
+                                                    setState(() {});
+                                                  },
+                                                  onMinuteChanged: (value) {
+                                                    sleepCheck.time =
+                                                        formatTimeString(
+                                                            '$sleepHour:${value!.replaceAll('m', '')}');
+                                                    setState(() {});
+                                                  },
+                                                ),
+                                                const SizedBox(height: 15),
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text('Breathing',
+                                                              style: Theme.of(
+                                                                      context)
+                                                                  .textTheme
+                                                                  .bodyMedium),
+                                                          const SizedBox(
+                                                              height: 5),
+                                                          CustomDropdown(
+                                                            height: 40,
+                                                            value: breathingOptions
+                                                                    .contains(
+                                                                        sleepCheck
+                                                                            .breathing)
+                                                                ? sleepCheck
+                                                                    .breathing
+                                                                : null,
+                                                            items:
+                                                                breathingOptions,
+                                                            hint: 'Select',
+                                                            onChanged: (value) {
+                                                              sleepCheck
+                                                                      .breathing =
+                                                                  value!;
+                                                              setState(() {});
+                                                            },
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text('Body Temperature',
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .bodyMedium),
-                                                        const SizedBox(
-                                                            height: 5),
-                                                        CustomDropdown(
-                                                          height: 40,
-                                                          value: bodyTempOptions
-                                                                  .contains(
-                                                                      sleepCheck
-                                                                          .bodyTemperature)
-                                                              ? sleepCheck
-                                                                  .bodyTemperature
-                                                              : null,
-                                                          items:
-                                                              bodyTempOptions,
-                                                          hint: 'Select',
-                                                          onChanged: (value) {
-                                                            sleepCheck
-                                                                    .bodyTemperature =
-                                                                value!;
-                                                            setState(() {});
-                                                          },
-                                                        ),
-                                                      ],
+                                                    const SizedBox(width: 10),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                              'Body Temperature',
+                                                              style: Theme.of(
+                                                                      context)
+                                                                  .textTheme
+                                                                  .bodyMedium),
+                                                          const SizedBox(
+                                                              height: 5),
+                                                          CustomDropdown(
+                                                            height: 40,
+                                                            value: bodyTempOptions
+                                                                    .contains(
+                                                                        sleepCheck
+                                                                            .bodyTemperature)
+                                                                ? sleepCheck
+                                                                    .bodyTemperature
+                                                                : null,
+                                                            items:
+                                                                bodyTempOptions,
+                                                            hint: 'Select',
+                                                            onChanged: (value) {
+                                                              sleepCheck
+                                                                      .bodyTemperature =
+                                                                  value!;
+                                                              setState(() {});
+                                                            },
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 15),
-                                              Text('Notes',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodyMedium),
-                                              const SizedBox(height: 5),
-                                              TextField(
-                                                controller: notesController,
-                                                maxLines: 2,
-                                                onChanged: (value) =>
-                                                    sleepCheck.notes = value,
-                                                decoration:
-                                                    const InputDecoration(
-                                                  enabledBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                        color: Colors.black26,
-                                                        width: 0.0),
-                                                  ),
-                                                  border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(4)),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 15),
+                                                Text('Notes',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium),
+                                                const SizedBox(height: 5),
+                                                TextField(
+                                                  controller: notesController,
+                                                  maxLines: 2,
+                                                  onChanged: (value) =>
+                                                      sleepCheck.notes = value,
+                                                  decoration:
+                                                      const InputDecoration(
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: Colors.black26,
+                                                          width: 0.0),
+                                                    ),
+                                                    border: OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  4)),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Row(
-                                                children: [
-                                                  CustomButton(
-                                                    height: 40,
-                                                    width: 80,
-                                                    text: 'UPDATE',
-                                                    ontap: () {
-                                                      context
-                                                          .read<
-                                                              SleepChecklistBloc>()
-                                                          .add(
-                                                              UpdateSleepCheckEvent(
-                                                            userId: '',
-                                                            id: sleepCheck.id,
-                                                            childId: sleepCheck
-                                                                .childId,
-                                                            roomId: sleepCheck
-                                                                .roomId,
-                                                            diaryDate: date!,
-                                                            time:
-                                                                sleepCheck.time,
-                                                            breathing:
-                                                                sleepCheck
-                                                                    .breathing,
-                                                            bodyTemperature:
-                                                                sleepCheck
-                                                                    .bodyTemperature,
-                                                            notes: sleepCheck
-                                                                .notes,
-                                                            centerId: '',
-                                                          ));
-                                                    },
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  CustomButton(
-                                                    height: 40,
-                                                    width: 80,
-                                                    text: 'DELETE',
-                                                    color: Colors.red,
-                                                    ontap: () {
-                                                      context
-                                                          .read<
-                                                              SleepChecklistBloc>()
-                                                          .add(
-                                                              DeleteSleepCheckEvent(
-                                                            userId: '',
-                                                            id: sleepCheck.id,
-                                                            centerId: '',
-                                                            roomId: child.room,
-                                                            diaryDate: date!,
-                                                          ));
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                                const SizedBox(height: 10),
+                                                Row(
+                                                  children: [
+                                                    CustomButton(
+                                                      height: 40,
+                                                      width: 80,
+                                                      text: 'UPDATE',
+                                                      ontap: () {
+                                                        context
+                                                            .read<
+                                                                SleepChecklistBloc>()
+                                                            .add(
+                                                                UpdateSleepCheckEvent(
+                                                              userId: '',
+                                                              id: sleepCheck.id,
+                                                              childId:
+                                                                  sleepCheck
+                                                                      .childId,
+                                                              roomId: sleepCheck
+                                                                  .roomId,
+                                                              diaryDate: date!,
+                                                              time: sleepCheck
+                                                                  .time,
+                                                              breathing:
+                                                                  sleepCheck
+                                                                      .breathing,
+                                                              bodyTemperature:
+                                                                  sleepCheck
+                                                                      .bodyTemperature,
+                                                              notes: sleepCheck
+                                                                  .notes,
+                                                              centerId: '',
+                                                            ));
+                                                      },
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    CustomButton(
+                                                      height: 40,
+                                                      width: 80,
+                                                      text: 'DELETE',
+                                                      color: Colors.red,
+                                                      ontap: () {
+                                                        context
+                                                            .read<
+                                                                SleepChecklistBloc>()
+                                                            .add(
+                                                                DeleteSleepCheckEvent(
+                                                              userId: '',
+                                                              id: sleepCheck.id,
+                                                              centerId: '',
+                                                              roomId:
+                                                                  child.room,
+                                                              diaryDate: date!,
+                                                            ));
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       );

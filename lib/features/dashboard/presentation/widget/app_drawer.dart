@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mydiaree/core/config/app_colors.dart'; 
+import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/features/annaunce/presentation/pages/announcement_list_screen.dart';
 import 'package:mydiaree/features/daily_journal/accident/presentation/pages/accident/accident_list_screen.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/pages/accident/sleepcheck_list_screen.dart';
-import 'package:mydiaree/features/observation/presentation/pages/observation_list_screen.dart'; 
+import 'package:mydiaree/features/observation/presentation/pages/observation_list_screen.dart';
 import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_list_screen.dart';
 import 'package:mydiaree/features/reflection/presentation/pages/reflection_list_screen.dart';
 import 'package:mydiaree/features/room/presentation/pages/room_list_screen.dart';
@@ -12,6 +12,7 @@ import 'package:mydiaree/features/service_detail/presentation/pages/service_deta
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
+
   @override
   Widget build(BuildContext context) {
     final TextStyle? titleTextStyle = Theme.of(context)
@@ -26,18 +27,13 @@ class AppDrawer extends StatelessWidget {
 
     final EdgeInsetsGeometry childrenPadding = EdgeInsets.only(left: 40);
     final EdgeInsetsGeometry contentPadding = EdgeInsets.only(left: 0);
+
     return Drawer(
       child: PatternBackground(
-        // decoration: BoxDecoration(
-        //   gradient: LinearGradient(
-        //     begin: Alignment.topLeft,
-        //     end: Alignment.bottomRight,
-        //     colors: [AppColors.kGradient1, AppColors.kGradient2],
-        //   ),
-        // ),
         child: ListView(
           children: <Widget>[
             const SizedBox(height: 30),
+            // 1. Dashboard
             ListTile(
               contentPadding: contentPadding,
               leading: const Icon(Icons.home, color: Colors.white),
@@ -45,10 +41,12 @@ class AppDrawer extends StatelessWidget {
               onTap: () {},
             ),
             divider,
+
+            // 2. Observation
             ListTile(
               contentPadding: contentPadding,
               leading: const Icon(Icons.graphic_eq, color: Colors.white),
-              title: Text('Observations', style: titleTextStyle),
+              title: Text('Observation', style: titleTextStyle),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return ObservationListScreen();
@@ -56,37 +54,8 @@ class AppDrawer extends StatelessWidget {
               },
             ),
             divider,
-            Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-                splashColor: Colors.white24,
-                highlightColor: Colors.white10,
-                unselectedWidgetColor: Colors.white,
-                colorScheme: ColorScheme.fromSwatch().copyWith(
-                  secondary: Colors.white,
-                  onSurface: Colors.white,
-                ),
-              ),
-              child: ExpansionTile(
-                leading: const Icon(Icons.book, color: Colors.white),
-                childrenPadding: childrenPadding,
-                title: Text('QIP', style: titleTextStyle),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                tilePadding: contentPadding,
-                children: [
-                  ListTile(
-                    title: Text('Self Assessment', style: childrenTextStyle),
-                    onTap: () {},
-                  ),
-                  ListTile(
-                    title: Text('QIP Full', style: childrenTextStyle),
-                    onTap: () {},
-                  ),
-                ],
-              ),
-            ),
-            divider,
+
+            // 3. Rooms
             ListTile(
               contentPadding: contentPadding,
               leading: const Icon(Icons.apartment, color: Colors.white),
@@ -98,25 +67,60 @@ class AppDrawer extends StatelessWidget {
               },
             ),
             divider,
+
+            // 4. Daily Reflections
+            ListTile(
+              contentPadding: contentPadding,
+              leading: const Icon(Icons.refresh, color: Colors.white),
+              title: Text('Daily Reflections', style: titleTextStyle),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return ReflectionListScreen();
+                }));
+              },
+            ),
+            divider,
+
+            // 5. Program Plan
             ListTile(
               contentPadding: contentPadding,
               leading: const Icon(Icons.article, color: Colors.white),
-              title: Text('Program Plans', style: titleTextStyle),
+              title: Text('Program Plan', style: titleTextStyle),
               onTap: () {
-                print('hi');
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return ProgramPlansListScreen();
                 }));
               },
             ),
             divider,
+
+            // 6. Service Details
             ListTile(
               contentPadding: contentPadding,
-              leading: const Icon(Icons.image, color: Colors.white),
-              title: Text('Media', style: titleTextStyle),
-              onTap: () {},
+              leading: const Icon(Icons.security_rounded, color: Colors.white),
+              title: Text('Service Details', style: titleTextStyle),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return ServiceDetailsScreen();
+                }));
+              },
             ),
             divider,
+
+            // 7. Announcements
+            ListTile(
+              contentPadding: contentPadding,
+              leading: const Icon(Icons.campaign, color: Colors.white),
+              title: Text('Announcements', style: titleTextStyle),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return AnnouncementsListScreen();
+                }));
+              },
+            ),
+            divider,
+
+            // 8. Daily Journal
             Theme(
               data: Theme.of(context).copyWith(
                 dividerColor: Colors.transparent,
@@ -131,28 +135,52 @@ class AppDrawer extends StatelessWidget {
               child: ExpansionTile(
                 tilePadding: contentPadding,
                 childrenPadding: childrenPadding,
-                leading: const Icon(Icons.campaign, color: Colors.white),
-                title: Text('Announcements', style: titleTextStyle),
+                leading: const Icon(Icons.book, color: Colors.white),
+                title: Text('Daily Journal', style: titleTextStyle),
                 iconColor: Colors.white,
                 collapsedIconColor: Colors.white,
                 children: [
                   ListTile(
-                    title: Text('Announcements', style: childrenTextStyle),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return AnnouncementsListScreen();
-                      }));
-                    },
+                  title: Text('Daily Diary', style: childrenTextStyle),
+                  onTap: () {}, // Add relevant screen
                   ),
                   ListTile(
-                    title: Text('Survey', style: childrenTextStyle),
-                    onTap: () {},
+                  title: Text('Head Checks', style: childrenTextStyle),
+                  onTap: () {}, // Add relevant screen
+                  ),
+                  ListTile(
+                  title: Text('Sleep Checklist', style: childrenTextStyle),
+                  onTap: () {
+                    Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                    return const SleepCheckListScreen();
+                    }));
+                  },
+                  ),
+                  ListTile(
+                  title: Text('Accident', style: childrenTextStyle),
+                  onTap: () {
+                    Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                    return AccidentListScreen();
+                    }));
+                  },
                   ),
                 ],
               ),
             ),
             divider,
+
+            // 9. Settings
+            ListTile(
+              contentPadding: contentPadding,
+              leading: const Icon(Icons.settings, color: Colors.white),
+              title: Text('Settings', style: titleTextStyle),
+              onTap: () {},
+            ),
+            divider,
+
+            // 10. Healthy Eating
             Theme(
               data: Theme.of(context).copyWith(
                 dividerColor: Colors.transparent,
@@ -174,133 +202,18 @@ class AppDrawer extends StatelessWidget {
                 children: [
                   ListTile(
                     title: Text('Menu', style: childrenTextStyle),
-                    onTap: () {},
+                    onTap: () {}, // Add navigation
                   ),
                   ListTile(
                     title: Text('Recipes', style: childrenTextStyle),
-                    onTap: () {},
+                    onTap: () {}, // Add navigation
                   ),
                 ],
               ),
             ),
             divider,
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.local_florist, color: Colors.white),
-              title: Text('Resources', style: titleTextStyle),
-              onTap: () {},
-            ),
-            divider,
-            Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-                splashColor: Colors.white24,
-                highlightColor: Colors.white10,
-                unselectedWidgetColor: Colors.white,
-                colorScheme: ColorScheme.fromSwatch().copyWith(
-                  secondary: Colors.white,
-                  onSurface: Colors.white,
-                ),
-              ),
-              child: ExpansionTile(
-                tilePadding: contentPadding,
-                childrenPadding: childrenPadding,
-                leading: const Icon(Icons.account_balance_wallet,
-                    color: Colors.white),
-                title: Text('Daily Journal', style: titleTextStyle),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: [
-                  ListTile(
-                    title: Text('Daily Dairy', style: childrenTextStyle),
-                    onTap: () {},
-                  ),
-                  ListTile(
-                    title: Text('Head Checks', style: childrenTextStyle),
-                    onTap: () {},
-                  ),
-                  ListTile(
-                    title: Text('Sleep Checklist', style: childrenTextStyle),
-                    onTap: () {
-                        Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return const SleepCheckListScreen();
-                      }));
-                    },
-                  ),
-                  ListTile(
-                    title: Text('Accident', style: childrenTextStyle),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return   AccidentListScreen();
-                      }));
-                    },
-                  ),
-                ],
-              ),
-            ),
-            divider,
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.refresh, color: Colors.white),
-              title: Text('Reflection', style: titleTextStyle),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return ReflectionListScreen();
-                }));
-              },
-            ),
-            divider,
-            Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-                splashColor: Colors.white24,
-                highlightColor: Colors.white10,
-                unselectedWidgetColor: Colors.white,
-                colorScheme: ColorScheme.fromSwatch().copyWith(
-                  secondary: Colors.white,
-                  onSurface: Colors.white,
-                ),
-              ),
-              child: ExpansionTile(
-                tilePadding: contentPadding,
-                childrenPadding: childrenPadding,
-                leading: const Icon(Icons.show_chart, color: Colors.white),
-                title: Text('Montessori', style: titleTextStyle),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: [
-                  ListTile(
-                    title: Text('Progress Plan', style: childrenTextStyle),
-                    onTap: () {},
-                  ),
-                  ListTile(
-                    title: Text('Lesson Plan', style: childrenTextStyle),
-                    onTap: () {},
-                  ),
-                ],
-              ),
-            ),
-            divider,
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.settings, color: Colors.white),
-              title: Text('Settings', style: titleTextStyle),
-              onTap: () {},
-            ),
-            divider,
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.security_rounded, color: Colors.white),
-              title: Text('Service', style: titleTextStyle),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return ServiceDetailsScreen();
-                }));
-              },
-            ),
-            divider,
+
+            // Logout
             ListTile(
               contentPadding: contentPadding,
               leading: const Icon(Icons.settings_power, color: Colors.white),
@@ -319,6 +232,7 @@ class AppDrawer extends StatelessWidget {
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
+                          // Perform logout
                         },
                         child: const Text('Logout',
                             style: TextStyle(color: AppColors.errorColor)),

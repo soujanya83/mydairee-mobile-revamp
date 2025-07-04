@@ -19,8 +19,8 @@ class ObservationListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          ObservationListBloc()..add(FetchObservationsEvent(centerId: '1')),
+      create: (_) => ObservationListBloc()
+        ..add(const FetchObservationsEvent(centerId: '1')),
       child: CustomScaffold(
         appBar: const CustomAppBar(title: "Observations"),
         body: BlocBuilder<ObservationListBloc, ObservationListState>(
@@ -89,14 +89,13 @@ class ObservationListScreen extends StatelessWidget {
                           final observation = observations[index];
                           return ObservationCard(
                             title: observation.title ?? 'No Title',
-                            author: observation.userName?.toString() ?? '',
-                            approvedBy:
-                                'Admin', // Provide actual value if available
-                            dateAdded: observation.dateAdded?.toString() ?? '',
-                            mediaUrl: '',
+                            author: observation.userName.toString(),
+                            approvedBy: 'Admin',
+                            dateAdded: observation.dateAdded.toString(),
+                            mediaUrl: 'https://mydiaree.com.au/uploads/Observation/1751369080_6863c578cdb84.jpeg',
                             montessoriCount: 0,
                             eylfCount: 0,
-                            status: observation.status?.toString() ?? '',
+                            status: observation.status.toString(),
                             onTap: () {
                               Navigator.push(
                                   context,

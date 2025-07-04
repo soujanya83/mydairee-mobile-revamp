@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks/data/model/sleep_check_model.dart';
-// Dummy data for SlipChecksChildListModel
 
+// Dummy data for SlipChecksChildListModel
 final dummySleepChecklistData = {
   "children": [
     {
@@ -24,29 +24,29 @@ final dummySleepChecklistData = {
       "sleepChecks": [
         {
           "id": "1",
-          "childid": "1",
-          "roomid": "1",
-          "diarydate": "04-07-2025",
+          "childId": "1",
+          "roomId": "1",
+          "diaryDate": "04-07-2025",
           "time": "10:30",
           "breathing": "Regular",
-          "body_temperature": "Warm",
+          "bodyTemperature": "Warm",
           "notes": "Sleeping well",
           "createdBy": "educator1",
-          "created_at": "2025-07-04T10:30:00Z",
+          "createdAt": "2025-07-04T10:30:00Z",
           "previousBreathing": null,
           "previousBodyTemperature": null
         },
         {
           "id": "2",
-          "childid": "1",
-          "roomid": "1",
-          "diarydate": "04-07-2025",
+          "childId": "1",
+          "roomId": "1",
+          "diaryDate": "04-07-2025",
           "time": "11:00",
           "breathing": "Fast",
-          "body_temperature": "Cool",
+          "bodyTemperature": "Cool",
           "notes": "Restless",
           "createdBy": "educator1",
-          "created_at": "2025-07-04T11:00:00Z",
+          "createdAt": "2025-07-04T11:00:00Z",
           "previousBreathing": "Regular",
           "previousBodyTemperature": "Warm"
         }
@@ -68,15 +68,15 @@ final dummySleepChecklistData = {
       "sleepChecks": [
         {
           "id": "3",
-          "childid": "2",
-          "roomid": "2",
-          "diarydate": "04-07-2025",
+          "childId": "2",
+          "roomId": "2",
+          "diaryDate": "04-07-2025",
           "time": "10:45",
           "breathing": "Difficult",
-          "body_temperature": "Hot",
+          "bodyTemperature": "Hot",
           "notes": "Needs attention",
           "createdBy": "educator2",
-          "created_at": "2025-07-04T10:45:00Z",
+          "createdAt": "2025-07-04T10:45:00Z",
           "previousBreathing": null,
           "previousBodyTemperature": null
         }
@@ -126,7 +126,9 @@ class SleepChecklistRepository {
           print('----------');
           print(s.toString());
           print('----------');
-          return SlipChecksChildListModel.fromJson(json);
+          return SlipChecksChildListModel.fromJson(
+            (dummySleepChecklistData['children'] ?? []) as List<dynamic>,
+          );
         }
       },
     );
