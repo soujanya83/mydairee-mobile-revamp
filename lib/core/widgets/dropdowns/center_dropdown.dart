@@ -33,7 +33,7 @@ class CenterDropdown extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: Container(
               height: height,
-              width: screenWidth*.9,
+              width: screenWidth*.95,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.primaryColor),
@@ -54,7 +54,7 @@ class CenterDropdown extends StatelessWidget {
             color: AppColors.white,
             borderRadius: BorderRadius.circular(8),
             child: Container(
-               width: screenWidth*.9,
+               width: screenWidth*.95,
               height: height,
               // padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(

@@ -39,4 +39,6 @@ class AppUrls {
   static const String deleteSleepChecklist = '$baseApiUrl/sleep-checklist/delete';
   static const String getSleepChecklist = '$baseApiUrl/sleep-checklist/list';
   static const String addSleepChecklist = '$baseApiUrl/sleep-addSleepChecklist';
+  static const String getHeadChecks = '$baseApiUrl/head-getHeadChecks';
+  static const String addHeadChecks = '$baseApiUrl/head-addHeadChecks';
 }

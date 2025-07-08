@@ -126,9 +126,7 @@ class SleepChecklistRepository {
           print('----------');
           print(s.toString());
           print('----------');
-          return SlipChecksChildListModel.fromJson(
-            (dummySleepChecklistData['children'] ?? []) as List<dynamic>,
-          );
+          return SlipChecksChildListModel.fromJson(dummySleepChecklistData);
         }
       },
     );

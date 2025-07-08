@@ -42,9 +42,9 @@ class ProgramPlansListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context
-          .read<ProgramPlanBloc>()
-          .add(const FetchProgramPlansEvent(centerId: '1'));
+      // context
+      //     .read<ProgramPlanBloc>()
+      //     .add(const FetchProgramPlansEvent(centerId: '1'));
     });
     return CustomScaffold(
       appBar: AppBar(
@@ -106,8 +106,7 @@ class ProgramPlansListScreen extends StatelessWidget {
                   }
 
                   return ListView.builder(
-                    shrinkWrap: true,
-                    // physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true, 
                     itemCount: state.prgramPlanListData?.plans.length ?? 0,
                     itemBuilder: (context, index) {
                       final plan = state.prgramPlanListData!.plans[index];
@@ -123,10 +122,8 @@ class ProgramPlansListScreen extends StatelessWidget {
                                   ?.year
                                   .toString() ??
                               '',
-                          roomName: "Room ID: ${plan.roomid}",
+                          roomName: plan.name,
                           creatorName: plan.createdBy,
-                          inquiryTopic: plan.inqTopicTitle,
-                          specialEvents: plan.specialActivity,
                           createdAt: plan.createdAt,
                           updatedAt: plan.endDate,
                           onEditPressed: () {

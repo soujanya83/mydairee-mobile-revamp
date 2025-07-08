@@ -3,6 +3,7 @@ import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/features/annaunce/presentation/pages/announcement_list_screen.dart';
 import 'package:mydiaree/features/daily_journal/accident/presentation/pages/accident/accident_list_screen.dart';
+import 'package:mydiaree/features/daily_journal/headchecks/presentation/pages/accident/headchecks_list_screen.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/pages/accident/sleepcheck_list_screen.dart';
 import 'package:mydiaree/features/observation/presentation/pages/observation_list_screen.dart';
 import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_list_screen.dart';
@@ -141,30 +142,35 @@ class AppDrawer extends StatelessWidget {
                 collapsedIconColor: Colors.white,
                 children: [
                   ListTile(
-                  title: Text('Daily Diary', style: childrenTextStyle),
-                  onTap: () {}, // Add relevant screen
+                    title: Text('Daily Diary', style: childrenTextStyle),
+                    onTap: () {}, // Add relevant screen
                   ),
                   ListTile(
-                  title: Text('Head Checks', style: childrenTextStyle),
-                  onTap: () {}, // Add relevant screen
+                    title: Text('Head Checks', style: childrenTextStyle),
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return const HeadChecksScreen();
+                      }));
+                    }, // Add relevant screen
                   ),
                   ListTile(
-                  title: Text('Sleep Checklist', style: childrenTextStyle),
-                  onTap: () {
-                    Navigator.push(context,
-                      MaterialPageRoute(builder: (context) {
-                    return const SleepCheckListScreen();
-                    }));
-                  },
+                    title: Text('Sleep Checklist', style: childrenTextStyle),
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return const SleepCheckListScreen();
+                      }));
+                    },
                   ),
                   ListTile(
-                  title: Text('Accident', style: childrenTextStyle),
-                  onTap: () {
-                    Navigator.push(context,
-                      MaterialPageRoute(builder: (context) {
-                    return AccidentListScreen();
-                    }));
-                  },
+                    title: Text('Accident', style: childrenTextStyle),
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return AccidentListScreen();
+                      }));
+                    },
                   ),
                 ],
               ),

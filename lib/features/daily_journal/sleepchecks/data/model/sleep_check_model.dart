@@ -3,17 +3,21 @@ class SlipChecksChildListModel {
 
   SlipChecksChildListModel({required this.children});
 
-  factory SlipChecksChildListModel.fromJson(List<dynamic> jsonList) {
+  factory SlipChecksChildListModel.fromJson(Map<String, dynamic> json) {
     return SlipChecksChildListModel(
-      children: jsonList
-          .map((json) =>
-              SlipChecksChildModel.fromJson(json as Map<String, dynamic>))
-          .toList(),
+      children: json['children'] != null
+          ? (json['children'] as List<dynamic>)
+              .map((json) =>
+                  SlipChecksChildModel.fromJson(json as Map<String, dynamic>))
+              .toList()
+          : [],
     );
   }
 
-  List<Map<String, dynamic>> toJson() {
-    return children.map((child) => child.toJson()).toList();
+  Map<String, dynamic> toJson() {
+    return {
+      'children': children.map((child) => child.toJson()).toList(),
+    };
   }
 }
 
@@ -52,23 +56,23 @@ class SlipChecksChildModel {
     List<SleepCheckModel> sleepChecksList = [];
     if (json['sleepChecks'] != null && json['sleepChecks'] is List) {
       sleepChecksList = (json['sleepChecks'] as List)
-          .map((e) => SleepCheckModel.fromJson(e))
+          .map((e) => SleepCheckModel.fromJson(e as Map<String, dynamic>))
           .toList();
     }
 
     return SlipChecksChildModel(
-      id: json['id'],
-      name: json['name'],
-      lastname: json['lastname'],
-      dob: json['dob'],
-      startDate: json['startDate'],
-      room: json['room'],
-      imageUrl: json['imageUrl'],
-      gender: json['gender'],
-      status: json['status'],
-      daysAttending: json['daysAttending'],
-      createdBy: json['createdBy'],
-      createdAt: json['createdAt'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      lastname: json['lastname'] ?? '',
+      dob: json['dob'] ?? '',
+      startDate: json['startDate'] ?? '',
+      room: json['room'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      gender: json['gender'] ?? '',
+      status: json['status'] ?? '',
+      daysAttending: json['daysAttending'] ?? '',
+      createdBy: json['createdBy'] ?? '',
+      createdAt: json['createdAt'] ?? '',
       sleepChecks: sleepChecksList,
     );
   }
@@ -105,8 +109,6 @@ class SleepCheckModel {
   String notes;
   String createdBy;
   String createdAt;
-
-  // New variables to track previous values
   String? previousBreathing;
   String? previousBodyTemperature;
 
@@ -127,16 +129,16 @@ class SleepCheckModel {
 
   factory SleepCheckModel.fromJson(Map<String, dynamic> json) {
     return SleepCheckModel(
-      id: json['id'],
-      childId: json['childId'],
-      roomId: json['roomId'],
-      diaryDate: json['diaryDate'],
-      time: json['time'],
-      breathing: json['breathing'],
-      bodyTemperature: json['bodyTemperature'],
-      notes: json['notes'],
-      createdBy: json['createdBy'],
-      createdAt: json['createdAt'],
+      id: json['id'] ?? '',
+      childId: json['childId'] ?? '',
+      roomId: json['roomId'] ?? '',
+      diaryDate: json['diaryDate'] ?? '',
+      time: json['time'] ?? '',
+      breathing: json['breathing'] ?? '',
+      bodyTemperature: json['bodyTemperature'] ?? '',
+      notes: json['notes'] ?? '',
+      createdBy: json['createdBy'] ?? '',
+      createdAt: json['createdAt'] ?? '',
       previousBreathing: json['previousBreathing'],
       previousBodyTemperature: json['previousBodyTemperature'],
     );
@@ -159,7 +161,6 @@ class SleepCheckModel {
     };
   }
 
-  /// Call this method before updating breathing/body temperature
   void trackChanges(String newBreathing, String newTemperature) {
     if (newBreathing != breathing) {
       previousBreathing = breathing;

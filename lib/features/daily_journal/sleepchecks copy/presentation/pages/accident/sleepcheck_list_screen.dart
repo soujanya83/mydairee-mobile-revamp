@@ -279,7 +279,8 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
                                                                   .start,
                                                           children: [
                                                             Text('Breathing',
-                                                                style: Theme.of(context)
+                                                                style: Theme.of(
+                                                                        context)
                                                                     .textTheme
                                                                     .bodyMedium),
                                                             const SizedBox(
@@ -314,7 +315,8 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
                                                               CrossAxisAlignment
                                                                   .start,
                                                           children: [
-                                                            Text('Body Temperature',
+                                                            Text(
+                                                                'Body Temperature',
                                                                 style: Theme.of(
                                                                         context)
                                                                     .textTheme

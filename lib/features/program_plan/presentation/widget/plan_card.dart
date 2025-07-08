@@ -3,15 +3,14 @@ import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/utils/helper_functions.dart';
 import 'package:mydiaree/core/widgets/custom_action_button.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
+import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_card.dart';
 
 class PlanCard extends StatelessWidget {
   final String month;
   final String year;
   final String roomName;
-  final String creatorName;
-  final String inquiryTopic;
-  final String specialEvents;
+  final String creatorName;  
   final String createdAt;
   final String updatedAt;
   final VoidCallback onEditPressed;
@@ -22,9 +21,7 @@ class PlanCard extends StatelessWidget {
     required this.month,
     required this.year,
     required this.roomName,
-    required this.creatorName,
-    required this.inquiryTopic,
-    required this.specialEvents,
+    required this.creatorName,  
     required this.createdAt,
     required this.updatedAt,
     required this.onEditPressed,
@@ -36,7 +33,7 @@ class PlanCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return PatternBackground(
-      elevation:1.5,
+      elevation: 1.5,
       boxShadow: [
         BoxShadow(
           // ignore: deprecated_member_use
@@ -61,14 +58,22 @@ class PlanCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      "${getMonthName(month)} $year",
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppColors.primaryColor,
-                          ),
-                    ),
-                  ),
+                  // Expanded(
+                  //   child: Text(
+                  //     "${getMonthName(month)} $year",
+                  //     style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  //           color: AppColors.primaryColor,
+                  //         ),
+                  //   ),
+                  // ),
+                  CustomButton(
+                      height: 30,
+                      width: 150,
+                      text: '${getMonthName(month)} $year'),
+                  const Expanded(
+                      child: SizedBox(
+                    width: 10,
+                  )),
                   Row(
                     children: [
                       CustomActionButton(
@@ -87,12 +92,8 @@ class PlanCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              _InfoText(icon: Icons.meeting_room, label: roomName),
-              _InfoText(icon: Icons.person, label: "Created by $creatorName"),
-              if (inquiryTopic.isNotEmpty)
-                _InfoText(icon: Icons.lightbulb, label: "Topic: $inquiryTopic"),
-              if (specialEvents.isNotEmpty)
-                _InfoText(icon: Icons.event, label: "Events: $specialEvents"),
+              _InfoText(icon: Icons.meeting_room, label: roomName,style:  Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primaryColor),),
+              _InfoText(icon: Icons.person, label: "Created by : $creatorName"), 
               const Divider(height: 20),
               Column(
                 children: [
@@ -113,12 +114,10 @@ Widget _DateLabel(String label, String? dateStr) {
   try {
     final date = DateTime.parse(dateStr ?? '');
     final formatted = "${date.day}/${date.month}/${date.year}";
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: AppColors.greyShadeLight,
-      ),
+    return PatternBackground(
+      elevation: 0,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      borderRadius: BorderRadius.circular(10), 
       child: Text("$label: $formatted", style: const TextStyle(fontSize: 12)),
     );
   } catch (_) {
@@ -129,8 +128,9 @@ Widget _DateLabel(String label, String? dateStr) {
 class _InfoText extends StatelessWidget {
   final IconData icon;
   final String label;
+  final TextStyle? style;
 
-  const _InfoText({required this.icon, required this.label});
+  const _InfoText({required this.icon, required this.label, this.style});
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +143,7 @@ class _InfoText extends StatelessWidget {
           Flexible(
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style:style?? Theme.of(context).textTheme.bodyMedium,
               overflow: TextOverflow.ellipsis,
             ),
           )

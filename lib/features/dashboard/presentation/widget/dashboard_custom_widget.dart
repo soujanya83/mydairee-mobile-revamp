@@ -532,6 +532,7 @@ class TimelineProgressList extends StatelessWidget {
 
     return ListView.builder(
       shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       itemCount: events.length,
       itemBuilder: (context, index) {
@@ -543,23 +544,20 @@ class TimelineProgressList extends StatelessWidget {
         return Stack(
           children: [
             Positioned(
-              left: 7, // center of bullet
+              left: 7,
               top: 0,
               bottom: 0,
               child: Container(
                 width: 2,
                 color: isPast ? event.color : Colors.grey[300],
-                height: isLast ? 12 : 72, // shorter if last item
+                height: isLast ? 12 : 72,
               ),
             ),
-
-            // Actual content row
             Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Ring Bullet with inner circle
                   Container(
                     margin: const EdgeInsets.only(top: 2),
                     width: 16,
@@ -583,7 +581,6 @@ class TimelineProgressList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Time + Description
                   Expanded(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,

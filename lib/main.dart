@@ -16,6 +16,7 @@ import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_log
 import 'package:mydiaree/features/auth/staff/presentation/bloc/login/staff_login_bloc.dart';
 import 'package:mydiaree/features/daily_journal/accident/presentation/bloc/accident_list/accident_list_bloc.dart';
 import 'package:mydiaree/features/daily_journal/accident/presentation/bloc/add_accident/add_accident_bloc.dart';
+import 'package:mydiaree/features/daily_journal/headchecks/presentation/bloc/accident_list/headchecks_list_bloc.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/bloc/accident_list/sleepcheks_list_bloc.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:mydiaree/features/observation/presentation/bloc/add_room/view_observation_bloc.dart';
@@ -89,6 +90,8 @@ class MyApp extends StatelessWidget {
         BlocProvider<SleepChecklistBloc>(
             create: (context) => SleepChecklistBloc( 
             )),
+        BlocProvider<HeadChecksBloc>(
+            create: (context) => HeadChecksBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
