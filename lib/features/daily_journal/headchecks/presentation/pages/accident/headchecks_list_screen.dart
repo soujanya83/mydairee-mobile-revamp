@@ -36,8 +36,7 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
             padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context),
+              children: [ 
                 const SizedBox(height: 10),
                 StatefulBuilder(builder: (context, setState) {
                   return CenterDropdown(
@@ -127,18 +126,13 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
                                           );
                                     }
                                   },
-                                  onSave: () {
-                                    
-                                  },
-                                  onCancel: () {
-                                    
-                                  },
+                                  onSave: () {},
+                                  onCancel: () {},
                                 ),
                               );
                             },
                           ),
-                          const SizedBox(height: 15),
-                          _buildActionButtons(context, state),
+                          const SizedBox(height: 15), 
                         ],
                       );
                     }
@@ -158,54 +152,6 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return BlocBuilder<HeadChecksBloc, HeadChecksState>(
-      builder: (context, state) {
-        DateTime? date =
-            state is HeadChecksLoaded ? state.date : DateTime.now();
-        return Container(
-          width: MediaQuery.of(context).size.width,
-          child: Row(
-            children: [
-              Text(
-                'Head Checks',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const Spacer(),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context, HeadChecksState state) {
-    if (state is! HeadChecksLoaded) return const SizedBox.shrink();
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        ActionButton(
-          label: 'CANCEL',
-          onPressed: () => Navigator.pop(context),
-          isPrimary: false,
-        ),
-        const SizedBox(width: 15),
-        ActionButton(
-          label: 'SAVE',
-          onPressed: () {
-            context.read<HeadChecksBloc>().add(SaveHeadChecksEvent(
-                  userId: '',
-                  roomId: selectedRoomId ?? '',
-                  date: state.date,
-                  headChecks: state.headChecks,
-                ));
-          },
-        ),
-        const SizedBox(width: 10),
-      ],
     );
   }
 }

@@ -54,6 +54,7 @@ dependencies:
   signature: ^6.3.0
   image_painter: ^0.7.1
   open_file: ^3.5.10
+  font_awesome_flutter: ^10.4.0
 
 dev_dependencies:
   flutter_test:

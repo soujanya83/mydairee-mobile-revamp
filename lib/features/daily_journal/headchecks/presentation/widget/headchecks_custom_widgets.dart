@@ -32,7 +32,9 @@ class HeadCheckCard extends StatelessWidget {
     this.onAdd,
     this.onRemove,
     required this.onHourChanged,
-    required this.onMinuteChanged, required this.onSave, required this.onCancel,
+    required this.onMinuteChanged,
+    required this.onSave,
+    required this.onCancel,
   });
 
   static final List<String> hours =
@@ -139,7 +141,7 @@ class HeadCheckCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
                 CustomButton(
-                  height: 45,
+                  height: 40,
                   width: 100,
                   text: 'SAVE',
                   ontap: onSave,
