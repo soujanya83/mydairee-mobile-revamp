@@ -26,9 +26,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: CarouselSlider(
-            
             options: CarouselOptions(
-              
               height: 150,
               autoPlay: widget.images.length > 1,
               autoPlayInterval: const Duration(seconds: 4),
@@ -40,7 +38,6 @@ class _ImageCarouselState extends State<ImageCarousel> {
                   _currentIndex = index;
                 });
               },
-            
             ),
             items: widget.images.map((imageUrl) {
               return Builder(

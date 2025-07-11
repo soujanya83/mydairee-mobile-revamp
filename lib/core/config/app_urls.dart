@@ -41,4 +41,5 @@ class AppUrls {
   static const String addSleepChecklist = '$baseApiUrl/sleep-addSleepChecklist';
   static const String getHeadChecks = '$baseApiUrl/head-getHeadChecks';
   static const String addHeadChecks = '$baseApiUrl/head-addHeadChecks';
+  static const String addSnapshot = '$baseApiUrl/snapshot-addSnapshot';
 }

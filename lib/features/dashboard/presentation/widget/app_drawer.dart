@@ -1,3 +1,7 @@
+// 🟡 Create two reusable widgets for Drawer:
+// 1. CustomDrawerTile
+// 2. CustomDrawerExpansionTile
+
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
@@ -11,225 +15,130 @@ import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_l
 import 'package:mydiaree/features/reflection/presentation/pages/reflection_list_screen.dart';
 import 'package:mydiaree/features/room/presentation/pages/room_list_screen.dart';
 import 'package:mydiaree/features/service_detail/presentation/pages/service_detail_screen.dart';
+import 'package:mydiaree/features/snapshot/presentation/pages/snapshot_screen.dart';
+// import 'package:mydiaree/features/snapshot/presentation/pages/snapshot_list_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle? titleTextStyle = Theme.of(context)
-        .textTheme
-        .bodyMedium
-        ?.copyWith(color: AppColors.black, fontSize: 15);
-    final TextStyle? childrenTextStyle = Theme.of(context)
-        .textTheme
-        .bodyMedium
-        ?.copyWith(color: AppColors.black, fontSize: 13);
-    final Widget divider = Divider(color: Colors.black.withOpacity(0.8));
-
-    final EdgeInsetsGeometry childrenPadding = EdgeInsets.only(left: 40);
-    final EdgeInsetsGeometry contentPadding = EdgeInsets.only(left: 0);
-
+    var divier = const Divider(
+      height: 1,
+      color: AppColors.black,
+    );
     return Drawer(
       child: PatternBackground(
         child: ListView(
-          children: <Widget>[
-            const SizedBox(height: 30),
-            // 1. Dashboard
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.home, color: Colors.white),
-              title: Text('Dashboard', style: titleTextStyle),
+          padding: const EdgeInsets.only(top: 30),
+          children: [
+            CustomDrawerTile(
+              icon: Icons.home,
+              title: 'Dashboard',
               onTap: () {},
             ),
-            divider,
-
-            // 2. Observation
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.graphic_eq, color: Colors.white),
-              title: Text('Observation', style: titleTextStyle),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return ObservationListScreen();
-                }));
-              },
-            ),
-            divider,
-
-            // 3. Rooms
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.apartment, color: Colors.white),
-              title: Text('Rooms', style: titleTextStyle),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return RoomsListScreen();
-                }));
-              },
-            ),
-            divider,
-
-            // 4. Daily Reflections
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.refresh, color: Colors.white),
-              title: Text('Daily Reflections', style: titleTextStyle),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return ReflectionListScreen();
-                }));
-              },
-            ),
-            divider,
-
-            // 5. Program Plan
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.article, color: Colors.white),
-              title: Text('Program Plan', style: titleTextStyle),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return ProgramPlansListScreen();
-                }));
-              },
-            ),
-            divider,
-
-            // 6. Service Details
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.security_rounded, color: Colors.white),
-              title: Text('Service Details', style: titleTextStyle),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return ServiceDetailsScreen();
-                }));
-              },
-            ),
-            divider,
-
-            // 7. Announcements
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.campaign, color: Colors.white),
-              title: Text('Announcements', style: titleTextStyle),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return AnnouncementsListScreen();
-                }));
-              },
-            ),
-            divider,
-
-            // 8. Daily Journal
-            Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-                splashColor: Colors.white24,
-                highlightColor: Colors.white10,
-                unselectedWidgetColor: Colors.white,
-                colorScheme: ColorScheme.fromSwatch().copyWith(
-                  secondary: Colors.white,
-                  onSurface: Colors.white,
+            divier,
+            CustomDrawerExpansionTile(
+              icon: Icons.book,
+              title: 'Daily Journal',
+              children: [
+                CustomDrawerTile(
+                  showDivider: false,
+                  title: 'Daily Diary',
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => DailyTrackingScreen())),
                 ),
-              ),
-              child: ExpansionTile(
-                tilePadding: contentPadding,
-                childrenPadding: childrenPadding,
-                leading: const Icon(Icons.book, color: Colors.white),
-                title: Text('Daily Journal', style: titleTextStyle),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: [
-                  ListTile(
-                    title: Text('Daily Diary', style: childrenTextStyle),
-                    onTap: () {
-                          Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return   DailyTrackingScreen();
-                      }));
-                    }, // Add relevant screen
-                  ),
-                  ListTile(
-                    title: Text('Head Checks', style: childrenTextStyle),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return const HeadChecksScreen();
-                      }));
-                    }, // Add relevant screen
-                  ),
-                  ListTile(
-                    title: Text('Sleep Checklist', style: childrenTextStyle),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return const SleepCheckListScreen();
-                      }));
-                    },
-                  ),
-                  ListTile(
-                    title: Text('Accident', style: childrenTextStyle),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return AccidentListScreen();
-                      }));
-                    },
-                  ),
-                ],
-              ),
+                CustomDrawerTile(
+                  showDivider: false,
+                  title: 'Head Checks',
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => HeadChecksScreen())),
+                ),
+                CustomDrawerTile(
+                  showDivider: false,
+                  title: 'Sleep Checklist',
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => SleepCheckListScreen())),
+                ),
+                CustomDrawerTile(
+                  title: 'Accident',
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => AccidentListScreen())),
+                ),
+              ],
             ),
-            divider,
-
-            // 9. Settings
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.settings, color: Colors.white),
-              title: Text('Settings', style: titleTextStyle),
+            divier,
+            CustomDrawerTile(
+              icon: Icons.article,
+              title: 'Program Plan',
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => ProgramPlansListScreen())),
+            ),
+            divier,
+            CustomDrawerTile(
+              icon: Icons.refresh,
+              title: 'Daily Reflections',
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => ReflectionListScreen())),
+            ),
+            divier,
+            CustomDrawerTile(
+              icon: Icons.graphic_eq,
+              title: 'Observation',
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const ObservationListScreen())),
+            ),
+            divier,
+            CustomDrawerTile(
+              icon: Icons.photo_camera_back_rounded,
+              title: 'Snapshots',
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SnapshotScreen())),
+            ),
+            divier,
+            CustomDrawerTile(
+              icon: Icons.campaign,
+              title: 'Announcements',
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => AnnouncementsListScreen())),
+            ),
+            divier,
+            CustomDrawerTile(
+              icon: Icons.apartment,
+              title: 'Rooms',
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => RoomsListScreen())),
+            ),
+            divier,
+            CustomDrawerExpansionTile(
+              icon: Icons.fastfood,
+              title: 'Healthy Eating',
+              children: [
+                CustomDrawerTile(title: 'Menu', onTap: () {}),
+                CustomDrawerTile(title: 'Recipes', onTap: () {}),
+              ],
+            ),
+            divier,
+            CustomDrawerTile(
+              icon: Icons.security_rounded,
+              title: 'Service Details',
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => ServiceDetailsScreen())),
+            ),
+            divier,
+            CustomDrawerTile(
+              icon: Icons.settings,
+              title: 'Settings',
               onTap: () {},
             ),
-            divider,
-
-            // 10. Healthy Eating
-            Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-                splashColor: Colors.white24,
-                highlightColor: Colors.white10,
-                unselectedWidgetColor: Colors.white,
-                colorScheme: ColorScheme.fromSwatch().copyWith(
-                  secondary: Colors.white,
-                  onSurface: Colors.white,
-                ),
-              ),
-              child: ExpansionTile(
-                tilePadding: contentPadding,
-                childrenPadding: childrenPadding,
-                leading: const Icon(Icons.fastfood, color: Colors.white),
-                title: Text('Healthy Eating', style: titleTextStyle),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: [
-                  ListTile(
-                    title: Text('Menu', style: childrenTextStyle),
-                    onTap: () {}, // Add navigation
-                  ),
-                  ListTile(
-                    title: Text('Recipes', style: childrenTextStyle),
-                    onTap: () {}, // Add navigation
-                  ),
-                ],
-              ),
-            ),
-            divider,
-
-            // Logout
-            ListTile(
-              contentPadding: contentPadding,
-              leading: const Icon(Icons.settings_power, color: Colors.white),
-              title: Text('Logout', style: titleTextStyle),
+            divier,
+            CustomDrawerTile(
+              icon: Icons.settings_power,
+              title: 'Logout',
               onTap: () {
                 showDialog(
                   context: context,
@@ -238,13 +147,12 @@ class AppDrawer extends StatelessWidget {
                     content: const Text('Are you sure you want to logout?'),
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
-                      ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel')),
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          // Perform logout
+                          // perform logout
                         },
                         child: const Text('Logout',
                             style: TextStyle(color: AppColors.errorColor)),
@@ -257,6 +165,113 @@ class AppDrawer extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class CustomDrawerTile extends StatelessWidget {
+  final IconData? icon;
+  final String title;
+  final VoidCallback onTap;
+  final bool showDivider;
+
+  const CustomDrawerTile({
+    super.key,
+    this.icon,
+    required this.title,
+    required this.onTap,
+    this.showDivider = false,
+  });
+
+  Widget copyWithDivider(bool value) {
+    return CustomDrawerTile(
+      icon: icon,
+      title: title,
+      onTap: onTap,
+      showDivider: value,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final TextStyle? titleTextStyle = Theme.of(context)
+        .textTheme
+        .bodyMedium
+        ?.copyWith(color: AppColors.black, fontSize: 15);
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.only(left: 0),
+          leading: icon != null ? Icon(icon, color: Colors.white) : null,
+          title: Text(title, style: titleTextStyle),
+          onTap: onTap,
+        ),
+        if (showDivider) Divider(color: Colors.black.withOpacity(0.8)),
+      ],
+    );
+  }
+}
+
+class CustomDrawerExpansionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final List<CustomDrawerTile> children;
+
+  const CustomDrawerExpansionTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final TextStyle? titleTextStyle = Theme.of(context)
+        .textTheme
+        .bodyMedium
+        ?.copyWith(
+            color: AppColors.black, fontSize: 15, fontWeight: FontWeight.w600);
+
+    return Column(
+      children: [
+        Theme(
+          data: Theme.of(context).copyWith(
+            dividerColor: Colors.transparent,
+            splashColor: Colors.white24,
+            highlightColor: Colors.white10,
+            unselectedWidgetColor: Colors.white,
+            colorScheme: ColorScheme.fromSwatch().copyWith(
+              secondary: Colors.white,
+              onSurface: Colors.white,
+            ),
+          ),
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+              splashColor: Colors.white24,
+              highlightColor: Colors.white10,
+              unselectedWidgetColor: Colors.white,
+              colorScheme: ColorScheme.fromSwatch().copyWith(
+                secondary: Colors.white,
+                onSurface: Colors.white,
+              ),
+            ),
+            child: ExpansionTile(
+              tilePadding: const EdgeInsets.only(left: 0, right: 10),
+              childrenPadding: const EdgeInsets.only(left: 50, right: 10),
+              leading: Icon(icon, color: Colors.white),
+              title: Text(title, style: titleTextStyle),
+              trailing: const Icon(Icons.keyboard_arrow_down_rounded,
+                  color: Colors.white), // custom icon
+              iconColor: Colors.white,
+              collapsedIconColor: Colors.white,
+              collapsedBackgroundColor: Colors.transparent,
+              children: children.map((child) => child).toList(),
+            ),
+          ),
+        ),
+        // Divider(color: Colors.black.withOpacity(0.8)),
+      ],
     );
   }
 }

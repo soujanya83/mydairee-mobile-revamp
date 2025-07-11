@@ -29,6 +29,9 @@ import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflect
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
 import 'package:mydiaree/features/service_detail/presentation/bloc/add_room/service_detail_bloc.dart';
+import 'package:mydiaree/features/snapshot/presentation/bloc/add_snapshot/add_snapshot_bloc.dart';
+import 'package:mydiaree/features/snapshot/presentation/bloc/snapshot_list/snapshot_bloc.dart';
+import 'package:mydiaree/features/splash/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -80,21 +83,16 @@ class MyApp extends StatelessWidget {
         BlocProvider<ReflectionListBloc>(
             create: (context) => ReflectionListBloc()),
         BlocProvider<AddReflectionBloc>(
-            create: (context) => AddReflectionBloc( 
-            )), 
-        BlocProvider<AccidentBloc>(
-            create: (context) => AccidentBloc( 
-            )), 
-        BlocProvider<AddAccidentBloc>(
-            create: (context) => AddAccidentBloc( 
-            )),
+            create: (context) => AddReflectionBloc()),
+        BlocProvider<AccidentBloc>(create: (context) => AccidentBloc()),
+        BlocProvider<AddAccidentBloc>(create: (context) => AddAccidentBloc()),
         BlocProvider<SleepChecklistBloc>(
-            create: (context) => SleepChecklistBloc( 
-            )),
-        BlocProvider<HeadChecksBloc>(
-            create: (context) => HeadChecksBloc()),
+            create: (context) => SleepChecklistBloc()),
+        BlocProvider<HeadChecksBloc>(create: (context) => HeadChecksBloc()),
         BlocProvider<DailyTrackingBloc>(
             create: (context) => DailyTrackingBloc()),
+        BlocProvider<SnapshotBloc>(create: (context) => SnapshotBloc()),
+        BlocProvider<AddSnapshotBloc>(create: (context) => AddSnapshotBloc())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

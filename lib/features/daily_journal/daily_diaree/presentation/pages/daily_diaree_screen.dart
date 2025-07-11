@@ -56,24 +56,31 @@ class DailyTrackingScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  SizedBox(
-                                    width: screenWidth * .6,
-                                    child: Row(
-                                      children: [
-                                        const FaIcon(FontAwesomeIcons.baby,
-                                            size: 24),
-                                        const SizedBox(width: 8),
-                                        SizedBox(
-                                          width: screenWidth * .5,
-                                          child: Text(
-                                            'Daily Childcare Tracking',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineSmall,
-                                          ),
+                                  Row(
+                                    children: [
+                                      const FaIcon(FontAwesomeIcons.baby,
+                                          size: 24),
+                                      const SizedBox(width: 8),
+                                      SizedBox(
+                                        width: screenWidth * .6,
+                                        child: Text(
+                                          'Daily Childcare Tracking',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall,
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      UIHelpers.addButton(
+                                        context: context,
+                                        ontap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                const AddEntryDialog(),
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
@@ -85,19 +92,6 @@ class DailyTrackingScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                            ),
-                            CustomButton(
-                              width: 100,
-                              height: 40,
-                              text: 'Add',
-                              icon: const Icon(FontAwesomeIcons.plus),
-                              ontap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => const AddEntryDialog(
-                                  ),
-                                );
-                              },
                             ),
                           ],
                         ),

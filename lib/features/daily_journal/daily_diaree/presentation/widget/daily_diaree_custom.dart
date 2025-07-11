@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:intl/intl.dart';
+import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_network_image.dart';
 import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/child_model.dart';
 
@@ -11,8 +12,19 @@ class ChildCard extends StatelessWidget {
   const ChildCard({super.key, required this.child});
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.white,
+    return PatternBackground(
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.08),
+          blurRadius: 8,
+          offset: const Offset(0, 6),
+        ),
+        //  BoxShadow(
+        // color: Colors.black.withOpacity(0.08),
+        // blurRadius: 8,
+        // offset: const Offset(0, 4),
+        // ),
+      ],
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -112,10 +124,15 @@ class ChildCard extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: AppColors.primaryColor),
       child: ExpansionTile(
+        // leading: FaIcon(
+        //   _getActivityIcon(activity.type),
+        //   size: 20,
+        //   color: Theme.of(context).primaryColor,
+        // ),
         leading: FaIcon(
-          _getActivityIcon(activity.type),
-          size: 20,
-          color: Theme.of(context).primaryColor,
+          FontAwesomeIcons.accusoft,
+          size: 24, // Adjust size as needed
+          color: Theme.of(context).primaryColor, // Optional: Set color
         ),
         title: Row(
           children: [

@@ -167,6 +167,7 @@ class _AddEntryDialogState extends State<AddEntryDialog> {
                         CustomTextFormWidget(
                           controller: _dateController,
                           hintText: 'Date',
+                          title: 'Date',
                           suffixWidget: Icon(Icons.calendar_today,
                               color: AppColors.primaryColor),
                           readOnly: true,
@@ -288,35 +289,29 @@ class _AddEntryDialogState extends State<AddEntryDialog> {
       case 'snacks':
         return Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: CustomTextFormWidget(
-                    controller: _timeController,
-                    hintText: '${_selectedActivity.capitalize()} Time',
-                    border: const OutlineInputBorder(),
-                    readOnly: true,
-                    ontap: () async {
-                      final time = await showTimePicker(
-                          context: context, initialTime: TimeOfDay.now());
-                      if (time != null) {
-                        _timeController.text = time.format(context);
-                      }
-                    },
-                    validator: (value) =>
-                        value!.isEmpty ? 'Please select a time' : null,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: CustomTextFormWidget(
-                    controller: _itemController,
-                    hintText: '${_selectedActivity.capitalize()} Item',
-                    validator: (value) =>
-                        value!.isEmpty ? 'Please enter an item' : null,
-                  ),
-                ),
-              ],
+            CustomTextFormWidget(
+              controller: _timeController,
+              hintText: '${_selectedActivity.capitalize()} Time',
+              border: const OutlineInputBorder(),
+              prefixWidget: const Icon(Icons.lock_clock),
+              readOnly: true,
+              ontap: () async {
+                final time = await showTimePicker(
+                    context: context, initialTime: TimeOfDay.now());
+                if (time != null) {
+                  // ignore: use_build_context_synchronously
+                  _timeController.text = time.format(context);
+                }
+              },
+              validator: (value) =>
+                  value!.isEmpty ? 'Please select a time' : null,
+            ),
+            const SizedBox(height: 16),
+            CustomTextFormWidget(
+              controller: _itemController,
+              hintText: '${_selectedActivity.capitalize()} Item',
+              validator: (value) =>
+                  value!.isEmpty ? 'Please enter an item' : null,
             ),
             const SizedBox(height: 16),
             CustomTextFormWidget(
@@ -343,15 +338,12 @@ class _AddEntryDialogState extends State<AddEntryDialog> {
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
+                  child: CustomTextFormWidget(
+                    prefixWidget: const Icon(Icons.av_timer_outlined),
                     controller: _sleepTimeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Sleep Time',
-                      prefixIcon: FaIcon(FontAwesomeIcons.moon),
-                      border: OutlineInputBorder(),
-                    ),
+                    hintText: 'Sleep Time',
                     readOnly: true,
-                    onTap: () async {
+                    ontap: () async {
                       final time = await showTimePicker(
                           context: context, initialTime: TimeOfDay.now());
                       if (time != null) {
@@ -364,15 +356,12 @@ class _AddEntryDialogState extends State<AddEntryDialog> {
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: TextFormField(
+                  child: CustomTextFormWidget(
                     controller: _wakeTimeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Wake Time',
-                      prefixIcon: FaIcon(FontAwesomeIcons.sun),
-                      border: OutlineInputBorder(),
-                    ),
+                    hintText: 'Wake Time',
+                    prefixWidget: const Icon(Icons.av_timer_outlined),
                     readOnly: true,
-                    onTap: () async {
+                    ontap: () async {
                       final time = await showTimePicker(
                           context: context, initialTime: TimeOfDay.now());
                       if (time != null) {
@@ -384,13 +373,10 @@ class _AddEntryDialogState extends State<AddEntryDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            CustomTextFormWidget(
               controller: _commentsController,
-              decoration: const InputDecoration(
-                labelText: 'Comments',
-                prefixIcon: FaIcon(FontAwesomeIcons.comment),
-                border: OutlineInputBorder(),
-              ),
+              hintText: 'Comments',
+              minLines: 3,
               maxLines: 3,
             ),
             const SizedBox(height: 16),
@@ -407,62 +393,44 @@ class _AddEntryDialogState extends State<AddEntryDialog> {
       case 'toileting':
         return Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _timeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Time',
-                      prefixIcon: FaIcon(FontAwesomeIcons.clock),
-                      border: OutlineInputBorder(),
-                    ),
-                    readOnly: true,
-                    onTap: () async {
-                      final time = await showTimePicker(
-                          context: context, initialTime: TimeOfDay.now());
-                      if (time != null) {
-                        _timeController.text = time.format(context);
-                      }
-                    },
-                    validator: (value) =>
-                        value!.isEmpty ? 'Please select a time' : null,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Nappy Status',
-                      prefixIcon: FaIcon(FontAwesomeIcons.baby),
-                      border: OutlineInputBorder(),
-                    ),
-                    value: _nappyStatusController.text.isEmpty
-                        ? null
-                        : _nappyStatusController.text,
-                    items: ['Clean', 'Wet', 'Soiled', 'Successful (Toilet)']
-                        .map((status) => DropdownMenuItem(
-                              value: status,
-                              child: Text(status),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      _nappyStatusController.text = value ?? '';
-                    },
-                    validator: (value) =>
-                        value == null ? 'Please select a status' : null,
-                  ),
-                ),
-              ],
+            CustomTextFormWidget(
+              controller: _timeController,
+              hintText: 'Time',
+              prefixWidget: const Icon(Icons.av_timer_outlined),
+              readOnly: true,
+              ontap: () async {
+                final time = await showTimePicker(
+                    context: context, initialTime: TimeOfDay.now());
+                if (time != null) {
+                  // ignore: use_build_context_synchronously
+                  _timeController.text = time.format(context);
+                }
+              },
+              validator: (value) =>
+                  value!.isEmpty ? 'Please select a time' : null,
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            CustomDropdown(
+              height: 55,
+              hint: 'Nappy Status',
+              value: _nappyStatusController.text.isEmpty
+                  ? null
+                  : _nappyStatusController.text,
+              items: ['Clean', 'Wet', 'Soiled', 'Successful (Toilet)']
+                  .map((status) => DropdownMenuItem(
+                        value: status,
+                        child: Text(status),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                _nappyStatusController.text = value.toString();
+              },
+            ),
+            const SizedBox(height: 16),
+            CustomTextFormWidget(
               controller: _commentsController,
-              decoration: const InputDecoration(
-                labelText: 'Comments',
-                prefixIcon: FaIcon(FontAwesomeIcons.comment),
-                border: OutlineInputBorder(),
-              ),
+              hintText: 'Comments',
+              minLines: 3,
               maxLines: 3,
             ),
             const SizedBox(height: 16),
@@ -479,18 +447,17 @@ class _AddEntryDialogState extends State<AddEntryDialog> {
       default: // morning-tea, afternoon-tea, sunscreen, bottle
         return Column(
           children: [
-            TextFormField(
+            CustomTextFormWidget(
               controller: _timeController,
-              decoration: const InputDecoration(
-                labelText: 'Time',
-                prefixIcon: FaIcon(FontAwesomeIcons.clock),
-                border: OutlineInputBorder(),
-              ),
+              hintText: '${_selectedActivity.capitalize()} Time',
+              border: const OutlineInputBorder(),
+              prefixWidget: const Icon(Icons.lock_clock),
               readOnly: true,
-              onTap: () async {
+              ontap: () async {
                 final time = await showTimePicker(
                     context: context, initialTime: TimeOfDay.now());
                 if (time != null) {
+                  // ignore: use_build_context_synchronously
                   _timeController.text = time.format(context);
                 }
               },
@@ -498,13 +465,11 @@ class _AddEntryDialogState extends State<AddEntryDialog> {
                   value!.isEmpty ? 'Please select a time' : null,
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            CustomTextFormWidget(
               controller: _commentsController,
-              decoration: const InputDecoration(
-                labelText: 'Comments',
-                prefixIcon: FaIcon(FontAwesomeIcons.comment),
-                border: OutlineInputBorder(),
-              ),
+              hintText: 'Comments',
+              maxLength: 4,
+              minLines: 3,
               maxLines: 3,
             ),
             const SizedBox(height: 16),
