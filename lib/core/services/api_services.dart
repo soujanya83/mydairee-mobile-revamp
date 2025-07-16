@@ -26,9 +26,23 @@ class ApiServices {
     String url, {
     Map<String, dynamic>? headers,
     Map<String, dynamic>? queryParameters,
+    bool dummy = false,
+    Map<String, dynamic>? dummyData,
   }) async {
     final dio = Dio();
+
     try {
+      if (dummy) {
+        print('dummy GET triggered');
+        print(dummyData);
+        await Future.delayed(const Duration(seconds: 2));
+        return ApiResponse(
+          data: dummyData,
+          success: true,
+          message: 'Dummy get successful',
+        );
+      }
+
       Options? options;
       if (headers != null) {
         options = Options(headers: headers);

@@ -1,7 +1,3 @@
-// 🟡 Create two reusable widgets for Drawer:
-// 1. CustomDrawerTile
-// 2. CustomDrawerExpansionTile
-
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
@@ -15,18 +11,19 @@ import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_l
 import 'package:mydiaree/features/reflection/presentation/pages/reflection_list_screen.dart';
 import 'package:mydiaree/features/room/presentation/pages/room_list_screen.dart';
 import 'package:mydiaree/features/service_detail/presentation/pages/service_detail_screen.dart';
+import 'package:mydiaree/features/settings/center_settings/presentation/pages/center_settings_screen.dart';
+import 'package:mydiaree/features/settings/manage_permissions/presentation/pages/manage_permissions_screen.dart';
+import 'package:mydiaree/features/settings/parent_setting/presentation/pages/parent_settings_screen.dart';
+import 'package:mydiaree/features/settings/staff_setting/presentation/pages/staff_settings_screen.dart';
+import 'package:mydiaree/features/settings/super_admin_settings/presentation/pages/supere_admin_settings_screen.dart';
 import 'package:mydiaree/features/snapshot/presentation/pages/snapshot_screen.dart';
-// import 'package:mydiaree/features/snapshot/presentation/pages/snapshot_list_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var divier = const Divider(
-      height: 1,
-      color: AppColors.black,
-    );
+    var divier = const Divider(height: 1, color: AppColors.black);
     return Drawer(
       child: PatternBackground(
         child: ListView(
@@ -45,14 +42,18 @@ class AppDrawer extends StatelessWidget {
                 CustomDrawerTile(
                   showDivider: false,
                   title: 'Daily Diary',
-                  onTap: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => DailyTrackingScreen())),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const DailyTrackingScreen())),
                 ),
                 CustomDrawerTile(
                   showDivider: false,
                   title: 'Head Checks',
-                  onTap: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => HeadChecksScreen())),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const HeadChecksScreen())),
                 ),
                 CustomDrawerTile(
                   showDivider: false,
@@ -60,7 +61,7 @@ class AppDrawer extends StatelessWidget {
                   onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => SleepCheckListScreen())),
+                          builder: (_) => const SleepCheckListScreen())),
                 ),
                 CustomDrawerTile(
                   title: 'Accident',
@@ -130,10 +131,62 @@ class AppDrawer extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => ServiceDetailsScreen())),
             ),
             divier,
-            CustomDrawerTile(
-              icon: Icons.settings,
+            CustomDrawerExpansionTile(
+              icon: Icons.book,
               title: 'Settings',
-              onTap: () {},
+              children: [
+                CustomDrawerTile(
+                  showDivider: false,
+                  title: 'Super-Admin-Settings',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const SuperAdminSettingsScreen()));
+                  },
+                ),
+                CustomDrawerTile(
+                    showDivider: false,
+                    title: 'Center Settings',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const CentersSettingsScreen()));
+                    }),
+                CustomDrawerTile(
+                    showDivider: false,
+                    title: 'Staff Setting',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => StaffSettingsScreen()));
+                    }),
+
+                CustomDrawerTile(
+                    showDivider: false,
+                    title: 'Parent Setting',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ParentSettingsScreen()));
+                    }),
+                CustomDrawerTile(
+                    showDivider: false,
+                    title: 'Manage Permissions',
+                    onTap:  () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ManagePermissionsScreen()));
+                    }),
+                // CustomDrawerTile(
+                //   title: 'Accident',
+                //   onTap: () {}
+                // ),
+              ],
             ),
             divier,
             CustomDrawerTile(

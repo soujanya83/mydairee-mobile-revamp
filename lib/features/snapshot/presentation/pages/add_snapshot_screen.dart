@@ -47,7 +47,8 @@ class _AddSnapshotScreenState extends State<AddSnapshotScreen> {
   // Selected values
   String? selectedRoomId;
   List<ChildIten> selectedChildren = [];
-  List<String> selectedMedia = [];
+  List<Map<String, dynamic>> selectedMedia =
+      []; // {path: String, type: 'file'|'network'}
 
   @override
   void initState() {
@@ -67,7 +68,9 @@ class _AddSnapshotScreenState extends State<AddSnapshotScreen> {
           .map((c) => ChildIten(id: c['id'] ?? '', name: c['name'] ?? '')));
     }
     if (data['images'] is List) {
-      selectedMedia = List<String>.from(data['images']);
+      selectedMedia = List<String>.from(data['images'])
+          .map((path) => {'path': path, 'type': 'network'})
+          .toList();
     }
   }
 
@@ -81,12 +84,14 @@ class _AddSnapshotScreenState extends State<AddSnapshotScreen> {
       );
 
       if (result != null && result.files.isNotEmpty) {
-        final files = result.files.map((f) => f.path!).toList();
+        final files =
+            result.files.map((f) => {'path': f.path!, 'type': 'file'}).toList();
 
         // Limit to 10 files
         final newMedia = [
           ...selectedMedia,
-          ...files.where((f) => !selectedMedia.contains(f))
+          ...files
+              .where((f) => !selectedMedia.any((m) => m['path'] == f['path'])),
         ].take(10).toList();
 
         setState(() {
@@ -236,6 +241,109 @@ class _AddSnapshotScreenState extends State<AddSnapshotScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Network Images (only in edit mode)
+                      if (widget.screenType == 'edit' &&
+                          selectedMedia.any((m) => m['type'] == 'network'))
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Already Saved Images',
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: 8),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: selectedMedia
+                                  .where((m) => m['type'] == 'network')
+                                  .length,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                                childAspectRatio: 1,
+                              ),
+                              itemBuilder: (context, index) {
+                                final media = selectedMedia
+                                    .where((m) => m['type'] == 'network')
+                                    .toList()[index];
+                                final isImage = media['path']
+                                        .toLowerCase()
+                                        .endsWith('.jpg') ||
+                                    media['path']
+                                        .toLowerCase()
+                                        .endsWith('.jpeg') ||
+                                    media['path']
+                                        .toLowerCase()
+                                        .endsWith('.png');
+                                return Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: isImage
+                                          ? Image.network(
+                                              media['path'],
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error,
+                                                      stackTrace) =>
+                                                  Container(
+                                                color: Colors.black12,
+                                                child: const Center(
+                                                  child: Icon(
+                                                    Icons.broken_image,
+                                                    color: Colors.grey,
+                                                    size: 48,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : Container(
+                                              color: Colors.black12,
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.videocam,
+                                                  color: Colors.grey[700],
+                                                  size: 48,
+                                                ),
+                                              ),
+                                            ),
+                                    ),
+                                    Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedMedia.remove(media);
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            color: Colors.black54,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          padding: const EdgeInsets.all(4),
+                                          child: const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 18,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+
+                      // File Picker
                       GestureDetector(
                         onTap: _pickMedia,
                         child: Container(
@@ -268,74 +376,95 @@ class _AddSnapshotScreenState extends State<AddSnapshotScreen> {
                         'Only images and videos are allowed. Max 10 files.',
                         style: TextStyle(color: Colors.grey, fontSize: 12),
                       ),
-                      if (selectedMedia.isNotEmpty)
+
+                      // Local Files
+                      if (selectedMedia.any((m) => m['type'] == 'file'))
                         Padding(
                           padding: const EdgeInsets.only(top: 16),
-                          child: GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: selectedMedia.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                              childAspectRatio: 1,
-                            ),
-                            itemBuilder: (context, index) {
-                              final media = selectedMedia[index];
-                              final isImage =
-                                  media.toLowerCase().endsWith('.jpg') ||
-                                      media.toLowerCase().endsWith('.jpeg') ||
-                                      media.toLowerCase().endsWith('.png');
-                              return Stack(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: isImage
-                                        ? Image.file(
-                                            File(media),
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Container(
-                                            color: Colors.black12,
-                                            child: Center(
-                                              child: Icon(
-                                                Icons.videocam,
-                                                color: Colors.grey[700],
-                                                size: 48,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Selected Files',
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
+                              const SizedBox(height: 8),
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: selectedMedia
+                                    .where((m) => m['type'] == 'file')
+                                    .length,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 8,
+                                  mainAxisSpacing: 8,
+                                  childAspectRatio: 1,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final media = selectedMedia
+                                      .where((m) => m['type'] == 'file')
+                                      .toList()[index];
+                                  final isImage = media['path']
+                                          .toLowerCase()
+                                          .endsWith('.jpg') ||
+                                      media['path']
+                                          .toLowerCase()
+                                          .endsWith('.jpeg') ||
+                                      media['path']
+                                          .toLowerCase()
+                                          .endsWith('.png');
+                                  return Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: isImage
+                                            ? Image.file(
+                                                File(media['path']),
+                                                width: double.infinity,
+                                                height: double.infinity,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Container(
+                                                color: Colors.black12,
+                                                child: Center(
+                                                  child: Icon(
+                                                    Icons.videocam,
+                                                    color: Colors.grey[700],
+                                                    size: 48,
+                                                  ),
+                                                ),
                                               ),
+                                      ),
+                                      Positioned(
+                                        top: 4,
+                                        right: 4,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              selectedMedia.remove(media);
+                                            });
+                                          },
+                                          child: Container(
+                                            decoration: const BoxDecoration(
+                                              color: Colors.black54,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            padding: const EdgeInsets.all(4),
+                                            child: const Icon(
+                                              Icons.close,
+                                              color: Colors.white,
+                                              size: 18,
                                             ),
                                           ),
-                                  ),
-                                  Positioned(
-                                    top: 4,
-                                    right: 4,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          selectedMedia.removeAt(index);
-                                        });
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.black54,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        padding: const EdgeInsets.all(4),
-                                        child: const Icon(
-                                          Icons.close,
-                                          color: Colors.white,
-                                          size: 18,
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ),
                     ],
@@ -381,17 +510,18 @@ class _AddSnapshotScreenState extends State<AddSnapshotScreen> {
                               if (_formKey.currentState!.validate()) {
                                 context.read<AddSnapshotBloc>().add(
                                       SubmitAddSnapshotEvent(
-                                        snapshotId:
-                                            widget.screenType == 'edit'
-                                                ? widget.id
-                                                : null,
+                                        snapshotId: widget.screenType == 'edit'
+                                            ? widget.id
+                                            : null,
                                         title: titleController.text,
                                         about: detailsController.text,
                                         roomId: selectedRoomId ?? '',
                                         children: selectedChildren
                                             .map((c) => c.id)
                                             .toList(),
-                                        media: selectedMedia,
+                                        media: selectedMedia
+                                            .map((m) => m['path'] as String)
+                                            .toList(),
                                       ),
                                     );
                               }

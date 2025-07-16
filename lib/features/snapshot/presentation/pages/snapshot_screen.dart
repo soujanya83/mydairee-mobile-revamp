@@ -65,13 +65,17 @@ class _SnapshotScreenState extends State<SnapshotScreen> {
                   const EdgeInsetsGeometry.only(right: 15, top: 15, bottom: 15),
               child: Align(
                   alignment: Alignment.topRight,
-                  child: UIHelpers.addButton(context: context, ontap: () {
-                    Navigator.push(context, 
-                    MaterialPageRoute(builder: (context){
-                      return AddSnapshotScreen(centerId: selectedCenterId??'', screenType: 'add',);
-                    })
-                    );
-                  })),
+                  child: UIHelpers.addButton(
+                      context: context,
+                      ontap: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          return AddSnapshotScreen(
+                            centerId: selectedCenterId ?? '',
+                            screenType: 'add',
+                          );
+                        }));
+                      })),
             ),
             const SizedBox(width: 8),
             StatefulBuilder(builder: (context, setState) {
@@ -106,11 +110,10 @@ class _SnapshotScreenState extends State<SnapshotScreen> {
                             title: snapshot.title,
                             status: snapshot.status,
                             images: snapshot.images.isNotEmpty
-                                ?
-                                [
-                                    'https://mydiaree.com.au/uploads/Snapshots/1752009635_686d8ba379fd5.jpeg'
-                                  ]??
-                                 snapshot.images
+                                ? [
+                                      'https://mydiaree.com.au/uploads/Snapshots/1752009635_686d8ba379fd5.jpeg'
+                                    ] ??
+                                    snapshot.images
                                 : [
                                     'https://mydiaree.com.au/uploads/Snapshots/1752009635_686d8ba379fd5.jpeg'
                                   ],
@@ -120,9 +123,30 @@ class _SnapshotScreenState extends State<SnapshotScreen> {
                             permissionUpdate: true,
                             permissionDelete: true,
                             onEdit: () {
-                              print('Editing snapshot with ID: ${snapshot.id}');
-                              Navigator.pushNamed(
-                                  context, '/snapshot/addnew/${snapshot.id}');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddSnapshotScreen(
+                                    centerId: selectedCenterId ?? '',
+                                    snapshot: const {
+                                      'id': '220',
+                                      'title': 'Snapshot Test',
+                                      'about': 'Description of the snapshot',
+                                      'room_id': 'room1',
+                                      'children': [
+                                        {'id': '1', 'name': 'Iron Man'},
+                                        {'id': '2', 'name': 'Rajat'},
+                                      ],
+                                      'images': [
+                                        'path/to/image1.jpg',
+                                        'path/to/image2.png',
+                                      ],
+                                    },
+                                    screenType: 'edit',
+                                    id: snapshot.id.toString(),
+                                  ),
+                                ),
+                              );
                             },
                             onDelete: () {
                               print(

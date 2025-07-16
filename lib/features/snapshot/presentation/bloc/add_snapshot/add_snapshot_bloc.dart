@@ -18,8 +18,7 @@ class AddSnapshotBloc extends Bloc<AddSnapshotEvent, AddSnapshotState> {
           children: event.children,
           media: event.media,
         );
-
-        if (response.success) {
+        if (response.success){
           emit(AddSnapshotSuccess(response.message));
         } else {
           emit(AddSnapshotFailure(response.message));

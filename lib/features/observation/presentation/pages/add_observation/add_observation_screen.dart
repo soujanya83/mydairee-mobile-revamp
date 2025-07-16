@@ -37,7 +37,7 @@ class AddObservationScreenState extends State<AddObservationScreen>
   static List<File> files = [];
   static List<TextEditingController> captions = [];
   static List<List<ChildModel>> _editChildren = [];
-  static List<List<StaffModel>> _editEducators = [];
+  static List<List<EducatorModel>> _editEducators = [];
 
   // Text controllers
   static TextEditingController titleController = TextEditingController();
@@ -68,9 +68,9 @@ class AddObservationScreenState extends State<AddObservationScreen>
     RoomsModel(room: RoomsDescModel(id: 'r2', name: 'Room B'), child: []),
   ];
 
-  final List<StaffModel> _allEducators = [
-    StaffModel(id: 'e1', name: 'Teacher Alice'),
-    StaffModel(id: 'e2', name: 'Teacher Bob'),
+  final List<EducatorModel> _allEducators = [
+    EducatorModel(id: 'e1', name: 'Teacher Alice'),
+    EducatorModel(id: 'e2', name: 'Teacher Bob'),
   ];
 
   @override
@@ -356,8 +356,8 @@ class AddObservationScreenState extends State<AddObservationScreen>
                           _editChildren[oldIndex] = child2;
                           _editChildren[newIndex] = child1;
 
-                          List<StaffModel> edu1 = _editEducators[oldIndex];
-                          List<StaffModel> edu2 = _editEducators[newIndex];
+                          List<EducatorModel> edu1 = _editEducators[oldIndex];
+                          List<EducatorModel> edu2 = _editEducators[newIndex];
                           _editEducators[oldIndex] = edu2;
                           _editEducators[newIndex] = edu1;
                         });
@@ -663,9 +663,9 @@ class RoomsDescModel {
   RoomsDescModel({required this.id, required this.name});
 }
 
-class StaffModel {
+class EducatorModel {
   final String id;
   final String name;
 
-  StaffModel({required this.id, required this.name});
+  EducatorModel({required this.id, required this.name});
 }

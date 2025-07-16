@@ -11,7 +11,6 @@ import 'package:mydiaree/features/auth/admin/presentation/bloc/signup/signup_blo
 import 'package:mydiaree/features/auth/admin/presentation/bloc/updatepassowd/update_passoword_bloc.dart';
 import 'package:mydiaree/features/auth/admin/presentation/bloc/use_type/user_type_bloc.dart';
 import 'package:mydiaree/core/config/app_theme.dart';
-import 'package:mydiaree/features/auth/admin/presentation/pages/admin/user_type_screen.dart';
 import 'package:mydiaree/features/auth/parent/presentation/bloc/login/parent_login_bloc.dart';
 import 'package:mydiaree/features/auth/staff/presentation/bloc/login/staff_login_bloc.dart';
 import 'package:mydiaree/features/daily_journal/accident/presentation/bloc/accident_list/accident_list_bloc.dart';
@@ -29,9 +28,14 @@ import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflect
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
 import 'package:mydiaree/features/service_detail/presentation/bloc/add_room/service_detail_bloc.dart';
+import 'package:mydiaree/features/settings/center_settings/presentation/bloc/center_settings/center_setting_bloc.dart';
+import 'package:mydiaree/features/settings/manage_permissions/presentation/bloc/list/manage_permission_bloc.dart';
+import 'package:mydiaree/features/settings/manage_permissions/presentation/bloc/users/assigned_user_bloc.dart';
+import 'package:mydiaree/features/settings/parent_setting/presentation/bloc/list/parent_setting_bloc.dart';
+import 'package:mydiaree/features/settings/staff_setting/presentation/bloc/list/staff_setting_bloc.dart';
+import 'package:mydiaree/features/settings/super_admin_settings/presentation/bloc/list/super_admin_setting_bloc.dart';
 import 'package:mydiaree/features/snapshot/presentation/bloc/add_snapshot/add_snapshot_bloc.dart';
 import 'package:mydiaree/features/snapshot/presentation/bloc/snapshot_list/snapshot_bloc.dart';
-import 'package:mydiaree/features/splash/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -92,7 +96,19 @@ class MyApp extends StatelessWidget {
         BlocProvider<DailyTrackingBloc>(
             create: (context) => DailyTrackingBloc()),
         BlocProvider<SnapshotBloc>(create: (context) => SnapshotBloc()),
-        BlocProvider<AddSnapshotBloc>(create: (context) => AddSnapshotBloc())
+        BlocProvider<AddSnapshotBloc>(create: (context) => AddSnapshotBloc()),
+        BlocProvider<CentersSettingsBloc>(
+            create: (context) => CentersSettingsBloc()),
+        BlocProvider<SuperAdminSettingsBloc>(
+            create: (context) => SuperAdminSettingsBloc()),
+        BlocProvider<StaffSettingsBloc>(
+            create: (context) => StaffSettingsBloc()),
+        BlocProvider<ParentSettingsBloc>(
+            create: (context) => ParentSettingsBloc()),
+        BlocProvider<PermissionBloc>(
+            create: (context) => PermissionBloc()),
+        BlocProvider<AssignerPermissionUserBloc>(
+            create: (context) => AssignerPermissionUserBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

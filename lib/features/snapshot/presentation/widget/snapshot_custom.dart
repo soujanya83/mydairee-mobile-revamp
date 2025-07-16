@@ -178,10 +178,6 @@ class SnapshotCard extends StatelessWidget {
     required this.onEdit,
   });
 
-  void editSnapshot(BuildContext context) {
-    print('Editing snapshot with ID: $id');
-    Navigator.pushNamed(context, '/snapshot/addnew/$id');
-  }
 
   void deleteSnapshot(BuildContext context) {
     print('Initiating delete for snapshot ID: $id');
@@ -224,8 +220,8 @@ class SnapshotCard extends StatelessWidget {
           Stack(
             children: [
               Padding(
-                padding:
-                    EdgeInsets.only(top: 30, bottom: 30, left: 5, right: 5),
+                padding: const EdgeInsets.only(
+                    top: 30, bottom: 5, left: 5, right: 5),
                 child: images.isNotEmpty
                     ? ImageCarousel(images: images)
                     : Container(
@@ -267,14 +263,14 @@ class SnapshotCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 4),
                   Text(
                     details,
                     style: Theme.of(context).textTheme.bodyMedium,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 3,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   // Children Section
                   if (children.isNotEmpty)
                     Column(
@@ -287,7 +283,7 @@ class SnapshotCard extends StatelessWidget {
                               .titleMedium
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 2),
                         SizedBox(
                           height: 50, // Constrain height
                           child: SingleChildScrollView(
@@ -308,7 +304,6 @@ class SnapshotCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  const SizedBox(height: 16),
                   // Rooms Section
                   if (rooms.isNotEmpty)
                     Column(
@@ -321,7 +316,7 @@ class SnapshotCard extends StatelessWidget {
                               .titleMedium
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 0),
                         SizedBox(
                           height: 50, // Constrain height
                           child: SingleChildScrollView(
@@ -351,7 +346,9 @@ class SnapshotCard extends StatelessWidget {
                           text: 'Edit',
                           width: 80,
                           height: 35,
-                          ontap: () => editSnapshot(context),
+                          ontap: (){
+                            onEdit();
+                          },
                           borderRadius: 5,
                         ),
                       const SizedBox(width: 8),
