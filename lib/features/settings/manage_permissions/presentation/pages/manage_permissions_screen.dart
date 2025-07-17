@@ -14,10 +14,8 @@ import 'package:mydiaree/features/settings/manage_permissions/presentation/pages
 
 class ManagePermissionsScreen extends StatefulWidget {
   const ManagePermissionsScreen({super.key});
-
   @override
-  State<ManagePermissionsScreen> createState() =>
-      _ManagePermissionsScreenState();
+  State<ManagePermissionsScreen> createState() => _ManagePermissionsScreenState();
 }
 
 class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
@@ -30,7 +28,6 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
   @override
   void initState() {
     super.initState();
-    // Load educators and permissions
     context.read<GlobalDataCubit>().loadEducators();
     context.read<PermissionBloc>().add(FetchPermissionsEvent());
   }
@@ -70,7 +67,6 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
               return const Center(child: CircularProgressIndicator());
             } else if (state is PermissionLoaded) {
               _permissionList = state.permissions;
-              // Initialize permissions map if not already done
               if (_permissions.isEmpty) {
                 for (var perm in _permissionList) {
                   _permissions[perm.key ?? ''] = false;

@@ -83,6 +83,36 @@ class ManagePermissionsRepository {
     ]
   };
 
+  final Map<String, dynamic> _dummyUsers = {
+    "success": true,
+    "data": [
+      {
+        "id": 1,
+        "name": "John Doe",
+        "permissions": [
+          {"key": "addObservation", "label": "Add Observation"},
+          {"key": "approveObservation", "label": "Approve Observation"},
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "permissions": [
+          {"key": "approveObservation", "label": "Approve Observation"},
+          {"key": "addReflection", "label": "Add Reflection"}
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Alice Johnson",
+        "permissions": [
+          {"key": "viewUsers", "label": "View Users"},
+          {"key": "updatePermission", "label": "Update Permission"}
+        ]
+      }
+    ]
+  };
+
   Future<ApiResponse> addPermissions({
     List<String> permissions = const [],
     String userId = '',
@@ -109,40 +139,23 @@ class ManagePermissionsRepository {
     );
   }
 
-  Future<List<UserModel>> fetchUsers() async {
-    await Future.delayed(Duration(seconds: 1)); // Simulate network delay
-    final response = {
-      'users': [
-        {
-          'id': 1,
-          'name': 'John Doe',
-          'permissions': ['read', 'write']
-        },
-        {
-          'id': 2,
-          'name': 'Jane Smith',
-          'permissions': ['read', 'admin']
-        },
-      ]
-    };
-    return (response['users'] as List)
-        .map((json) => UserModel.fromJson(json))
-        .toList();
-  }
-
-  Future<List<PermissionModel>> fetchPermissions() async {
-    await Future.delayed(Duration(seconds: 1)); // Simulate network delay
-    final response = {
-      'permissions': [
-        {'id': 'read', 'name': 'Read Access'},
-        {'id': 'write', 'name': 'Write Access'},
-        {'id': 'admin', 'name': 'Admin Access'},
-        {'id': 'delete', 'name': 'Delete Access'},
-      ]
-    };
-    return (response['permissions'] as List)
-        .map((json) => PermissionModel.fromJson(json))
-        .toList();
+  Future<ApiResponse<List<UserModel>>> fetchUsers({bool dummy = false}) async {
+    try {
+      if (dummy) {
+        await Future.delayed(
+            const Duration(seconds: 4)); // Simulate network delay
+        return ApiResponse(
+          success: _dummyUsers["success"] as bool,
+          data: (_dummyUsers["data"] as List)
+              .map((json) => UserModel.fromJson(json as Map<String, dynamic>))
+              .toList(),
+          message: "Users fetched successfully",
+        );
+      }
+      return ApiResponse(success: false, message: "Real API not implemented");
+    } catch (e) {
+      return ApiResponse(success: false, message: "Error: $e");
+    }
   }
 
   Future<void> updateUserPermissions(

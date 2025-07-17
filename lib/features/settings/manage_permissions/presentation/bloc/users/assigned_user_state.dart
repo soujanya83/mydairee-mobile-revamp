@@ -7,11 +7,11 @@ class AssignerPermissionUserInitial extends AssignerPermissionUserState {}
 
 class AssignerPermissionUserLoading extends AssignerPermissionUserState {}
 
+class AssignerPermissionUserAdded extends AssignerPermissionUserState {}
+
 class AssignerPermissionUserLoaded extends AssignerPermissionUserState {
   final List<UserModel> users;
-  final List<PermissionModel> permissions;
-
-  AssignerPermissionUserLoaded.AssignerPermissionUserLoaded(this.users, this.permissions);
+  AssignerPermissionUserLoaded(this.users);
 }
 
 class AssignerPermissionUserError extends AssignerPermissionUserState {

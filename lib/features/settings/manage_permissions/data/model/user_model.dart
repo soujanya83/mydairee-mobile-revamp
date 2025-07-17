@@ -1,7 +1,9 @@
+import 'package:mydiaree/features/settings/manage_permissions/data/model/permission_model.dart';
+
 class UserModel {
   final int id;
   final String name;
-  final List<String> permissions;
+  final List<PermissionModel> permissions;
 
   UserModel({required this.id, required this.name, required this.permissions});
 
@@ -9,13 +11,15 @@ class UserModel {
     return UserModel(
       id: json['id'],
       name: json['name'],
-      permissions: List<String>.from(json['permissions']),
+      permissions: (json['permissions'] as List<dynamic>)
+          .map((e) => PermissionModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'permissions': permissions,
+        'permissions': permissions.map((e) => e.toJson()).toList(),
       };
 }
