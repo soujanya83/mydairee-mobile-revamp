@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
-import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_dropdown.dart';
@@ -167,41 +167,45 @@ class DatePickerButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.grey),
-      ),
-      height: 35,
-      width: 120,
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Row(
-          children: [
-            Text(
-              date != null ? DateFormat("dd-MM-yyyy").format(date!) : '',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const Spacer(),
-            GestureDetector(
-              onTap: () async {
-                final selectedDate = await showDatePicker(
-                  context: context,
-                  initialDate: date ?? DateTime.now(),
-                  firstDate: DateTime(1800),
-                  lastDate: DateTime(2100),
-                );
-                if (selectedDate != null) {
-                  onDateSelected(selectedDate);
-                }
-              },
-              child: Icon(
-                Icons.calendar_today,
-                color: Colors.grey[400],
-                size: 18,
+    return Material(
+      elevation: 2, borderRadius: BorderRadius.circular(5),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.primaryColor,width: 1.5),
+          borderRadius: BorderRadius.circular(5)
+        ),
+        height: 40,
+        width: 140,
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Row(
+            children: [
+              Text(
+                date != null ? DateFormat("dd-MM-yyyy").format(date!) : '',
+                style: Theme.of(context).textTheme.bodyLarge,
               ),
-            ),
-          ],
+              const Spacer(),
+              GestureDetector(
+                onTap: () async {
+                  final selectedDate = await showDatePicker(
+                    context: context,
+                    initialDate: date ?? DateTime.now(),
+                    firstDate: DateTime(1800),
+                    lastDate: DateTime(2100),
+                  );
+                  if (selectedDate != null) {
+                    onDateSelected(selectedDate);
+                  }
+                },
+                child:const Icon(
+                  Icons.calendar_today,
+                  color: AppColors.primaryColor,
+                  size: 18,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -215,7 +215,7 @@ class _PermissionDialogState extends State<PermissionDialog> {
         ),
         BlocBuilder<AssignerPermissionUserBloc, AssignerPermissionUserState>(
             builder: (context, state) {
-          if(state is AssignerPermissionUserAdded){
+          if (state is AssignerPermissionUserAdded) {
             Navigator.pop(context);
           }
           return CustomButton(
@@ -229,7 +229,7 @@ class _PermissionDialogState extends State<PermissionDialog> {
               context.read<AssignerPermissionUserBloc>().add(
                     UpdateUserPermissions(
                         widget.user.id, _permissions.keys.toList()),
-                  );
+               );
             },
           );
         }),

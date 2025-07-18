@@ -6,6 +6,7 @@ import 'package:mydiaree/features/daily_journal/accident/presentation/pages/acci
 import 'package:mydiaree/features/daily_journal/daily_diaree/presentation/pages/daily_diaree_screen.dart';
 import 'package:mydiaree/features/daily_journal/headchecks/presentation/pages/accident/headchecks_list_screen.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/pages/accident/sleepcheck_list_screen.dart';
+import 'package:mydiaree/features/healthy_menu/menu/presentation/pages/menu_screen.dart';
 import 'package:mydiaree/features/observation/presentation/pages/observation_list_screen.dart';
 import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_list_screen.dart';
 import 'package:mydiaree/features/reflection/presentation/pages/reflection_list_screen.dart';
@@ -119,7 +120,12 @@ class AppDrawer extends StatelessWidget {
               icon: Icons.fastfood,
               title: 'Healthy Eating',
               children: [
-                CustomDrawerTile(title: 'Menu', onTap: () {}),
+                CustomDrawerTile(
+                    title: 'Menu',
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => MenuScreen()));
+                    }),
                 CustomDrawerTile(title: 'Recipes', onTap: () {}),
               ],
             ),
@@ -176,7 +182,7 @@ class AppDrawer extends StatelessWidget {
                 CustomDrawerTile(
                     showDivider: false,
                     title: 'Manage Permissions',
-                    onTap:  () {
+                    onTap: () {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
