@@ -124,16 +124,16 @@ class ChildCard extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: AppColors.primaryColor),
       child: ExpansionTile(
-        // leading: FaIcon(
-        //   _getActivityIcon(activity.type),
-        //   size: 20,
-        //   color: Theme.of(context).primaryColor,
-        // ),
         leading: FaIcon(
-          FontAwesomeIcons.accusoft,
-          size: 24, // Adjust size as needed
-          color: Theme.of(context).primaryColor, // Optional: Set color
+          _getActivityIcon(activity.type),
+          size: 20,
+          color: Theme.of(context).primaryColor,
         ),
+        // leading: FaIcon(
+        //   FontAwesomeIcons.accusoft,
+        //   size: 24, // Adjust size as needed
+        //   color: Theme.of(context).primaryColor, // Optional: Set color
+        // ),
         title: Row(
           children: [
             SizedBox(

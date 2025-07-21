@@ -37,7 +37,7 @@ class _RecipeScreenState extends State<RecipeScreen> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         title: 'Recipe',
       ),
       body: Column(

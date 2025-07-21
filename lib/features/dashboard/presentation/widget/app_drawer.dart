@@ -6,6 +6,7 @@ import 'package:mydiaree/features/daily_journal/accident/presentation/pages/acci
 import 'package:mydiaree/features/daily_journal/daily_diaree/presentation/pages/daily_diaree_screen.dart';
 import 'package:mydiaree/features/daily_journal/headchecks/presentation/pages/accident/headchecks_list_screen.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/pages/accident/sleepcheck_list_screen.dart';
+import 'package:mydiaree/features/healthy_menu/ingredients/presentation/pages/ingredient_list_screen.dart';
 import 'package:mydiaree/features/healthy_menu/menu/presentation/pages/menu_screen.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/pages/reciepe_screen.dart';
 import 'package:mydiaree/features/observation/presentation/pages/observation_list_screen.dart';
@@ -132,6 +133,12 @@ class AppDrawer extends StatelessWidget {
                    onTap: () {
                    Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const RecipeScreen()));
+                }),
+                 CustomDrawerTile(
+                  title: 'Ingredients',
+                   onTap: () {
+                   Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const IngredientListScreen()));
                 }),
               ],
             ),

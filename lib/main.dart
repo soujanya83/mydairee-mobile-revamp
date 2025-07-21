@@ -19,6 +19,7 @@ import 'package:mydiaree/features/daily_journal/daily_diaree/presentation/bloc/s
 import 'package:mydiaree/features/daily_journal/headchecks/presentation/bloc/accident_list/headchecks_list_bloc.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/bloc/accident_list/sleepcheks_list_bloc.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:mydiaree/features/healthy_menu/ingredients/presentation/bloc/ingredient_bloc.dart';
 import 'package:mydiaree/features/healthy_menu/menu/presentation/bloc/menu_bloc.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/add_edit/add_reciepe_bloc.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/list/reciepe_bloc.dart';
@@ -118,6 +119,8 @@ class MyApp extends StatelessWidget {
             create: (context) => RecipeBloc()),
         BlocProvider<AddRecipeBloc>(
             create: (context) => AddRecipeBloc()),
+        BlocProvider<IngredientBloc>(
+            create: (context) => IngredientBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

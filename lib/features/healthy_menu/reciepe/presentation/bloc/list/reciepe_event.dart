@@ -1,6 +1,5 @@
 abstract class RecipeEvent {}
-
-class FetchCentersEvent extends RecipeEvent {}
+ 
 
 class FetchIngredientsEvent extends RecipeEvent {}
 
