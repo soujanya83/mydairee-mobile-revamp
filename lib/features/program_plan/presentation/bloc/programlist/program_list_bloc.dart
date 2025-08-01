@@ -8,6 +8,7 @@ class ProgramPlanBloc extends Bloc<ProgramPlanListEvent, ProgramPlanListState> {
   ProgramPlanBloc() : super(ProgramPlanInitial()) {
     on<FetchProgramPlansEvent>(_onFetchProgramPlans);
     on<DeleteProgramPlanEvent>(_onDeleteProgramPlan);
+    
   }
 
   Future<void> _onFetchProgramPlans(
@@ -15,6 +16,14 @@ class ProgramPlanBloc extends Bloc<ProgramPlanListEvent, ProgramPlanListState> {
     emit(ProgramPlanLoading());
     try {
       final response = await repository.getProgramPlans(centerId: event.centerId);
+      print('here in fetch program plans');
+      print('Response: ${response.data}');
+      print('Success: ${response.success}');
+      print('Message: ${response.message}');
+      if (response.success == false) {
+        emit(ProgramPlanError(response.message));
+        return;
+      }
       emit(ProgramPlanLoaded(response.data));
     } catch (e) {
       emit(const ProgramPlanError('Failed to fetch program plans'));
@@ -25,9 +34,10 @@ class ProgramPlanBloc extends Bloc<ProgramPlanListEvent, ProgramPlanListState> {
       DeleteProgramPlanEvent event, Emitter<ProgramPlanListState> emit) async {
     emit(ProgramPlanLoading());
     try {
-      final success = await repository.deletePlan(planId: event.planId);
-      if (success) {
+      final response = await repository.deletePlan(planId: event.planId);
+      if (response.success) {
         emit(ProgramPlanDeleted());
+        
       } else {
         emit(const ProgramPlanError('Failed to delete the plan.'));
       }

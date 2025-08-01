@@ -9,6 +9,7 @@ import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/pages/a
 import 'package:mydiaree/features/healthy_menu/ingredients/presentation/pages/ingredient_list_screen.dart';
 import 'package:mydiaree/features/healthy_menu/menu/presentation/pages/menu_screen.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/pages/reciepe_screen.dart';
+import 'package:mydiaree/features/learning_and_progress/presentation/pages/learning_and_progress_screen.dart';
 import 'package:mydiaree/features/observation/presentation/pages/observation_list_screen.dart';
 import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_list_screen.dart';
 import 'package:mydiaree/features/reflection/presentation/pages/reflection_list_screen.dart';
@@ -20,6 +21,7 @@ import 'package:mydiaree/features/settings/parent_setting/presentation/pages/par
 import 'package:mydiaree/features/settings/staff_setting/presentation/pages/staff_settings_screen.dart';
 import 'package:mydiaree/features/settings/super_admin_settings/presentation/pages/supere_admin_settings_screen.dart';
 import 'package:mydiaree/features/snapshot/presentation/pages/snapshot_screen.dart';
+import 'package:mydiaree/main.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -118,6 +120,13 @@ class AppDrawer extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => RoomsListScreen())),
             ),
             divier,
+            CustomDrawerTile(
+              icon: Icons.production_quantity_limits,
+              title: 'L & P',
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const LearningAndProgressScreen())),
+            ),
+            divier,
             CustomDrawerExpansionTile(
               icon: Icons.fastfood,
               title: 'Healthy Eating',
@@ -129,17 +138,21 @@ class AppDrawer extends StatelessWidget {
                           MaterialPageRoute(builder: (_) => MenuScreen()));
                     }),
                 CustomDrawerTile(
-                  title: 'Recipes',
-                   onTap: () {
-                   Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const RecipeScreen()));
-                }),
-                 CustomDrawerTile(
-                  title: 'Ingredients',
-                   onTap: () {
-                   Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const IngredientListScreen()));
-                }),
+                    title: 'Recipes',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const RecipeScreen()));
+                    }),
+                CustomDrawerTile(
+                    title: 'Ingredients',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const IngredientListScreen()));
+                    }),
               ],
             ),
             divier,
@@ -212,26 +225,7 @@ class AppDrawer extends StatelessWidget {
               icon: Icons.settings_power,
               title: 'Logout',
               onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel')),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          // perform logout
-                        },
-                        child: const Text('Logout',
-                            style: TextStyle(color: AppColors.errorColor)),
-                      ),
-                    ],
-                  ),
-                );
+                logoutDialog(context);
               },
             ),
           ],
@@ -346,4 +340,134 @@ class CustomDrawerExpansionTile extends StatelessWidget {
       ],
     );
   }
+}
+
+logoutDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierColor: Colors.black.withOpacity(0.5),
+    builder: (context) => Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 10,
+      backgroundColor: Colors.white,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        constraints: BoxConstraints(
+          maxWidth: screenWidth * 0.9,
+          minWidth: screenWidth * 0.6,
+          maxHeight: screenHeight * 0.35,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Semantics(
+              label: 'Logout warning icon',
+              child: Icon(
+                Icons.warning_rounded,
+                size: 36,
+                color: AppColors.errorColor.withOpacity(0.9),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Semantics(
+              label: 'Confirm Sign Out',
+              child: Text(
+                'Confirm Sign Out',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.black,
+                      letterSpacing: 0.5,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Semantics(
+              label: 'Are you sure you want to sign out of your account?',
+              child: Text(
+                'Are you sure you want to sign out of your account?',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Semantics(
+                  label: 'Cancel sign out',
+                  button: true,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side:
+                            BorderSide(color: AppColors.primaryColor, width: 1),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryColor,
+                          ),
+                    ),
+                  ),
+                ),
+                Semantics(
+                  label: 'Confirm sign out',
+                  button: true,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      // Perform logout (e.g., clear auth token, navigate to login screen)
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.errorColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 3,
+                    ),
+                    child: Text(
+                      'Sign Out',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

@@ -55,6 +55,7 @@ dependencies:
   image_painter: ^0.7.1
   open_file: ^3.5.10
   font_awesome_flutter: ^10.4.0
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

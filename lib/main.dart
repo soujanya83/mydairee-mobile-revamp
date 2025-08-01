@@ -23,6 +23,8 @@ import 'package:mydiaree/features/healthy_menu/ingredients/presentation/bloc/ing
 import 'package:mydiaree/features/healthy_menu/menu/presentation/bloc/menu_bloc.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/add_edit/add_reciepe_bloc.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/list/reciepe_bloc.dart';
+import 'package:mydiaree/features/learning_and_progress/presentation/bloc/list/learning_and_progress_bloc.dart';
+import 'package:mydiaree/features/learning_and_progress/presentation/bloc/view_progress/view_progress_bloc.dart';
 import 'package:mydiaree/features/observation/presentation/bloc/add_room/view_observation_bloc.dart';
 import 'package:mydiaree/features/observation/presentation/bloc/list_room/obsevation_list_bloc.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_bloc.dart';
@@ -40,6 +42,7 @@ import 'package:mydiaree/features/settings/staff_setting/presentation/bloc/list/
 import 'package:mydiaree/features/settings/super_admin_settings/presentation/bloc/list/super_admin_setting_bloc.dart';
 import 'package:mydiaree/features/snapshot/presentation/bloc/add_snapshot/add_snapshot_bloc.dart';
 import 'package:mydiaree/features/snapshot/presentation/bloc/snapshot_list/snapshot_bloc.dart';
+import 'package:mydiaree/features/splash/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,7 +53,6 @@ double screenWidth = 0;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
@@ -63,9 +65,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<LoginBloc>(
           create: (context) => LoginBloc(),
         ),
-        BlocProvider<UserTypeBloc>(
-          create: (context) => UserTypeBloc(),
-        ),
+        BlocProvider<UserTypeBloc>(create: (context) => UserTypeBloc()),
         BlocProvider<OtpVerifyBloc>(create: (context) => OtpVerifyBloc()),
         BlocProvider<ForgotPasswordBloc>(
             create: (context) => ForgotPasswordBloc()),
@@ -105,29 +105,26 @@ class MyApp extends StatelessWidget {
             create: (context) => CentersSettingsBloc()),
         BlocProvider<SuperAdminSettingsBloc>(
             create: (context) => SuperAdminSettingsBloc()),
-        BlocProvider<StaffSettingsBloc>(
-            create: (context) => StaffSettingsBloc()),
+        BlocProvider<StaffSettingsBloc>( 
+          create: (context) => StaffSettingsBloc()),
         BlocProvider<ParentSettingsBloc>(
             create: (context) => ParentSettingsBloc()),
-        BlocProvider<PermissionBloc>(
-            create: (context) => PermissionBloc()),
+        BlocProvider<PermissionBloc>(create: (context) => PermissionBloc()),
         BlocProvider<AssignerPermissionUserBloc>(
             create: (context) => AssignerPermissionUserBloc()),
-        BlocProvider<MenuBloc>(
-            create: (context) => MenuBloc()),
-        BlocProvider<RecipeBloc>(
-            create: (context) => RecipeBloc()),
-        BlocProvider<AddRecipeBloc>(
-            create: (context) => AddRecipeBloc()),
-        BlocProvider<IngredientBloc>(
-            create: (context) => IngredientBloc()),
+        BlocProvider<MenuBloc>(create: (context) => MenuBloc()),
+        BlocProvider<RecipeBloc>(create: (context) => RecipeBloc()),
+        BlocProvider<AddRecipeBloc>(create: (context) => AddRecipeBloc()),
+        BlocProvider<IngredientBloc>(create: (context) => IngredientBloc()),
+        BlocProvider<LearningAndProgressBloc>(create: (context) => LearningAndProgressBloc()),
+        BlocProvider<ViewProgressBloc>(create: (context) => ViewProgressBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: RAppTheme.lightTheme,
         darkTheme: RAppTheme.lightTheme,
         themeMode: ThemeMode.system,
-        home: DashboardScreen(),
+        home:  const SplashScreen()
       ),
     );
   }

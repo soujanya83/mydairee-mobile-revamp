@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
+import 'package:mydiaree/core/services/shared_preference_service.dart';
 import 'package:mydiaree/core/utils/helper_functions.dart';
 
 class ApiServices {
@@ -22,55 +23,86 @@ class ApiServices {
     }
   }
 
-  static Future<ApiResponse> getData(
-    String url, {
-    Map<String, dynamic>? headers,
-    Map<String, dynamic>? queryParameters,
-    bool dummy = false,
-    Map<String, dynamic>? dummyData,
-  }) async {
-    final dio = Dio();
+  
+static Future<ApiResponse> getData(
+  String url, {
+  Map<String, dynamic>? headers,
+  Map<String, dynamic>? queryParameters,
+  bool dummy = false,
+  Map<String, dynamic>? dummyData,
+}) async {
+  final dio = Dio();
 
-    try {
-      if (dummy) {
-        print('dummy GET triggered');
-        print(dummyData);
-        await Future.delayed(const Duration(seconds: 2));
-        return ApiResponse(
-          data: dummyData,
-          success: true,
-          message: 'Dummy get successful',
-        );
-      }
-
-      Options? options;
-      if (headers != null) {
-        options = Options(headers: headers);
-      }
-
-      final response = await dio.get(
-        url,
-        queryParameters: queryParameters,
-        options: options,
+  try {
+    if (dummy) {
+      print('Dummy GET triggered');
+      print('Dummy Data: $dummyData');
+      await Future.delayed(const Duration(seconds: 2));
+      return ApiResponse(
+        data: dummyData,
+        success: true,
+        message: 'Dummy get successful',
       );
-
-      if (validApiResponse(response)) {
-        return ApiResponse(
-          success: true,
-          data: response.data,
-          message: 'Success',
-        );
-      } else {
-        return ApiResponse(
-          success: false,
-          data: response.data,
-          message: getApiMessage(response.data),
-        );
-      }
-    } catch (e) {
-      return ApiResponse(success: false, message: 'Something Went Wrong');
     }
+
+    // Prepare headers
+      Options? options;
+      options = Options(
+        headers: headers??{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await getToken()}',
+
+        },
+        validateStatus: (status) {
+          return true;
+        },
+      );
+    
+
+    // Print Debug Info
+    print('Sending GET request');
+    print('URL: $url');
+    if (queryParameters != null) {
+      print('Query Parameters: $queryParameters');
+    }
+    if (headers != null) {
+      print('Headers: $headers');
+    }
+
+    // Perform request
+    final response = await dio.get(
+      url,
+      queryParameters: queryParameters,
+      options: options,
+    );
+
+    // Debug response
+    print('Response Received');
+    print('Status Code: ${response.statusCode}');
+    print('Response Data: ${response.data}');
+
+    // Handle response
+    if (validApiResponse(response)) {
+      return ApiResponse(
+        success: true,
+        data: response.data,
+        message: getApiMessage(response),
+      );
+    } else {
+      return ApiResponse(
+        success: false,
+        data: response.data,
+        message: getApiMessage(response),
+      );
+    }
+  } catch (e, s) {
+    print('Error in getData');
+    print('Error: $e');
+    print('Stack: $s');
+    return ApiResponse(success: false, message: 'Something Went Wrong');
   }
+}
 
   static Future<ApiResponse> postData(String url, dynamic data,
       {Map<String, dynamic>? headers,
@@ -81,9 +113,17 @@ class ApiServices {
     final dio = Dio();
     try {
       Options? options;
-      if (headers != null) {
-        options = Options(headers: headers);
-      }
+      options = Options(
+        headers: headers??{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await getToken()}',
+
+        },
+        validateStatus: (status) {
+          return true;
+        },
+      );
 
       dynamic body = data;
       List<MultipartFile>? files;
@@ -114,17 +154,17 @@ class ApiServices {
         body = formData;
       }
 
-      if (dummy) {
-        print('dummy data');
-        print(dummyData);
-        print(options);
-        await Future.delayed(const Duration(seconds: 3));
-        return ApiResponse(
-          data: dummyData,
-          success: true,
-          message: 'Dummy post successful',
-        );
-      }
+      // if (dummy) {
+      //   print('dummy data');
+      //   print(dummyData);
+      //   print(options);
+      //   await Future.delayed(const Duration(seconds: 3));
+      //   return ApiResponse(
+      //     data: dummyData,
+      //     success: true,
+      //     message: 'Dummy post successful',
+      //   );
+      // }
 
       final response = await dio.post(
         url,
@@ -140,7 +180,7 @@ class ApiServices {
       return ApiResponse(
           success: false,
           data: response.data,
-          message: getApiMessage(response.data));
+          message: getApiMessage(response));
     } catch (e, s) {
       print('error in postData function');
       debugPrint(e.toString());

@@ -24,6 +24,9 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
         fileField: fileField,
         dummy: dummy,
         dummyData: dummyData);
+    print('Response: ${response.data}');
+    print('Success: ${response.success}');
+    print('Message: ${response.message}');
     if (response.success) {
       return ApiResponse(
           success: true,
@@ -41,20 +44,42 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
 }
 
 Future<ApiResponse<T?>> getAndParseData<T>(
-  String url, {
-  Map<String, dynamic>? data,
+  String url, { 
   T Function(dynamic json)? fromJson,
   bool dummy = false,
   Map<String, dynamic>? dummyData,
+  Map<String, dynamic>? queryParameters,
 }) async {
   try {
     final response = await ApiServices.getData(
       url,
-      queryParameters: data,
+      queryParameters: queryParameters,
       dummy: dummy,
       dummyData: dummyData,
     );
+    print('Response: ${response.data}');
+    print('Success: ${response.success}');
+    print('Message: ${response.message}');
     if (response.success) {
+      try {
+        if (fromJson != null) {
+          return ApiResponse(
+            success: true,
+            data: fromJson(response.data),
+            message: response.message,
+          );
+        } else {
+          return ApiResponse(
+            success: true,
+            data: response.data as T?,
+            message: response.message,
+          );
+        }
+      } catch (e,s) {
+        print('Error parsing data: $e');
+        print('Stack: $s');
+        return ApiResponse(success: false, message: 'Data parsing error');
+      }
       return ApiResponse(
         success: true,
         data: fromJson != null ? fromJson(response.data) : null,
@@ -70,11 +95,12 @@ Future<ApiResponse<T?>> getAndParseData<T>(
 
 String getApiMessage(Response response) {
   try {
-    return jsonDecode(response.data)['msg'].toString();
+    return response.data['message']?.toString() ?? '';
   } catch (e) {
     return '';
   }
 }
+
 
 String defaultErrorMessage() {
   return 'Something Went Wrong';

@@ -32,15 +32,14 @@ class AdminAuthenticationRepository {
       fileField: 'profile_image',
     );
   }
-
-  // Example method for user login
+ 
   Future<ApiResponse<LoginModel?>> loginUser(
-      String username, String password) async {
+      String email, String password) async {
     return postAndParse(
       AppUrls.login,
-      dummy: true,
+      dummy: false,
       {
-        'username': username,
+        'email': email,
         'password': password,
       },
       fromJson: (json) => LoginModel.fromJson(json),

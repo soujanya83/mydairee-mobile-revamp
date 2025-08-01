@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mydiaree/core/services/shared_preference_service.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/features/auth/admin/presentation/bloc/login/login_bloc.dart';
 import 'package:mydiaree/features/auth/admin/presentation/bloc/login/login_event.dart';
@@ -132,19 +134,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       UIHelpers.verticalSpace(10),
                       BlocListener<LoginBloc, LoginState>(
-                          listener: (context, state) {
+                          listener: (context, state)async {
                         if (state is LoginError) {
                           UIHelpers.showToast(
                             context,
                             message: state.message,
                             backgroundColor: AppColors.errorColor,
                           );
-                        } else if (state is LoginSuccess) {
+                        } else if (state is LoginSuccess) { 
                           UIHelpers.showToast(
                             context,
                             message: state.message,
                             backgroundColor: AppColors.successColor,
                           );
+                          print(state.loginData?.message);
+                          print(state.loginData?.token);
+                          final token = state.loginData?.token; // Replace 'token' with your actual key
+                          await saveToken(token??'');
+                         
+                          
                           Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
                             return DashboardScreen();

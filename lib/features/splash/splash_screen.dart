@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_asset.dart';
+import 'package:mydiaree/core/services/shared_preference_service.dart';
 import 'package:mydiaree/features/auth/admin/presentation/pages/admin/user_type_screen.dart';
+import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,13 +17,26 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const UserTypeScreen(),
-        ),
-      );
+    Timer(const Duration(seconds: 3), () async {
+      final token = await getToken();
+      if (token != null && token.isNotEmpty) {
+        // If token exists, navigate to Dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DashboardScreen(),
+          ),
+        );
+      } else {
+        // If no token, navigate to UserTypeScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const UserTypeScreen(),
+          ),
+        );
+      }
+      ;
     });
   }
 

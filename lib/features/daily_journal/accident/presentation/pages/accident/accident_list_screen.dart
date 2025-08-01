@@ -73,7 +73,7 @@ class AccidentListScreen extends StatelessWidget{
                   // Text('Room', style: Theme.of(context).textTheme.bodyMedium),
                   const SizedBox(height: 6),
                   Padding(
-                    padding: const EdgeInsets.only(left: 20, right: 20),
+                    padding: const EdgeInsets.only(left: 10, right: 10),
                     child: StatefulBuilder(builder: (context, setState) {
                       return RoomDropdown(
                         selectedRoomId: selectedRoomId,

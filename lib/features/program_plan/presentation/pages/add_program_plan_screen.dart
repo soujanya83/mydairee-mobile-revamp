@@ -5,23 +5,32 @@ import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_dropdown.dart';
+import 'package:mydiaree/core/widgets/custom_multi_selected_dialog.dart';
 import 'package:mydiaree/core/widgets/custom_multiline_text_field.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/dropdowns/room_dropdown.dart';
+import 'package:mydiaree/features/program_plan/data/model/ChildrenAddProgramPlan.dart';
+import 'package:mydiaree/features/program_plan/data/model/UsersAddProgramPlan.dart';
+import 'package:mydiaree/features/program_plan/data/model/program_plan_data_model.dart';
+import 'package:mydiaree/features/program_plan/data/model/program_plan_list_model.dart';
+import 'package:mydiaree/features/program_plan/data/repositories/program_plan_repository.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_bloc.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_event.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_state.dart';
 import 'package:mydiaree/features/program_plan/presentation/widget/add_plan_widgets.dart';
+import 'package:mydiaree/features/program_plan/presentation/widget/eylf_wrapper.dart';
 
 class AddProgramPlanScreen extends StatefulWidget {
   final String centerId;
+  final String? programPlanId;
   final Map<String, dynamic>? programPlan;
   final String screenType;
 
   const AddProgramPlanScreen({
     super.key,
     required this.centerId,
+    this.programPlanId,
     this.programPlan,
     required this.screenType,
   });
@@ -85,12 +94,32 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
   List<String> rooms = []; // This should be populated from your data
 
   // Selected educators and children
-  List<String> selectedEducators = [];
-  List<String> selectedChildren = [];
+  List<String> selectedEducatorIds = [];
+  List<String> selectedEducatorNames = [];
+  List<String> selectedChildrenIds = [];
+  List<String> selectedChildrenNames = [];
+
+  ProgramPlanData? programPlanData;
+  ChildrenAddProgramPlanModel? children;
+  UserAddProgramPlanModel? user;
+
+  getProgramPlan() {
+    ProgramPlanRepository()
+        .getProgramPlanData(
+            centerId: widget.centerId, planId: widget.programPlanId)
+        .then((response) {
+      if (response.data != null) {
+        setState(() {
+          programPlanData = response.data;
+        });
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    getProgramPlan();
     if (widget.screenType == 'edit' && widget.programPlan != null) {
       _initializeFromExistingData();
     }
@@ -124,12 +153,8 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
     cultureController.text = data['culture'] ?? '';
 
     // Set selected educators and children
-    if (data['educators'] is List) {
-      selectedEducators = List<String>.from(data['educators']);
-    }
-    if (data['children'] is List) {
-      selectedChildren = List<String>.from(data['children']);
-    }
+    if (data['educators'] is List) {}
+    if (data['children'] is List) {}
   }
 
   void _showEducatorSelectionDialog() {
@@ -145,11 +170,12 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
     // TODO: Implement EYLF selection dialog
   }
 
-  assignPracticalLifeInController() {
+  assignPracticalLifeInController(){
+    // assignEylfOutcomeInController(programPlanData?.eylfOutcomes ?? [],practicalLifeController);
+    // return;
     print('assigning here');
     practicalLifeController.text = '';
-    print(
-        '======================PracticalLifeController===========================');
+    print('======================PracticalLifeController===========================');
     for (int parentIndex = 0;
         parentIndex < (practicalLifeData?.activity.length ?? 0);
         parentIndex++) {
@@ -190,8 +216,7 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    assignPracticalLifeData();
+  Widget build(BuildContext context) { 
     return CustomScaffold(
       appBar: const CustomAppBar(title: "Create Program Plan"),
       body: SingleChildScrollView(
@@ -250,100 +275,210 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Room selection
                 Text('Room', style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 6),
-                RoomDropdown(
-                  selectedRoomId: selectedRoomId,
-                  onChanged: (room) {
-                    setState(() {
-                      selectedRoomId = room.id;
-                    });
+                Builder(
+                  builder: (context) {
+                    final rooms = programPlanData?.rooms ?? [];
+                    return CustomDropdown<int>(
+                      value: (selectedRoomId != null &&
+                              int.tryParse(selectedRoomId!) != null)
+                          ? int.parse(selectedRoomId!)
+                          : null,
+                      items: rooms
+                          .where((room) => room.id != null)
+                          .map((room) => room.id!)
+                          .toList(),
+                      hint: 'Select Room',
+                      height: 45,
+                      displayItem: (id) {
+                        final room = rooms.firstWhere(
+                          (r) => r.id == id,
+                        );
+                        return room.name ?? '';
+                      },
+                      onChanged: (id) async {
+                        selectedRoomId = id?.toString();
+                        if (id != null) {
+                          user = await ProgramPlanRepository()
+                              .getRoomUsers(selectedRoomId!);
+                          children = await ProgramPlanRepository()
+                              .getRoomChildren(selectedRoomId!);
+                        } else {
+                          user = null;
+                          children = null;
+                        }
+                        setState(() {});
+                      },
+                    );
                   },
                 ),
 
                 const SizedBox(height: 16),
 
-                // Educators selection
-                Text('Educators',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 6),
-                GestureDetector(
-                  onTap: _showEducatorSelectionDialog,
-                  child: Container(
-                    width: 180,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(width: 8),
-                        Icon(Icons.add_circle, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text('Select Educator',
-                            style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                if (selectedEducators.isNotEmpty)
-                  Wrap(
-                    spacing: 8,
-                    children: selectedEducators
-                        .map((edu) => Chip(
-                              label: Text(edu),
-                              onDeleted: () {
+                if (selectedRoomId != null) ...[
+                  Text('Educators',
+                      style: Theme.of(context).textTheme.bodyMedium),
+                  const SizedBox(height: 6),
+                  Builder(
+                    builder: (context) {
+                      final educators = user?.users ?? [];
+                      if (educators.isEmpty) {
+                        return Container(
+                          width: 180,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'No educators found',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        );
+                      }
+                      return GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => CustomMultiSelectDialog(
+                              title: 'Select Educator',
+                              itemsId: educators
+                                  .map((u) => u.id.toString())
+                                  .toList(),
+                              itemsName:
+                                  educators.map((u) => u.name ?? '').toList(),
+                              initiallySelectedIds: selectedEducatorIds,
+                              onItemTap: (ids) {
                                 setState(() {
-                                  selectedEducators.remove(edu);
+                                  selectedEducatorIds = ids;
+                                  selectedEducatorNames = educators
+                                      .where(
+                                          (u) => ids.contains(u.id.toString()))
+                                      .map((u) => u.name ?? '')
+                                      .toList();
                                 });
                               },
-                            ))
-                        .toList(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 180,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Row(
+                            children: [
+                              SizedBox(width: 8),
+                              Icon(Icons.add_circle, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text('Select Educator',
+                                  style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 8),
+                  if (selectedEducatorNames.isNotEmpty)
+                    Wrap(
+                      spacing: 8,
+                      children: selectedEducatorNames
+                          .map((name) => Chip(label: Text(name)))
+                          .toList(),
+                    )
+                  else
+                    const Text('No educators selected',
+                        style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 16),
 
-                // Children selection
-                Text('Children', style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 6),
-                GestureDetector(
-                  onTap: _showChildrenSelectionDialog,
-                  child: Container(
-                    width: 180,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(width: 8),
-                        Icon(Icons.add_circle, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text('Select Children',
-                            style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                if (selectedChildren.isNotEmpty)
-                  Wrap(
-                    spacing: 8,
-                    children: selectedChildren
-                        .map((child) => Chip(
-                              label: Text(child),
-                              onDeleted: () {
+                  // Children selection
+                  Text('Children',
+                      style: Theme.of(context).textTheme.bodyMedium),
+                  const SizedBox(height: 6),
+                  Builder(
+                    builder: (context) {
+                      final childrenList = children?.children ?? [];
+                      if (childrenList.isEmpty) {
+                        return Container(
+                          width: 180,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'No children found',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        );
+                      }
+                      return GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => CustomMultiSelectDialog(
+                              title: 'Select Children',
+                              itemsId: childrenList
+                                  .map((c) => c.id.toString())
+                                  .toList(),
+                              itemsName: childrenList
+                                  .map((c) => c.name ?? '')
+                                  .toList(),
+                              initiallySelectedIds: selectedChildrenIds,
+                              onItemTap: (ids) {
                                 setState(() {
-                                  selectedChildren.remove(child);
+                                  selectedChildrenIds = ids;
+                                  selectedChildrenNames = childrenList
+                                      .where(
+                                          (c) => ids.contains(c.id.toString()))
+                                      .map((c) => c.name ?? '')
+                                      .toList();
                                 });
                               },
-                            ))
-                        .toList(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 180,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Row(
+                            children: [
+                              SizedBox(width: 8),
+                              Icon(Icons.add_circle, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text('Select Children',
+                                  style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 8),
+                  if (selectedChildrenNames.isNotEmpty)
+                    Wrap(
+                      spacing: 8,
+                      children: selectedChildrenNames
+                          .map((name) => Chip(label: Text(name)))
+                          .toList(),
+                    )
+                  else
+                    const Text('No children selected',
+                        style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 16),
+                ],
 
                 // Focus Areas
                 CustomMultilineTextField(
@@ -353,21 +488,21 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                   onTap: () {
                     showPracticalLifeDialog(
                       context,
-                      practicalLifeData,
+                      programPlanData?.montessoriSubjects?[0],
                       assignPracticalLifeInController,
                     );
                   },
                 ),
-                const SizedBox(height: 16),
+                // const SizedBox(height: 16),
 
-                CustomMultilineTextField(
-                  title: 'Sensorial',
-                  context: context,
-                  controller: sensorialController,
-                  onTap: () {
-                    showPracticalLifeDialog(context, practicalLifeData, () {});
-                  },
-                ),
+                // CustomMultilineTextField(
+                //   title: 'Sensorial',
+                //   context: context,
+                //   controller: sensorialController,
+                //   onTap: () {
+                //     showPracticalLifeDialog(context, programPlanData?.montessoriSubjects?[0], () {});
+                //   },
+                // ),
                 const SizedBox(height: 16),
 
                 CustomMultilineTextField(
@@ -375,38 +510,38 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                   context: context,
                   controller: mathController,
                   onTap: () {
-                    showPracticalLifeDialog(context, practicalLifeData, () {});
+                    showPracticalLifeDialog(context, programPlanData?.montessoriSubjects?[1], () {});
                   },
                 ),
                 const SizedBox(height: 16),
 
-                CustomMultilineTextField(
-                  title: 'Language',
-                  context: context,
-                  controller: languageController,
-                  onTap: () {
-                    showPracticalLifeDialog(context, practicalLifeData, () {});
-                  },
-                ),
-                const SizedBox(height: 16),
+                // CustomMultilineTextField(
+                //   title: 'Language',
+                //   context: context,
+                //   controller: languageController,
+                //   onTap: () {
+                //     showPracticalLifeDialog(context, programPlanData?.montessoriSubjects?[0], () {});
+                //   },
+                // ),
+                // const SizedBox(height: 16),
 
-                CustomMultilineTextField(
-                  title: 'Culture',
-                  context: context,
-                  controller: cultureController,
-                  onTap: () {
-                    showPracticalLifeDialog(context, practicalLifeData, () {});
-                  },
-                ),
+                // CustomMultilineTextField(
+                //   title: 'Culture',
+                //   context: context,
+                //   controller: cultureController,
+                //   onTap: () {
+                //     showPracticalLifeDialog(context, programPlanData?.montessoriSubjects?[0], () {});
+                //   },
+                // ),
 
-                // EYLF
-                const SizedBox(height: 6),
+                // // EYLF
+                // const SizedBox(height: 6),
                 CustomMultilineTextField(
                   title: 'EYLF',
                   context: context,
                   controller: eylfController,
                   onTap: () {
-                    showPracticalLifeDialog(context, practicalLifeData, () {});
+                    showPracticalLifeDialog(context, programPlanData?.montessoriSubjects?[0], () {});
                   },
                 ),
                 const SizedBox(height: 16),
@@ -474,8 +609,8 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                                         month: selectedMonth ?? '',
                                         year: selectedYear ?? '',
                                         roomId: selectedRoom ?? '',
-                                        educators: selectedEducators,
-                                        children: selectedChildren,
+                                        educators: selectedEducatorIds,
+                                        children: selectedChildrenIds,
                                         focusArea: focusAreasController.text,
                                         outdoorExperiences:
                                             outdoorExperiencesController.text,
@@ -536,8 +671,8 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
       'month': selectedMonth,
       'year': selectedYear,
       'room_id': selectedRoom,
-      'educators': selectedEducators,
-      'children': selectedChildren,
+      'educators': selectedEducatorIds,
+      'children': selectedChildrenIds,
       'focus_area': focusAreasController.text,
       'practical_life': practicalLifeController.text,
       'sensorial': sensorialController.text,

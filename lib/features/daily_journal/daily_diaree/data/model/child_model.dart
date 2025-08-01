@@ -22,7 +22,7 @@ class ChildModel extends Equatable {
 
 class ActivityModel extends Equatable {
   final String type;
-  final DateTime date;
+  final DateTime? date;
   final String? time;
   final String? item;
   final String? sleepTime;
@@ -32,7 +32,7 @@ class ActivityModel extends Equatable {
 
   const ActivityModel({
     required this.type,
-    required this.date,
+      this.date,
     this.time,
     this.item,
     this.sleepTime,

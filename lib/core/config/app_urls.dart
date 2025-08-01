@@ -1,7 +1,15 @@
 class AppUrls {
-  // Base URLs
-  static const String baseApiUrl = '';
-  static const String login = '$baseApiUrl/auth/login';
+  static const String baseApiUrl = 'https://mydiaree.com.au';
+  static const String login = '$baseApiUrl/api/login';
+  static const String programPlan = '$baseApiUrl/api/programPlanList';
+  static const String deletedataofprogramplan =
+      '$baseApiUrl/api/LessonPlanList/deletedataofprogramplan';
+  static const String programPlanCreate = '$baseApiUrl/api/programPlan/create';
+    static const String getRoomUsers = '$baseApiUrl/api/LessonPlanList/get_room_users';
+  static const String getRoomChildren = '$baseApiUrl/api/LessonPlanList/get_room_children';
+
+  ///////////////////////////////
+
   static const String signup = '$baseApiUrl/auth/signup';
   static const String otpVerify = '$baseApiUrl/auth/otp-verify';
   static const String forgotPassword = '$baseApiUrl/auth/forgot-password';

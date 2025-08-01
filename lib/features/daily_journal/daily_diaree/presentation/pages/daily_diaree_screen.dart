@@ -108,7 +108,8 @@ class DailyTrackingScreen extends StatelessWidget {
                           ),
                           itemCount: state.children.length,
                           itemBuilder: (context, index) {
-                            return ChildCard(child: state.children[index]);
+                            return ChildCard(onAddEntriesPressed: () {  },
+                            child: state.children[index]);
                           },
                         ),
                       ),

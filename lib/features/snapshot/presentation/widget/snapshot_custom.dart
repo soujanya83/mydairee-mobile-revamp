@@ -244,7 +244,7 @@ class SnapshotCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    status.capitalize(),
+                    status,
                     style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ),

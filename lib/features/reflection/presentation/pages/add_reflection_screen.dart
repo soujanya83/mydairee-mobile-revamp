@@ -85,54 +85,54 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
     // Can use RoomDropdown widget directly
   }
 
-  assignPracticalLifeInController() {
-    print('assigning here');
-    eylfController.text = '';
-    print(
-        '======================PracticalLifeController===========================');
-    for (int parentIndex = 0;
-        parentIndex < (practicalLifeData?.activity.length ?? 0);
-        parentIndex++) {
-      String activity = practicalLifeData?.activity[parentIndex].title ?? '';
-      bool isDone = false;
-      print(
-          '====================*******i*****=$parentIndex============================');
-      for (int childIndex = 0;
-          childIndex <
-              (practicalLifeData?.activity[parentIndex].subActivity.length ??
-                  0);
-          childIndex++) {
-        print(
-            '====================##########j##########=$childIndex===($parentIndex)=========================');
-        print(
-            '======value=${practicalLifeData?.activity[parentIndex].subActivity[childIndex].choosen ?? false}==========');
+  // assignPracticalLifeInController(){
+  //   print('assigning here');
+  //   eylfController.text = '';
+  //   print(
+  //       '======================PracticalLifeController===========================');
+  //   for (int parentIndex = 0;
+  //       parentIndex < (practicalLifeData?.activity.length ?? 0);
+  //       parentIndex++) {
+  //     String activity = practicalLifeData?.activity[parentIndex].title ?? '';
+  //     bool isDone = false;
+  //     print(
+  //         '====================*******i*****=$parentIndex============================');
+  //     for (int childIndex = 0;
+  //         childIndex <
+  //             (practicalLifeData?.activity[parentIndex].subActivity.length ??
+  //                 0);
+  //         childIndex++) {
+  //       print(
+  //           '====================##########j##########=$childIndex===($parentIndex)=========================');
+  //       print(
+  //           '======value=${practicalLifeData?.activity[parentIndex].subActivity[childIndex].choosen ?? false}==========');
 
-        if (practicalLifeData
-                ?.activity[parentIndex].subActivity[childIndex].choosen ??
-            false) {
-          if (!isDone) {
-            eylfController.text += '**$activity** - \n';
-            isDone = true;
-          }
+  //       if (practicalLifeData
+  //               ?.activity[parentIndex].subActivity[childIndex].choosen ??
+  //           false) {
+  //         if (!isDone) {
+  //           eylfController.text += '**$activity** - \n';
+  //           isDone = true;
+  //         }
 
-          String subActivity = practicalLifeData
-                  ?.activity[parentIndex].subActivity[childIndex].title ??
-              '';
-          print('===================00eir0ir0====================');
-          eylfController.text += '**• **$subActivity.\n';
-        }
-      }
-    }
-    Future.delayed(Duration(seconds: 3), () {
-      print('text file is the ===========');
-      print(eylfController.text);
-    });
-  }
+  //         String subActivity = practicalLifeData
+  //                 ?.activity[parentIndex].subActivity[childIndex].title ??
+  //             '';
+  //         print('===================00eir0ir0====================');
+  //         eylfController.text += '**• **$subActivity.\n';
+  //       }
+  //     }
+  //   }
+  //   Future.delayed(Duration(seconds: 3), () {
+  //     print('text file is the ===========');
+  //     print(eylfController.text);
+  //   });
+  // }
 
-  void _showEylfSelectionDialog() {
-    assignPracticalLifeData();
-    showPracticalLifeDialog(
-        context, practicalLifeData, assignPracticalLifeInController);
+  void _showEylfSelectionDialog(){
+    // assignPracticalLifeData();
+    // showPracticalLifeDialog(
+    //     context, practicalLifeData, assignPracticalLifeInController);
   }
 
   Future<void> _pickMedia() async {

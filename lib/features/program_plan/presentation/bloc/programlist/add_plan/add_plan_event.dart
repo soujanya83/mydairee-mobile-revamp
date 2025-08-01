@@ -6,6 +6,9 @@ abstract class AddPlanEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
+ 
+ 
+
 
 class SubmitAddPlanEvent extends AddPlanEvent {
   final String? planId;
@@ -14,7 +17,6 @@ class SubmitAddPlanEvent extends AddPlanEvent {
   final String roomId;
   final List<String> educators;
   final List<String> children;
-
   final String focusArea;
   final String outdoorExperiences;
   final String inquiryTopic;
@@ -26,7 +28,6 @@ class SubmitAddPlanEvent extends AddPlanEvent {
   final String spontaneousExperience;
   final String mindfulnessExperience;
   final String eylf;
-
   final String practicalLife;
   final String sensorial;
   final String math;
@@ -84,3 +85,4 @@ class SubmitAddPlanEvent extends AddPlanEvent {
         culture,
       ];
 }
+ 

@@ -1,4 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:mydiaree/features/program_plan/data/model/program_plan_data_model.dart'
+    hide User;
+
+import 'package:mydiaree/features/program_plan/data/model/UsersAddProgramPlan.dart';
+import 'package:mydiaree/features/program_plan/data/model/ChildrenAddProgramPlan.dart';
 
 abstract class AddPlanState extends Equatable {
   const AddPlanState();
@@ -8,6 +13,7 @@ abstract class AddPlanState extends Equatable {
 }
 
 class AddPlanInitial extends AddPlanState {}
+
 
 class AddPlanLoading extends AddPlanState {}
 

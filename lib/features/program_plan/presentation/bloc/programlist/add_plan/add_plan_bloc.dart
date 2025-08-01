@@ -1,14 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/features/program_plan/data/repositories/program_plan_repository.dart';
 import 'add_plan_event.dart';
-import 'add_plan_state.dart'; // Update path as per your structure
+import 'add_plan_state.dart';
 
 class AddPlanBloc extends Bloc<AddPlanEvent, AddPlanState> {
-   ProgramPlanRepository repository = ProgramPlanRepository();
+  ProgramPlanRepository repository = ProgramPlanRepository();
 
   AddPlanBloc() : super(AddPlanInitial()) {
     on<SubmitAddPlanEvent>((event, emit) async {
-      emit(AddPlanLoading()); 
+      emit(AddPlanLoading());
       try {
         final response = await repository.addOrEditPlan(
           planId: event.planId,
@@ -44,5 +44,6 @@ class AddPlanBloc extends Bloc<AddPlanEvent, AddPlanState> {
         emit(AddPlanFailure(e.toString()));
       }
     });
+ 
   }
 }
