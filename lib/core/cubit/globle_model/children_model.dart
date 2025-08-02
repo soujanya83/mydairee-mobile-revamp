@@ -7,9 +7,9 @@ class ChildModel {
   factory ChildModel.fromJson(Map<String, dynamic> json) {
     return ChildModel(
       success: json['success'] ?? false,
-      data: (json['data'] as List<dynamic>)
-          .map((e) => ChildIten.fromJson(e))
-          .toList(),
+      data: (json['data'] != null
+          ? (json['data'] as List<dynamic>).map((e) => ChildIten.fromJson(e)).toList()
+          : []),
     );
   }
 }

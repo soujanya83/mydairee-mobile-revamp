@@ -104,6 +104,62 @@ static Future<ApiResponse> getData(
   }
 }
 
+static Future<ApiResponse> deleteData(
+  String url, {
+  Map<String, dynamic>? headers,  
+  dynamic data,
+}) async {
+  final dio = Dio();
+
+  try { 
+
+    Options options = Options(
+      method: 'DELETE',
+      headers: headers ?? {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${await getToken()}',
+      },
+      validateStatus: (status) => true,
+    );
+
+    print('Sending DELETE request');
+    print('URL: $url'); 
+    if (headers != null) {
+      print('Headers: $headers');
+    }
+
+    final response = await dio.request(
+      url,
+      options: options,
+      data: data,
+    );
+
+    print('Response Received');
+    print('Status Code: ${response.statusCode}');
+    print('Response Data: ${response.data}');
+
+    if (validApiResponse(response)) {
+      return ApiResponse(
+        success: true,
+        data: response.data,
+        message: getApiMessage(response),
+      );
+    } else {
+      return ApiResponse(
+        success: false,
+        data: response.data,
+        message: getApiMessage(response),
+      );
+    }
+  } catch (e, s) {
+    print('Error in deleteData');
+    print('Error: $e');
+    print('Stack: $s');
+    return ApiResponse(success: false, message: 'Something Went Wrong');
+  }
+}
+
   static Future<ApiResponse> postData(String url, dynamic data,
       {Map<String, dynamic>? headers,
       List<String>? filesPath,

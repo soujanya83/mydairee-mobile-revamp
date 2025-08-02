@@ -3,20 +3,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/utils/helper_functions.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
+import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
+import 'package:mydiaree/features/room/data/repositories/room_repositories.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_event.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_state.dart';
 import 'package:mydiaree/features/room/presentation/pages/add_room_screen.dart';
+import 'package:mydiaree/features/room/presentation/pages/view_room_screen.dart';
 import 'package:mydiaree/features/room/presentation/widget/room_list_custom_widgets.dart';
 import 'package:mydiaree/main.dart';
 
-class RoomsListScreen extends StatelessWidget {
-  RoomsListScreen({super.key});
+// ignore: must_be_immutable
+class RoomsListScreen extends StatefulWidget {
+  const RoomsListScreen({super.key});
 
+  @override
+  State<RoomsListScreen> createState() => _RoomsListScreenState();
+}
+
+class _RoomsListScreenState extends State<RoomsListScreen> {
   String searchString = '';
 
   bool roomsFetched = true;
@@ -24,8 +33,6 @@ class RoomsListScreen extends StatelessWidget {
   bool usersFetched = true;
 
   int currentIndex = 0;
-
-  List<bool> checkValues = [false, false, false, false, false];
 
   // Sample check values
   List statList = [];
@@ -42,19 +49,44 @@ class RoomsListScreen extends StatelessWidget {
 
   List<String> selectedRooms = [];
 
-  String? selectedStatus;
+  String? selectedStatus = 'Active';
 
-  String? selectedCenterId;
+  String selectedCenterId = '1';
 
   String? selectedCenterName;
+
+  Future<void> deleteRooms(List<int> roomIds) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+    final response = await RoomRepository().deleteMultipleRooms(roomIds);
+
+    Navigator.of(context, rootNavigator: true).pop();
+    if (response.success) {
+      UIHelpers.showToast(context, message: response.message);
+      context
+          .read<RoomListBloc>()
+          .add(FetchRoomsEvent(centerId: selectedCenterId));
+    } else {
+      UIHelpers.showToast(context, message: response.message);
+    }
+  }
+
+  final TextEditingController searchController = TextEditingController();
+
+  initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context
+          .read<RoomListBloc>()
+          .add(FetchRoomsEvent(centerId: selectedCenterId));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<RoomListBloc>().add(const FetchRoomsEvent(centerId: '1'));
-    });
-
-    final TextEditingController searchController = TextEditingController();
-    bool permissionAdd = true;
     return CustomScaffold(
       appBar: const CustomAppBar(title: "Rooms"),
       body: BlocConsumer<RoomListBloc, RoomListState>(
@@ -86,6 +118,31 @@ class RoomsListScreen extends StatelessWidget {
                         Text('Rooms',
                             style: Theme.of(context).textTheme.headlineSmall),
                         const Spacer(),
+                        if (selectedRooms.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 1.0),
+                            child: CustomButton(
+                              width: 130,
+                              height: 35,
+                              borderRadius: 10,
+                              color: Colors.red,
+                              text: 'Delete Selected',
+                              ontap: () {
+                                showDeleteConfirmationDialog(context, () async {
+                                  // Convert selectedRooms to List<int>
+                                  final roomIds = selectedRooms
+                                      .map((id) => int.tryParse(id))
+                                      .whereType<int>()
+                                      .toList();
+
+                                  Navigator.pop(context);
+                                  await deleteRooms(roomIds);
+                                  selectedRooms.clear();
+                                });
+                              },
+                            ),
+                          ),
+                        SizedBox(width: 10),
                         if (permissionAdd)
                           UIHelpers.addButton(
                             context: context,
@@ -108,11 +165,13 @@ class RoomsListScreen extends StatelessWidget {
                       return CenterDropdown(
                         selectedCenterId: selectedCenterId,
                         onChanged: (value) {
-                          setState(
-                            () {
-                              selectedCenterId = value.id;
-                            },
-                          );
+                          setState(() {
+                            selectedCenterId = value.id;
+                          });
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            context.read<RoomListBloc>().add(
+                                FetchRoomsEvent(centerId: selectedCenterId));
+                          });
                         },
                       );
                     }),
@@ -128,109 +187,85 @@ class RoomsListScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 5),
+                    CustomDropdown(
+                      height: 35,
+                      width: screenWidth * .3,
+                      hint: 'Select',
+                      onChanged: (value) {
+                        selectedStatus = value;
+                        setState(() {});
+                      },
+                      value: selectedStatus,
+                      items: const <String>['Active', 'Inactive'],
+                    ),
                     StatefulBuilder(builder: (context, setstateddd) {
-                      return CustomDropdown(
-                        height: 35,
-                        width: screenWidth * .3,
-                        hint: 'Select',
-                        onChanged: (value) {
-                          selectedStatus = value;
-                          setstateddd(
-                            () {},
-                          );
-                        },
-                        value: selectedStatus,
-                        items: const <String>['Active', 'Inactive'],
-                      );
-                    }),
-                    StatefulBuilder(builder: (context, setstateddd) {
+                      final rooms = state.roomsData.rooms ?? [];
+
+                      if(rooms.isEmpty) {
+                        return SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.4,
+                          child: const Center( 
+                            child: Text('No rooms available'),
+                          ),
+                        );
+                      }
                       return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
-                        itemCount: state.roomsData.rooms.length,
+                        itemCount: rooms.length,
                         itemBuilder: (BuildContext context, int index) {
-                          return RoomCard(
-                            isSelected: selectedRooms
-                                .contains(state.roomsData.rooms[index].id),
-                            permissionUpdate: true,
-                            onSelectionChanged: (selected) {
-                              if (selected) {
-                                if (true) {
-                                  selectedRooms
-                                      .add(state.roomsData.rooms[index].id);
-                                  setstateddd(
-                                    () {},
-                                  );
-                                }
-                              } else {
-                                if (selectedRooms.contains(
-                                    state.roomsData.rooms[index].id)) {
-                                  selectedRooms
-                                      .remove(state.roomsData.rooms[index].id);
-                                  setstateddd(
-                                    () {},
-                                  );
-                                }
-                              }
-                            },
-                            onEditPressed: () {
-                              Map<String, dynamic>? existingRoomData = {
-                                'id': state.roomsData.rooms[index].id,
-                                'centerId': selectedCenterId,
-                                'name': state.roomsData.rooms[index].name,
-                                'color': getColorValue(
-                                    state.roomsData.rooms[index].color),
-                                'status': state.roomsData.rooms[index].status,
-                                'educatorIds':
-                                    state.roomsData.rooms[index].educatorIds,
-                                'capacity':
-                                    state.roomsData.rooms[index].capacity,
-                                'ageFrom': state.roomsData.rooms[index].ageFrom,
-                                'ageTo': state.roomsData.rooms[index].ageTo,
-                              };
+                          final room = rooms[index];
+                          final roomId = room.id?.toString() ?? '';
+                          final roomName = room.name ?? '';
+                          final roomColor =
+                              getColorFromHex(room.color ?? '#1711c1');
+                          final userName = room.createdBy ?? '';
+                          final status = room.status ?? '';
+                          final educators = (room.educators != null)
+                              ? List<String>.from(room.educators!
+                                  .map((e) => e?.userid?.toString() ?? '')
+                                  .where((id) => id.isNotEmpty)
+                                  .toList())
+                              : <String>[];
+
+                          return InkWell(
+                            onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => AddRoomScreen(
-                                    centerId: selectedCenterId ?? '',
-                                    screenType: 'edit',
-                                    room: existingRoomData,
-                                  ),
+                                  builder: (context) =>
+                                      ViewRoomScreen(room: room),
                                 ),
                               );
                             },
-                            roomId: state.roomsData.rooms[index].id,
-                            roomName: state.roomsData.rooms[index].name,
-                            roomColor: getColorValue(
-                                    state.roomsData.rooms[index].color)
-                                .toString(),
-                            userName: state.roomsData.rooms[index].userName,
-                            status: state.roomsData.rooms[index].status,
-                            educators: state.roomsData.rooms[index].educatorIds,
+                            child: RoomCard(
+                              isSelected: selectedRooms.contains(roomId),
+                              permissionUpdate: true,
+                              onSelectionChanged: (bool selected) {
+                                setstateddd(() {
+                                  if (selected) {
+                                    if (!selectedRooms.contains(roomId)) {
+                                      selectedRooms.add(roomId);
+                                    }
+                                  } else {
+                                    selectedRooms.remove(roomId);
+                                  }
+                                  setState(() {});
+                                });
+                              },
+                              roomId: roomId,
+                              roomName: roomName,
+                              roomColor: roomColor,
+                              userName: userName.toString(),
+                              status: status,
+                              educators: educators,
+                              // onEditPressed: () {},
+                            ),
                           );
                         },
                       );
                     }),
                     const SizedBox(height: 10),
-                    if (selectedRooms.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: () {
-                            showDeleteConfirmationDialog(context, () {
-                              context
-                                  .read<RoomListBloc>()
-                                  .add(DeleteSelectedRoomsEvent(selectedRooms));
-                              Navigator.pop(context);
-                            });
-                          },
-                          child: const Text('Delete Selected'),
-                        ),
-                      ),
                   ],
                 ),
               ),

@@ -10,34 +10,82 @@ import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
+import 'package:mydiaree/features/reflection/data/repositories/reflection_repository.dart';
 import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflection_list_bloc.dart';
 import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflection_list_event.dart';
 import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflection_list_state.dart';
 import 'package:mydiaree/features/reflection/presentation/pages/add_reflection_screen.dart';
 import 'package:mydiaree/features/reflection/presentation/widget/reflection_list_custom_widgets.dart';
+import 'package:mydiaree/features/room/presentation/widget/room_list_custom_widgets.dart';
 
 // ignore: must_be_immutable
-class ReflectionListScreen extends StatelessWidget {
+class ReflectionListScreen extends StatefulWidget {
   ReflectionListScreen({super.key});
 
+  @override
+  State<ReflectionListScreen> createState() => _ReflectionListScreenState();
+}
+
+class _ReflectionListScreenState extends State<ReflectionListScreen> {
   String searchString = '';
+
   String? selectedStatus;
-  String? selectedCenterId;
+
+  String selectedCenterId = '1';
+
   String? selectedCenterName;
 
+  String _monthName(int month) {
+    const months = [
+      '', // 0 index not used
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    if (month < 1 || month > 12) return '';
+    return months[month];
+  }
+
+  Future<void> _deleteReflection(
+      BuildContext context, String reflectionId) async {
+    final repo = ReflectionRepository();
+ 
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final response = await repo.deleteReflection(reflectionId);
+    Navigator.of(context, rootNavigator: true).pop();
+
+    if (response.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Reflection deleted successfully')),
+      ); 
+      context.read<ReflectionListBloc>().add(
+            FetchReflectionsEvent(centerId: selectedCenterId ?? '1'),
+          );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.message ?? 'Delete failed')),
+      );
+    }
+  }
+
+  initState() {
+    super.initState();
+    // Fetch initial data
+    context.read<ReflectionListBloc>().add(
+          FetchReflectionsEvent(centerId: selectedCenterId),
+        );
+  }
+
+  final TextEditingController searchController = TextEditingController();
+  bool permissionAdd = true;
+  bool permissionUpdate = true;
+  bool permissionDelete = true;
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context
-          .read<ReflectionListBloc>()
-          .add(FetchReflectionsEvent(centerId: '1'));
-    });
-
-    final TextEditingController searchController = TextEditingController();
-    const bool permissionAdd = true;
-    const bool permissionUpdate = true;
-    const bool permissionDelete = true;
-
     return CustomScaffold(
       appBar: const CustomAppBar(title: "Reflection"),
       body: BlocConsumer<ReflectionListBloc, ReflectionListState>(
@@ -135,7 +183,7 @@ class ReflectionListScreen extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => AddReflectionScreen(
-                                    centerId: selectedCenterId ?? '',
+                                    centerId: selectedCenterId ?? '1',
                                     screenType: 'add',
                                   ),
                                 ),
@@ -166,12 +214,9 @@ class ReflectionListScreen extends StatelessWidget {
                         height: 40,
                         hintText: 'Search reflections...',
                         controller: searchController,
-                        onChanged: (value) {
-                          searchString = value!;
-                          context.read<ReflectionListBloc>().add(
-                              FetchReflectionsEvent(
-                                  centerId: selectedCenterId ?? '1',
-                                  search: value));
+                        onChanged: (value) {},
+                        onFieldSubmitted: (p0) {
+                          setState(() {});
                         },
                       ),
                     ),
@@ -195,54 +240,77 @@ class ReflectionListScreen extends StatelessWidget {
                     }),
                     const SizedBox(height: 10),
                     StatefulBuilder(builder: (context, setState) {
+                      // Filter reflections by searchController.text (case-insensitive)
+                      final searchText =
+                          searchController.text.trim().toLowerCase();
+                      final filteredReflections =
+                          (state.reflections.data?.reflection ?? [])
+                              .where((reflection) {
+                        final title = reflection.title?.toLowerCase() ?? '';
+                        return searchText.isEmpty || title.contains(searchText);
+                      }).toList();
+
                       return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
-                        itemCount: state.reflections.reflections.length,
+                        itemCount: filteredReflections.length,
                         itemBuilder: (context, index) {
-                          final reflection =
-                              state.reflections.reflections[index];
+                          final reflection = filteredReflections[index];
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: ReflectionCard(
-                              images: reflection.images,
-                              title: reflection.title,
-                              date: reflection.date,
+                              images: reflection.media
+                                      ?.map((m) => m.mediaUrl ?? '')
+                                      .toList() ??
+                                  [],
+                              title: reflection.title ?? '',
+                              date: (() {
+                                if (reflection.createdAt == null) return '';
+                                try {
+                                  final date = DateTime.parse(
+                                          reflection.createdAt.toString())
+                                      .toLocal();
+                                  return "${_monthName(date.month)} ${date.day}, ${date.year}";
+                                } catch (e) {
+                                  return '';
+                                }
+                              })(),
                               children: reflection.children
-                                  .map((c) => ChildrenModel(
-                                        name: c.name,
-                                        imageUrl: c.name,
-                                      ))
-                                  .toList(),
-                              educators: reflection.educators
-                                  .map((e) => EducatorModel(
-                                        name: e.name,
-                                        imageUrl: e.name,
-                                      ))
-                                  .toList(),
+                                      ?.map((c) => ChildrenModel(
+                                            name: c.child?.name ?? '',
+                                            imageUrl: c.child?.imageUrl ?? '',
+                                          ))
+                                      .toList() ??
+                                  [],
+                              educators: reflection.staff
+                                      ?.map((e) => EducatorModel(
+                                            name:
+                                                e.staff?.name?.toString() ?? '',
+                                            imageUrl:
+                                                e.staff?.imageUrl?.toString() ??
+                                                    '',
+                                          ))
+                                      .toList() ??
+                                  [],
                               permissionUpdate: permissionUpdate,
                               permissionDelete: permissionDelete,
                               onEditPressed: () {
-                                // Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder: (context) => AddReflectionScreen(
-                                //       centerId: selectedCenterId ?? '',
-                                //       screenType: 'edit',
-                                //       reflection: {
-                                //         'id': reflection.id,
-                                //         'title': reflection.title,
-                                //         'date': reflection.date,
-                                //         'images': reflection.images,
-                                //         'children': reflection.children.map((c) => {'name': c.name, 'avatarUrl': c.avatarUrl}).toList(),
-                                //         'educators': reflection.educators.map((e) => {'name': e.name, 'avatarUrl': e.avatarUrl}).toList(),
-                                //         'editUrl': reflection.editUrl,
-                                //         'printUrl': reflection.printUrl,
-                                //         'status': reflection.status,
-                                //       },
-                                //     ),
-                                //   ),
-                                // );
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AddReflectionScreen(
+                                        centerId: selectedCenterId,
+                                        screenType: 'edit',
+                                        id: reflection.id.toString()),
+                                  ),
+                                );
+                              },
+                              onDeletePressed: () async {
+                                showDeleteConfirmationDialog(context, () {
+                                  Navigator.pop(context);
+                                  _deleteReflection(
+                                      context, reflection.id.toString());
+                                });
                               },
                             ),
                           );

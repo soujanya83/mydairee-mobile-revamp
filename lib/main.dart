@@ -33,6 +33,7 @@ import 'package:mydiaree/features/reflection/presentation/bloc/add_relection/add
 import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflection_list_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
+import 'package:mydiaree/features/room/presentation/bloc/view_room/vieiw_room_bloc.dart';
 import 'package:mydiaree/features/service_detail/presentation/bloc/add_room/service_detail_bloc.dart';
 import 'package:mydiaree/features/settings/center_settings/presentation/bloc/center_settings/center_setting_bloc.dart';
 import 'package:mydiaree/features/settings/manage_permissions/presentation/bloc/list/manage_permission_bloc.dart';
@@ -58,10 +59,7 @@ class MyApp extends StatelessWidget {
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
     return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (_) => GlobalDataCubit(GlobleRepository()),
-        ),
+      providers: [ 
         BlocProvider<LoginBloc>(
           create: (context) => LoginBloc(),
         ),
@@ -75,7 +73,6 @@ class MyApp extends StatelessWidget {
         BlocProvider<ForgotPasswordBloc>(
             create: (context) => ForgotPasswordBloc()),
         BlocProvider<RoomListBloc>(create: (context) => RoomListBloc()),
-        BlocProvider<AddRoomBloc>(create: (context) => AddRoomBloc()),
         BlocProvider<ProgramPlanBloc>(create: (context) => ProgramPlanBloc()),
         BlocProvider<StaffLoginBloc>(create: (context) => StaffLoginBloc()),
         BlocProvider<ParentLoginBloc>(create: (context) => ParentLoginBloc()),
@@ -118,6 +115,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<IngredientBloc>(create: (context) => IngredientBloc()),
         BlocProvider<LearningAndProgressBloc>(create: (context) => LearningAndProgressBloc()),
         BlocProvider<ViewProgressBloc>(create: (context) => ViewProgressBloc()),
+        BlocProvider<ViewRoomBloc>(create: (context) => ViewRoomBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/config/app_fonts.dart';
 import 'package:mydiaree/core/cubit/global_data_cubit.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
@@ -74,14 +75,15 @@ class DashboardScreen extends StatelessWidget {
       'color': Colors.grey,
     },
   ];
-  final _focusDay = DateTime.now();
 
   DashboardScreen({super.key});
-
+  final GlobalRepository globalRepository = GlobalRepository();
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<GlobalDataCubit>().loadAll();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (centerDataGloble == null) {
+        centerDataGloble = await globalRepository.getCenters();
+      }
     });
     return CustomScaffold(
       appBar: const CustomAppBar(
@@ -157,17 +159,18 @@ class DashboardScreen extends StatelessWidget {
                   ];
                   return PatternBackground(
                     elevation: 0,
-                    border: Border.all(color: AppColors.primaryColor,width: .2),
+                    border:
+                        Border.all(color: AppColors.primaryColor, width: .2),
                     boxShadow: [
                       BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 8,
-                      offset:const Offset(0, 4),
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                       BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                     child: StatCard(

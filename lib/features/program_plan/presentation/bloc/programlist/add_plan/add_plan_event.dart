@@ -6,9 +6,16 @@ abstract class AddPlanEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
- 
- 
 
+class FetchProgramPlanDataEvent extends AddPlanEvent {
+  const FetchProgramPlanDataEvent({required this.centerId, this.planId});
+
+  final String centerId;
+  final String? planId;
+
+  @override
+  List<Object?> get props => [centerId, planId];
+}
 
 class SubmitAddPlanEvent extends AddPlanEvent {
   final String? planId;
@@ -33,8 +40,10 @@ class SubmitAddPlanEvent extends AddPlanEvent {
   final String math;
   final String language;
   final String culture;
+  final String centerId;
 
   const SubmitAddPlanEvent({
+    required this.centerId,
     this.planId,
     required this.month,
     required this.year,
@@ -85,4 +94,3 @@ class SubmitAddPlanEvent extends AddPlanEvent {
         culture,
       ];
 }
- 

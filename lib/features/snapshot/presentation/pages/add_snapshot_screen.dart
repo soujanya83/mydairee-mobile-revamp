@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/cubit/global_data_cubit.dart';
 import 'package:mydiaree/core/cubit/globle_model/children_model.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
@@ -107,36 +109,27 @@ class _AddSnapshotScreenState extends State<AddSnapshotScreen> {
     }
   }
 
+  ApiResponse<ChildModel?>? childrenData;
+  final GlobalRepository repository = GlobalRepository();
+  getChildren() async {
+    // childrenData = await repository.getChildren(widget.centerId);
+  }
+
   void _showChildrenSelectionDialog() async {
-    final globalState = context.read<GlobalDataCubit>().state;
+    final children = childrenData?.data?.data ?? [];
     await showDialog<List<String>>(
       context: context,
       builder: (context) => CustomMultiSelectDialog(
-        itemsId: List.generate(
-          globalState.childrenData?.data.length ?? 0,
-          (index) {
-            return globalState.childrenData?.data[index].id ?? '';
-          },
-        ),
-        itemsName: List.generate(
-          globalState.childrenData?.data.length ?? 0,
-          (index) {
-            return globalState.childrenData?.data[index].name ?? '';
-          },
-        ),
-        initiallySelectedIds: List.generate(selectedChildren.length, (index) {
-          final child = globalState.childrenData?.data.firstWhere(
-            (c) => c.name == selectedChildren[index].name,
-            orElse: () => ChildIten(id: '', name: ''),
-          );
-          return child?.id ?? '';
-        }),
+        itemsId: children.map((child) => child.id ?? '').toList(),
+        itemsName: children.map((child) => child.name ?? '').toList(),
+        initiallySelectedIds:
+            selectedChildren.map((child) => child?.id ?? '').toList(),
         title: 'Select Children',
         onItemTap: (selectedIds) {
           setState(() {
-            final children = globalState.childrenData?.data ?? [];
-            selectedChildren =
-                children.where((c) => selectedIds.contains(c.id)).toList();
+            selectedChildren = children
+                .where((child) => selectedIds.contains(child.id))
+                .toList();
           });
         },
       ),
@@ -182,21 +175,23 @@ class _AddSnapshotScreenState extends State<AddSnapshotScreen> {
                 // Room selection
                 Text('Room', style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 6),
-                RoomDropdown(
-                  selectedRoomId: selectedRoomId,
-                  onChanged: (room) {
-                    setState(() {
-                      selectedRoomId = room.id;
-                    });
-                  },
-                ),
+                // RoomDropdown(
+                //   selectedRoomId: selectedRoomId,
+                //   onChanged: (room) {
+                //     setState(() {
+                //       selectedRoomId = room.id;
+                //     });
+                //   },
+                // ),
                 const SizedBox(height: 16),
 
                 // Children selection
                 Text('Children', style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 6),
                 GestureDetector(
-                  onTap: _showChildrenSelectionDialog,
+                  onTap: (){
+                    _showChildrenSelectionDialog();
+                  },
                   child: Container(
                     width: 180,
                     height: 38,

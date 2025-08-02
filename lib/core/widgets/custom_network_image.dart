@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
 
 class CustomNetworkImage extends StatelessWidget {
   final String? imageUrl;
@@ -28,6 +29,7 @@ class CustomNetworkImage extends StatelessWidget {
   Widget build(BuildContext context) {
     print('custom image url');
     print(imageUrl);
+    print('Full URL: ${fullUrl ?? ('${AppUrls.baseApiUrl}/${imageUrl ?? ''}')}');
     return GestureDetector(
       onTap: !isImageShow
           ? null
@@ -37,13 +39,14 @@ class CustomNetworkImage extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => FullScreenImage(
-                    imageUrl: (imageUrl ?? ''),
+                    imageUrl: AppUrls.baseApiUrl + (imageUrl ?? ''),
                   ),
                 ),
               );
             },
+  
       child: CachedNetworkImage(
-        imageUrl: fullUrl ?? ((imageUrl ?? '')),
+        imageUrl: fullUrl ?? ('${AppUrls.baseApiUrl}/${imageUrl ?? ''}'),
         width: width,
         height: height,
         fit: fit,

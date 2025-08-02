@@ -1,4 +1,4 @@
-import 'package:mydiaree/features/reflection/data/model/reflection_list_model_screen.dart'; 
+import 'package:mydiaree/features/reflection/data/model/reflection_list_model.dart'; 
 
 abstract class ReflectionListState {}
 

@@ -1,81 +1,317 @@
-import 'package:mydiaree/core/config/app_colors.dart';
+// To parse this JSON data, do
+//
+//     final roomListModel = roomListModelFromJson(jsonString);
+
+import 'dart:convert';
+
+RoomListModel roomListModelFromJson(String str) => RoomListModel.fromJson(json.decode(str));
+
+String roomListModelToJson(RoomListModel data) => json.encode(data.toJson());
 
 class RoomListModel {
-  final List<RoomItem> rooms;
+    bool? status;
+    String? message;
+    List<Room>? rooms;
+    List<CenterData>? centers;
+    String? centerid;
+    List<RoomStaff>? roomStaffs;
 
-  RoomListModel({
-    required this.rooms,
-  });
+    RoomListModel({
+        this.status,
+        this.message,
+        this.rooms,
+        this.centers,
+        this.centerid,
+        this.roomStaffs,
+    });
 
-  factory RoomListModel.fromJson(Map<String, dynamic> json) {
-    return RoomListModel(
-      rooms: (json['rooms'] as List)
-          .map((roomJson) => RoomItem.fromJson(roomJson))
-          .toList(),
+    factory RoomListModel.fromJson(Map<String, dynamic> json) => RoomListModel(
+        status: json["status"],
+        message: json["message"],
+        rooms: json["rooms"] == null ? [] : List<Room>.from(json["rooms"]!.map((x) => Room.fromJson(x))),
+        centers: json["centers"] == null ? [] : List<CenterData>.from(json["centers"]!.map((x) => CenterData.fromJson(x))),
+        centerid: json["centerid"],
+        roomStaffs: json["roomStaffs"] == null ? [] : List<RoomStaff>.from(json["roomStaffs"]!.map((x) => RoomStaff.fromJson(x))),
     );
-  }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'rooms': rooms.map((room) => room.toJson()).toList(),
+    Map<String, dynamic> toJson() => {
+        "status": status,
+        "message": message,
+        "rooms": rooms == null ? [] : List<dynamic>.from(rooms!.map((x) => x.toJson())),
+        "centers": centers == null ? [] : List<dynamic>.from(centers!.map((x) => x.toJson())),
+        "centerid": centerid,
+        "roomStaffs": roomStaffs == null ? [] : List<dynamic>.from(roomStaffs!.map((x) => x.toJson())),
     };
-  }
 }
 
-class RoomItem {
-  final String id;
-  final String name;
-  final int capacity;
-  final int ageFrom;
-  final int ageTo;
-  final String status;
-  final int color;
-  final List<String> educatorIds;
-  final String userName;
+class CenterData {
+    int? id;
+    dynamic userId;
+    String? centerName;
+    String? adressStreet;
+    String? addressCity;
+    String? addressState;
+    String? addressZip;
+    DateTime? createdAt;
+    DateTime? updatedAt;
 
-  RoomItem({
-    required this.id,
-    required this.name,
-    required this.capacity,
-    required this.ageFrom,
-    required this.ageTo,
-    required this.status,
-    required this.color,
-    required this.educatorIds,
-    required this.userName,
-  });
+    CenterData({
+        this.id,
+        this.userId,
+        this.centerName,
+        this.adressStreet,
+        this.addressCity,
+        this.addressState,
+        this.addressZip,
+        this.createdAt,
+        this.updatedAt,
+    });
 
-  factory RoomItem.fromJson(Map<String, dynamic> json) {
-    // Convert hex color string to integer if needed
-    final colorValue = json['color'] is String
-        ? int.tryParse(json['color'].replaceFirst('#', '0xff')) ??
-            AppColors.primaryColor.value
-        : json['color'] ?? AppColors.primaryColor.value;
-
-    return RoomItem(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      capacity: json['capacity'] ?? 0,
-      ageFrom: json['ageFrom'] ?? 0,
-      ageTo: json['ageTo'] ?? 0,
-      status: json['status'] ?? 'Active',
-      color: colorValue,
-      educatorIds: (json['educatorIds'] as List?)?.cast<String>() ?? [],
-      userName: json['userName'] ?? '',
+    factory CenterData.fromJson(Map<String, dynamic> json) => CenterData(
+        id: json["id"],
+        userId: json["user_id"],
+        centerName: json["centerName"],
+        adressStreet: json["adressStreet"],
+        addressCity: json["addressCity"],
+        addressState: json["addressState"],
+        addressZip: json["addressZip"],
+        createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     );
-  }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'capacity': capacity,
-      'ageFrom': ageFrom,
-      'ageTo': ageTo,
-      'status': status,
-      'color': color,
-      'educatorIds': educatorIds,
-      'userName': userName,
+    Map<String, dynamic> toJson() => {
+        "id": id,
+        "user_id": userId,
+        "centerName": centerName,
+        "adressStreet": adressStreet,
+        "addressCity": addressCity,
+        "addressState": addressState,
+        "addressZip": addressZip,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
     };
-  }
+}
+
+class RoomStaff {
+    String? staffid;
+    String? name;
+
+    RoomStaff({
+        this.staffid,
+        this.name,
+    });
+
+    factory RoomStaff.fromJson(Map<String, dynamic> json) => RoomStaff(
+        staffid: json["staffid"],
+        name: json["name"],
+    );
+
+    Map<String, dynamic> toJson() => {
+        "staffid": staffid,
+        "name": name,
+    };
+}
+
+class Room {
+    int? roomid;
+    int? id;
+    String? name;
+    int? capacity;
+    int? userId;
+    String? color;
+    int? ageFrom;
+    int? ageTo;
+    String? status;
+    int? centerid;
+    dynamic createdBy;
+    List<Child>? children;
+    List<Educator>? educators;
+
+    Room({
+        this.roomid,
+        this.id,
+        this.name,
+        this.capacity,
+        this.userId,
+        this.color,
+        this.ageFrom,
+        this.ageTo,
+        this.status,
+        this.centerid,
+        this.createdBy,
+        this.children,
+        this.educators,
+    });
+
+    factory Room.fromJson(Map<String, dynamic> json) => Room(
+        roomid: json["roomid"],
+        id: json["id"],
+        name: json["name"],
+        capacity: json["capacity"],
+        userId: json["userId"],
+        color: json["color"],
+        ageFrom: json["ageFrom"],
+        ageTo: json["ageTo"],
+        status: json["status"],
+        centerid: json["centerid"],
+        createdBy: json["created_by"],
+        children: json["children"] == null ? [] : List<Child>.from(json["children"]!.map((x) => Child.fromJson(x))),
+        educators: json["educators"] == null ? [] : List<Educator>.from(json["educators"]!.map((x) => Educator.fromJson(x))),
+    );
+
+    Map<String, dynamic> toJson() => {
+        "roomid": roomid,
+        "id": id,
+        "name": name,
+        "capacity": capacity,
+        "userId": userId,
+        "color": color,
+        "ageFrom": ageFrom,
+        "ageTo": ageTo,
+        "status": status,
+        "centerid": centerid,
+        "created_by": createdBy,
+        "children": children == null ? [] : List<dynamic>.from(children!.map((x) => x.toJson())),
+        "educators": educators == null ? [] : List<dynamic>.from(educators!.map((x) => x.toJson())),
+    };
+}
+
+class Child {
+    int? id;
+    String? name;
+    String? lastname;
+    String? dob;
+    String? startDate;
+    int? room;
+    String? imageUrl;
+    ChildGender? gender;
+    Status? status;
+    String? daysAttending;
+    int? createdBy;
+    DateTime? createdAt;
+    int? centerid;
+    DateTime? childCreatedAt;
+    dynamic updatedAt;
+
+    Child({
+        this.id,
+        this.name,
+        this.lastname,
+        this.dob,
+        this.startDate,
+        this.room,
+        this.imageUrl,
+        this.gender,
+        this.status,
+        this.daysAttending,
+        this.createdBy,
+        this.createdAt,
+        this.centerid,
+        this.childCreatedAt,
+        this.updatedAt,
+    });
+
+    factory Child.fromJson(Map<String, dynamic> json) => Child(
+        id: json["id"],
+        name: json["name"],
+        lastname: json["lastname"],
+        dob: json["dob"],
+        startDate: json["startDate"],
+        room: json["room"],
+        imageUrl: json["imageUrl"],
+        gender: childGenderValues.map[json["gender"]]!,
+        status: statusValues.map[json["status"]]!,
+        daysAttending: json["daysAttending"],
+        createdBy: json["createdBy"],
+        createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+        centerid: json["centerid"],
+        childCreatedAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"],
+    );
+
+    Map<String, dynamic> toJson() => {
+        "id": id,
+        "name": name,
+        "lastname": lastname,
+        "dob": dob,
+        "startDate": startDate,
+        "room": room,
+        "imageUrl": imageUrl,
+        "gender": childGenderValues.reverse[gender],
+        "status": statusValues.reverse[status],
+        "daysAttending": daysAttending,
+        "createdBy": createdBy,
+        "createdAt": createdAt?.toIso8601String(),
+        "centerid": centerid,
+        "created_at": childCreatedAt?.toIso8601String(),
+        "updated_at": updatedAt,
+    };
+}
+
+enum ChildGender {
+    FEMALE,
+    MALE
+}
+
+final childGenderValues = EnumValues({
+    "Female": ChildGender.FEMALE,
+    "Male": ChildGender.MALE
+});
+
+enum Status {
+    ACTIVE
+}
+
+final statusValues = EnumValues({
+    "Active": Status.ACTIVE
+});
+
+class Educator {
+    int? userid;
+    String? name;
+    EducatorGender? gender;
+    String? imageUrl;
+
+    Educator({
+        this.userid,
+        this.name,
+        this.gender,
+        this.imageUrl,
+    });
+
+    factory Educator.fromJson(Map<String, dynamic> json) => Educator(
+        userid: json["userid"],
+        name: json["name"],
+        gender: educatorGenderValues.map[json["gender"]]!,
+        imageUrl: json["imageUrl"],
+    );
+
+    Map<String, dynamic> toJson() => {
+        "userid": userid,
+        "name": name,
+        "gender": educatorGenderValues.reverse[gender],
+        "imageUrl": imageUrl,
+    };
+}
+
+enum EducatorGender {
+    FEMALE,
+    MALE
+}
+
+final educatorGenderValues = EnumValues({
+    "FEMALE": EducatorGender.FEMALE,
+    "MALE": EducatorGender.MALE
+});
+
+class EnumValues<T> {
+    Map<String, T> map;
+    late Map<T, String> reverseMap;
+
+    EnumValues(this.map);
+
+    Map<T, String> get reverse {
+            reverseMap = map.map((k, v) => MapEntry(v, k));
+            return reverseMap;
+    }
 }

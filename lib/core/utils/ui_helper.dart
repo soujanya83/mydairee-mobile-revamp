@@ -55,6 +55,7 @@ class UIHelpers {
                 message,
                 style: TextStyle(color: textColor, fontSize: fontSize),
                 textAlign: TextAlign.center,
+                maxLines: 1,
               ),
             ),
           ),

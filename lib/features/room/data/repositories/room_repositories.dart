@@ -1,6 +1,8 @@
 import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
+import 'package:mydiaree/features/room/data/model/childrens_room_model.dart';
 import 'package:mydiaree/features/room/data/model/room_list_model.dart';
+import 'package:mydiaree/features/room/data/model/staff_model.dart' show Staff, StaffListModel;
 
 Map<String, dynamic> dummyRoomListData = {
   "rooms": [
@@ -64,43 +66,49 @@ class RoomRepository {
       dummy: true,
       dummyData: dummyRoomListData,
       {
-        'center_id': centerId,
-        if (searchQuery != null) 'search': searchQuery,
-        if (statusFilter != null && statusFilter != 'Select')
-          'status': statusFilter,
+        'user_center_id': centerId,
       },
       fromJson: (json) => RoomListModel.fromJson(json),
     );
   }
 
-  // Add a new room
-  Future<ApiResponse> addOrEditRoom({
-    String? id,
-    required String centerId,
-    required String name,
-    required String capacity,
+  Future<ApiResponse> addRoom({
+    required String roomName,
+    required String roomCapacity,
     required String ageFrom,
     required String ageTo,
     required String roomStatus,
-    required String color,
-    required dynamic educators,
+    required String roomColor,
+    required String dcenterid,
+    required List<int> educators,
+    String? roomId,
   }) async {
-    return postAndParse(
+    final data = {
+      if (roomId != null) 'id': roomId,
+      'room_name': roomName,
+      'room_capacity': roomCapacity,
+      'ageFrom': ageFrom,
+      'ageTo': ageTo,
+      'room_status': roomStatus,
+      'room_color': roomColor,
+      'dcenterid': dcenterid,
+      'educators': educators,
+    };
+
+    return await postAndParse(
       AppUrls.addRoom,
-      dummy: true,
-      {
-        if (id != null) 'id': id,
-        'center_id': centerId,
-        'name': name,
-        'capacity': capacity,
-        'age_from': ageFrom,
-        'age_to': ageTo,
-        'room_status': roomStatus,
-        'color': color,
-        'educatos': educators,
-      },
+      data,
     );
   }
+
+
+Future<ApiResponse<StaffListModel?>> getStaffList() async {
+  const url = '${AppUrls.baseApiUrl}/api/staffs';
+  return await getAndParseData(
+    url,
+    fromJson: (json) => StaffListModel.fromJson(json),
+  );
+}
 
   // Update room details
   // Future<ApiResponse> updateRoom({
@@ -130,15 +138,25 @@ class RoomRepository {
   // }
 
   // Batch delete rooms
-  Future<ApiResponse> deleteMultipleRooms({
-    required List<String> roomIds,
-  }) async {
-    return postAndParse(
-      AppUrls.deleteMultipleRooms,
-      dummy: true,
-      {
-        'room_ids': roomIds,
-      },
+  Future<ApiResponse> deleteMultipleRooms(List<int> selectedRoomIds) async {
+    const url = AppUrls
+        .bulkDeleteRooms; // e.g. 'https://mydiaree.com.au/api/rooms/bulk-delete'
+    final data = {
+      "selected_rooms": selectedRoomIds,
+    };
+
+    return await deleteDataApi(
+      url,
+      data: data,
+    );
+  }
+
+  Future<ApiResponse<ChildrensRoomModel?>> getChildrenByRoomId(
+      String roomId) async {
+    final url = '${AppUrls.baseApiUrl}/api/room/$roomId/children';
+    return await getAndParseData(
+      url,
+      fromJson: (json) => ChildrensRoomModel.fromJson(json),
     );
   }
 }

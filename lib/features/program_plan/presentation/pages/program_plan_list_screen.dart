@@ -25,9 +25,11 @@ class ProgramPlansListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context
-          .read<ProgramPlanBloc>()
-          .add(const FetchProgramPlansEvent(centerId: '1'));
+      final bloc = context.read<ProgramPlanBloc>();
+      final state = bloc.state;
+      if (state is! ProgramPlanLoaded || state.prgramPlanListData == null) {
+        bloc.add(const FetchProgramPlansEvent(centerId: '1'));
+      }
     });
     return CustomScaffold(
       appBar: const CustomAppBar(
@@ -43,7 +45,9 @@ class ProgramPlansListScreen extends StatelessWidget {
             );
             selectedProgramIds.clear();
             context.read<ProgramPlanBloc>().add(
-                  FetchProgramPlansEvent(centerId: selectedCenterId.isEmpty ? '1' : selectedCenterId),
+                  FetchProgramPlansEvent(
+                      centerId:
+                          selectedCenterId.isEmpty ? '1' : selectedCenterId),
                 );
           } else if (state is ProgramPlanError) {
             UIHelpers.showToast(
@@ -60,17 +64,14 @@ class ProgramPlansListScreen extends StatelessWidget {
             return Center(child: Text(state.message));
           } else if (state is ProgramPlanLoaded) {
             if (state.prgramPlanListData?.data?.programPlans?.isEmpty ?? true) {
-              return  const Center(child: Text(' No plans found.'));
+              return const Center(child: Text(' No plans found.'));
             }
             final plans = state.prgramPlanListData!.data!.programPlans!;
             return SingleChildScrollView(
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Card Header
-
-                  // Filters
+                children: [ 
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -131,6 +132,7 @@ class ProgramPlansListScreen extends StatelessWidget {
                         final plan = plans[index];
                         final isSelected = selectedProgramIds.contains(plan.id);
                         return ProgramPlanCard(
+                          
                           index: index,
                           isSelected: isSelected,
                           onSelect: (selected) {
@@ -147,11 +149,12 @@ class ProgramPlansListScreen extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => AddProgramPlanScreen(
+                                  programPlanId: plan.id.toString(),
+                                  editPlanData: plan,
                                   centerId: selectedCenterId.isEmpty
                                       ? '1'
                                       : selectedCenterId,
                                   screenType: 'edit',
-                                  programPlan: {},
                                 ),
                               ),
                             );
@@ -174,7 +177,7 @@ class ProgramPlansListScreen extends StatelessWidget {
                             );
                           },
                           id: plan.id?.toString() ?? '',
-                          name: plan.room?.name?.name??'',
+                          name: plan.room?.name?.name ?? '',
                           createdBy: plan.creator?.name?.name ?? '',
                           createdAt: plan.createdAt?.toString() ?? '',
                           endDate: plan.updatedAt?.toString() ?? '',
@@ -360,6 +363,7 @@ class ProgramPlansListScreen extends StatelessWidget {
     );
   }
 }
+
 class ProgramPlanCard extends StatelessWidget {
   final int index;
   final String id;

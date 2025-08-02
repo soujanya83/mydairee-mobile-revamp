@@ -1,81 +1,50 @@
 import 'package:mydiaree/core/config/app_urls.dart';
-import 'package:mydiaree/core/cubit/globle_model/center_model.dart';
-import 'package:mydiaree/core/cubit/globle_model/children_model.dart';
-import 'package:mydiaree/core/cubit/globle_model/educator_model.dart';
+import 'package:mydiaree/core/cubit/globle_model/center_model.dart'; 
 import 'package:mydiaree/core/services/apiresoponse.dart';
+import 'package:mydiaree/features/program_plan/data/model/children_program_plan_model.dart';
+import 'package:mydiaree/features/program_plan/data/model/user_add_program_model.dart';
+import 'package:mydiaree/features/room/data/model/room_list_model.dart';
 
-class GlobleRepository {
-  Future<ApiResponse<CenterModel?>> getCenters() async {
-    return postAndParse<CenterModel>(
-      AppUrls.getCenterList,
-      {},
-      dummyData: centeresJson,
-      dummy: true,
+ApiResponse<CenterModel?>? centerDataGloble; 
+
+class GlobalRepository {
+  Future<ApiResponse<CenterModel?>?> getCenters() async {
+    return getAndParseData<CenterModel?>(
+      AppUrls.getCenters,  
       fromJson: (json) => CenterModel.fromJson(json),
     );
   }
 
-  Future<ApiResponse<ChildModel?>> getChildren() async {
-    return postAndParse<ChildModel>(
-      AppUrls.getChildrenList,
-      {},
-      dummyData: childrensJson,
-      dummy: true,
-      fromJson: (json) => ChildModel.fromJson(json),
+  Future<ApiResponse<ChildrenAddProgramPlanModel?>> getChildren(String roomId) async {
+    return postAndParse<ChildrenAddProgramPlanModel?>(
+      AppUrls.getRoomChildren,
+      {'room_id': roomId},
+      fromJson: (json) => ChildrenAddProgramPlanModel.fromJson(json),
     );
   }
 
-  Future<ApiResponse<EducatorModel?>> getEducators() async {
-    return postAndParse<EducatorModel>(
-      AppUrls.getEducators,
-      {},
-      dummyData: dummyEducatorData,
-      dummy: true,
-      fromJson: (json) => EducatorModel.fromJson(json),
+  Future<ApiResponse<UserAddProgramPlanModel?>> getEducators(String roomId) async {
+
+    return postAndParse<UserAddProgramPlanModel?>(
+      AppUrls.getRoomUsers ,
+      {'room_id': roomId},
+      fromJson: (json) => UserAddProgramPlanModel.fromJson(json),
     );
   }
+
+  Future<ApiResponse<RoomListModel?>> getRooms({
+    required String centerId,
+    String? searchQuery,
+    String? statusFilter,
+  }) async {
+    return await postAndParse(
+      AppUrls.getRooms,
+      {
+        'center_id': centerId,
+      },
+      fromJson: (json) => RoomListModel.fromJson(json),
+    );
+  }
+
+ 
 }
-
-final childrensJson = {
-  "success": true,
-  "data": [
-    {"id": "101", "name": "Child A"},
-    {"id": "102", "name": "Child B"}
-  ]
-};
-
-final centeresJson = {
-  "success": true,
-  "data": [
-    {"id": "1", "name": "Center A"},
-    {"id": "2", "name": "Center B"}
-  ]
-};
-
-Map<String, dynamic> dummyEducatorData = {
-  "success": true,
-  "message": "Educators fetched successfully",
-  "educators": [
-    {
-      "id": "1",
-      "name": "John Doe",
-      "email": "john@example.com",
-      "phone": "555-0101",
-      "status": "Active"
-    },
-    {
-      "id": "2",
-      "name": "Jane Smith",
-      "email": "jane@example.com",
-      "phone": "555-0102",
-      "status": "Active"
-    },
-    {
-      "id": "3",
-      "name": "Mike Johnson",
-      "email": "mike@example.com",
-      "phone": "555-0103",
-      "status": "Inactive"
-    }
-  ]
-};

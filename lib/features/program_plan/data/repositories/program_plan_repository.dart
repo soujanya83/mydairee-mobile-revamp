@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
+import 'package:mydiaree/features/program_plan/data/model/children_program_plan_model.dart';
 import 'package:mydiaree/features/program_plan/data/model/program_plan_data_model.dart'
     hide User;
 import 'package:mydiaree/features/program_plan/data/model/program_plan_list_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:mydiaree/core/config/app_urls.dart';
-import 'package:mydiaree/features/program_plan/data/model/UsersAddProgramPlan.dart';
-import 'package:mydiaree/features/program_plan/data/model/ChildrenAddProgramPlan.dart';
+import 'package:mydiaree/features/program_plan/data/model/user_add_program_model.dart';
 
 class ProgramPlanRepository {
   Future<ApiResponse<ProgramPlanListModel?>> getProgramPlans({
@@ -68,7 +68,7 @@ class ProgramPlanRepository {
       {'room_id': roomId},
       dummy: false,
       fromJson: (json) => ChildrenAddProgramPlanModel.fromJson(json),
-    ); 
+    );
     return response.data;
   }
 
@@ -95,34 +95,40 @@ class ProgramPlanRepository {
     required String math,
     required String language,
     required String culture,
+    required String centerId,
   }) async {
+    final data = {
+      if (planId != null) 'plan_id': planId,
+      'centerid': centerId.trim(),
+      'months': month,
+      'years': year.trim(),
+      'room_id': roomId.trim(),
+      'users': educators,
+      'children': children,
+      'focus_area': focusArea.trim(),
+      'outdoor_experiences': outdoorExperiences.trim(),
+      'inquiry_topic': inquiryTopic.trim(),
+      'sustainability_topic': sustainabilityTopic.trim(),
+      'special_events': specialEvents.trim(),
+      'children_voices': childrenVoices.trim(),
+      'families_input': familiesInput.trim(),
+      'group_experience': groupExperience.trim(),
+      'spontaneous_experience': spontaneousExperience.trim(),
+      'mindfulness_experiences': mindfulnessExperience.trim(),
+      'practical_life': practicalLife.trim(),
+      'sensorialData': sensorial.trim(),
+      'math': math.trim(),
+      'languageData': language.trim(),
+      'cultureData': culture.trim(),
+      'eylf': eylf.trim(),
+    };
+    if (kDebugMode) {
+      print('addOrEditPlan data: $data');
+    } 
     return postAndParse(
       AppUrls.addPlan,
-      dummy: true,
-      {
-        if (planId != null) 'id': planId,
-        'month': month,
-        'year': year,
-        'room_id': roomId,
-        'educators': educators,
-        'children': children,
-        'focus_area': focusArea,
-        'outdoor_experiences': outdoorExperiences,
-        'inquiry_topic': inquiryTopic,
-        'sustainability_topic': sustainabilityTopic,
-        'special_events': specialEvents,
-        'children_voices': childrenVoices,
-        'families_input': familiesInput,
-        'group_experience': groupExperience,
-        'spontaneous_experience': spontaneousExperience,
-        'mindfulness_experiences': mindfulnessExperience,
-        'eylf': eylf,
-        'practical_life': practicalLife,
-        'sensorial': sensorial,
-        'math': math,
-        'language': language,
-        'culture': culture,
-      },
+      dummy: false,
+      data,
     );
   }
 

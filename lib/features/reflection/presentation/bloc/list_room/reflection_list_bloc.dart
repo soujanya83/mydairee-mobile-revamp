@@ -25,11 +25,11 @@ class ReflectionListBloc
     try {
       final response = await _reflectionRepository.getReflections(
         centerId: event.centerId,
-        search: event.search,
-        status: event.status,
-        children: event.children,
-        authors: event.authors,
-        page: event.page,
+        // search: event.search,
+        // status: event.status,
+        // children: event.children,
+        // authors: event.authors,
+        // page: event.page,
       );
 
       if (response.success && response.data != null) {
@@ -55,7 +55,7 @@ class ReflectionListBloc
     try {
       final response =
           await _reflectionRepository.deleteReflections(event.reflectionIds);
-      if (response.success) {
+      if (response.success){
         emit(ReflectionDeletedState());
         add(FetchReflectionsEvent(centerId: event.centerId)); // Reload list
       } else {

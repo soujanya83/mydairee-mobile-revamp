@@ -8,9 +8,11 @@ class AddPlanBloc extends Bloc<AddPlanEvent, AddPlanState> {
 
   AddPlanBloc() : super(AddPlanInitial()) {
     on<SubmitAddPlanEvent>((event, emit) async {
+      print('SubmitAddPlanEvent triggered with event: $event');
       emit(AddPlanLoading());
       try {
         final response = await repository.addOrEditPlan(
+          centerId: event.centerId,
           planId: event.planId,
           month: event.month,
           year: event.year,
@@ -40,7 +42,10 @@ class AddPlanBloc extends Bloc<AddPlanEvent, AddPlanState> {
         } else {
           emit(AddPlanFailure(response.message));
         }
-      } catch (e) {
+      } catch (e,s) {
+        print('error in SubmitAddPlanEvent');
+        print(s.toString());
+        print(e.toString());
         emit(AddPlanFailure(e.toString()));
       }
     });

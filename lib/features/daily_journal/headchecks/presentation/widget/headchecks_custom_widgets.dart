@@ -18,8 +18,11 @@ class HeadCheckCard extends StatelessWidget {
   final VoidCallback? onRemove;
   final Function(String?) onHourChanged;
   final Function(String?) onMinuteChanged;
-  final Function() onSave;
+  final Function() onDelete;
   final Function() onCancel;
+    final ValueChanged<String>? onHeadCountChanged;
+  final ValueChanged<String>? onSignatureChanged;
+  final ValueChanged<String>? onCommentsChanged;
 
   const HeadCheckCard({
     super.key,
@@ -33,8 +36,8 @@ class HeadCheckCard extends StatelessWidget {
     this.onRemove,
     required this.onHourChanged,
     required this.onMinuteChanged,
-    required this.onSave,
-    required this.onCancel,
+    required this.onDelete,
+    required this.onCancel, this.onHeadCountChanged, this.onSignatureChanged, this.onCommentsChanged,
   });
 
   static final List<String> hours =
@@ -100,10 +103,13 @@ class HeadCheckCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 5),
-            CustomTextFormWidget(
+           CustomTextFormWidget(
               maxLines: 1,
               keyboardType: TextInputType.number,
               controller: headCountController,
+              onChanged: (value) {
+                onHeadCountChanged?.call(value ?? '');
+              },
             ),
             const SizedBox(height: 15),
             Text(
@@ -111,9 +117,12 @@ class HeadCheckCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 5),
-            CustomTextFormWidget(
+               CustomTextFormWidget(
               maxLines: 1,
               controller: signatureController,
+              onChanged: (value){
+                onSignatureChanged?.call(value??'');
+              },
             ),
             const SizedBox(height: 15),
             Text(
@@ -121,30 +130,25 @@ class HeadCheckCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 5),
-            CustomTextFormWidget(
+              CustomTextFormWidget(
               maxLines: 2,
               controller: commentsController,
+              onChanged: (value){
+                onCommentsChanged?.call(value??'');
+              },
             ),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                OutlinedButton(
-                  onPressed: onCancel,
-                  child: Text(
-                    'CANCEL',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(color: Colors.black),
-                  ),
-                ),
+               
                 const SizedBox(width: 16),
                 CustomButton(
                   height: 40,
+                  color: AppColors.errorColor,
                   width: 100,
-                  text: 'SAVE',
-                  ontap: onSave,
+                  text: 'Delete',
+                  ontap: onDelete,
                 ),
               ],
             )

@@ -160,16 +160,16 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
               }),
               // Text('Room', style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 6),
-              StatefulBuilder(builder: (context, setState) {
-                return RoomDropdown(
-                  selectedRoomId: selectedRoomId,
-                  onChanged: (room) {
-                    setState(() {
-                      selectedRoomId = room.id;
-                    });
-                  },
-                );
-              }),
+              // StatefulBuilder(builder: (context, setState) {
+              //   return RoomDropdown(
+              //     selectedRoomId: selectedRoomId,
+              //     onChanged: (room) {
+              //       setState(() {
+              //         selectedRoomId = room.id;
+              //       });
+              //     },
+              //   );
+              // }),
               const SizedBox(height: 10),
               BlocBuilder<SleepChecklistBloc, SleepChecklistState>(
                 builder: (context, state) {

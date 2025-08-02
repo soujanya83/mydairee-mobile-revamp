@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
-import 'package:mydiaree/core/cubit/global_data_cubit.dart';
 import 'package:mydiaree/core/cubit/globle_model/educator_model.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
@@ -11,11 +12,16 @@ import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_multi_selected_dialog.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
+import 'package:mydiaree/features/program_plan/data/model/user_add_program_model.dart';
 import 'package:mydiaree/features/room/data/model/room_list_model.dart';
+import 'package:mydiaree/features/room/data/model/staff_model.dart' show Staff;
+import 'package:mydiaree/features/room/data/repositories/room_repositories.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_event.dart';
 import 'package:mydiaree/features/room/presentation/bloc/add_room/add_room_state.dart';
+import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_state.dart';
+import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_event.dart';
 
 class AddRoomScreen extends StatefulWidget {
   final String screenType;
@@ -37,13 +43,33 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
   Color pickerColor = AppColors.primaryColor;
   Color currentColor = AppColors.primaryColor;
 
-  List<EducatorItem?> selectedEducators = [];
-  List<RoomItem?> selectedRooms = [];
+  List<User?> selectedEducators = [];
   final _formKey = GlobalKey<FormState>();
+  final GlobalRepository repository = GlobalRepository();
+  ApiResponse<UserAddProgramPlanModel?>? educatorData;
+
+  Future<void> getEducator() async {
+    educatorData = await repository.getEducators('1013182027');
+    setState(() {});
+  }
+
+  bool isLoading = false;
+
+  List<Staff> staffList = [];
+  List<Staff> selectedStaff = [];
+  Future<void> fetchStaff() async {
+    final response = await RoomRepository().getStaffList();
+    if (response.success && response.data != null) {
+      setState(() {
+        staffList = response.data!.data ?? [];
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    fetchStaff();
     if (widget.room != null && widget.screenType == 'edit') {
       name.text = widget.room!['name'] ?? '';
       capacity.text = widget.room!['capacity']?.toString() ?? '';
@@ -54,21 +80,13 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
           Color(widget.room!['color'] ?? AppColors.primaryColor.value);
       pickerColor = currentColor;
       try {
-        selectedEducators = List.generate(
-                context.read<GlobalDataState>().centersData?.data.length ?? 0,
-                (index) => context
-                    .read<GlobalDataState>()
-                    .educatorsData
-                    ?.educators[index])
-            .toList()
-            .where((e) =>
-                context
-                    .read<GlobalDataState>()
-                    .educatorsData
-                    ?.educators
-                    .contains(e) ??
-                false)
-            .toList();
+        if (educatorData != null &&
+            educatorData!.success &&
+            educatorData!.data != null) {
+          selectedEducators = educatorData!.data!.users ?? [];
+        } else {
+          selectedEducators = [];
+        }
       } catch (e) {
         debugPrint('Error parsing educatorIds: $e');
         selectedEducators = [];
@@ -80,68 +98,96 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
     pickerColor = color;
   }
 
-  void _showEducatorDialog() async {
-    final globalState = context.read<GlobalDataCubit>().state;
-    await showDialog<List<Map<String, String>>>(
+  // void _showEducatorDialog() async {
+  //   final educators = educatorData?.data?.users ?? [];
+  //   await showDialog<List<Map<String, String>>>(
+  //     context: context,
+  //     builder: (context) => CustomMultiSelectDialog(
+  //       itemsId: List.generate(
+  //         educators.length,
+  //         (index) => educators[index].id.toString(),
+  //       ),
+  //       itemsName: List.generate(
+  //         educators.length,
+  //         (index) => educators[index].name ?? '',
+  //       ),
+  //       initiallySelectedIds: List.generate(
+  //         selectedEducators.length,
+  //         (index) => selectedEducators[index]?.id?.toString() ?? '',
+  //       ),
+  //       title: 'Select Educator',
+  //       onItemTap: (selectedIds) {
+  //         setState(() {
+  //           selectedEducators = educators
+  //               .where((e) => selectedIds.contains(e.id.toString()))
+  //               .toList();
+  //         });
+  //       },
+  //     ),
+  //   );
+  // }
+
+  void _showEducatorAndStaffDialog() async {
+    final educators = educatorData?.data?.users ?? [];
+    await showDialog(
       context: context,
       builder: (context) => CustomMultiSelectDialog(
-        itemsId: List.generate(
-          globalState.educatorsData?.educators.length ?? 0,
-          (index) {
-            return globalState.educatorsData?.educators[index].id ?? '';
-          },
-        ),
-        itemsName: List.generate(
-          globalState.educatorsData?.educators.length ?? 0,
-          (index) {
-            return globalState.educatorsData?.educators[index].name ?? '';
-          },
-        ),
-        initiallySelectedIds: List.generate(selectedEducators.length, (index) {
-          return selectedEducators[index]?.id ?? '';
-        }),
-        title: 'Select Educator',
+        itemsId: [
+          ...educators.map((e) => 'edu_${e.id}'),
+          ...staffList.map((s) => 'staff_${s.id}')
+        ],
+        itemsName: [
+          ...educators.map((e) => '${e.name ?? ''}'),
+          ...staffList.map((s) => '${s.name ?? ''}')
+        ],
+        initiallySelectedIds: [
+          ...selectedEducators.map((e) => 'edu_${e?.id}'),
+          ...selectedStaff.map((s) => 'staff_${s.id}')
+        ],
+        title: 'Select Educator/Staff',
         onItemTap: (selectedIds) {
           setState(() {
-            final educators = globalState.educatorsData?.educators ?? [];
-            selectedEducators =
-                educators.where((e) => selectedIds.contains(e.id)).toList();
+            selectedEducators = educators
+                .where((e) => selectedIds.contains('edu_${e.id}'))
+                .toList();
+            selectedStaff = staffList
+                .where((s) => selectedIds.contains('staff_${s.id}'))
+                .toList();
           });
         },
       ),
     );
   }
 
-  void _showRoomDialog() async {
-    final roomListState = context.read<RoomListLoaded>();
-    await showDialog<List<Map<String, String>>>(
-      context: context,
-      builder: (context) => CustomMultiSelectDialog(
-        itemsId: List.generate(
-          roomListState.roomsData.rooms.length,
-          (index) {
-            return roomListState.roomsData.rooms[index].id;
-          },
-        ),
-        itemsName: List.generate(
-          roomListState.roomsData.rooms.length,
-          (index) {
-            return roomListState.roomsData.rooms[index].name;
-          },
-        ),
-        initiallySelectedIds: List.generate(selectedRooms.length, (index) {
-          return selectedRooms[index]?.id ?? '';
-        }),
-        title: 'Select Educator',
-        onItemTap: (selectedIds) {
-          setState(() {
-            final rooms = roomListState.roomsData.rooms;
-            selectedRooms =
-                rooms.where((e) => selectedIds.contains(e.id)).toList();
-          });
-        },
-      ),
+  Future<void> submitRoom() async {
+    if (_formKey.currentState?.validate() != true) return;
+    final educatorIds =
+        selectedEducators.map((e) => e?.id).whereType<int>().toList();
+
+    final response = await RoomRepository().addRoom(
+      roomName: name.text,
+      roomCapacity: capacity.text,
+      ageFrom: ageFrom.text,
+      ageTo: ageTo.text,
+      roomStatus: _chosenStatus,
+      roomColor:
+          '#${currentColor.value.toRadixString(16).padLeft(8, '0').substring(2)}',
+      dcenterid: widget.centerId,
+      educators: educatorIds,
+      roomId: (widget.screenType == 'edit') ? widget.room!['id'] : null,
     );
+
+    UIHelpers.showToast(
+      context,
+      message: response.message,
+      backgroundColor:
+          response.success ? AppColors.successColor : AppColors.errorColor,
+    );
+    if (response.success) {
+      final roomListBloc = context.read<RoomListBloc>();
+      roomListBloc.add(FetchRoomsEvent(centerId: widget.centerId));
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -209,7 +255,7 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                           final from = int.tryParse(ageFrom.text);
                           if (n == null || n < 0) return 'Enter valid age';
                           if (from != null && n < from) {
-                            return 'Age To must be >= Age From';
+                            return 'Enter Valid Age';
                           }
                           return null;
                         },
@@ -274,7 +320,7 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                 const SizedBox(height: 6),
                 GestureDetector(
                   onTap: () {
-                    _showEducatorDialog();
+                    _showEducatorAndStaffDialog();
                   },
                   child: Container(
                     width: 180,
@@ -295,16 +341,16 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                if (selectedEducators.isNotEmpty)
+                if (selectedStaff.isNotEmpty)
                   Wrap(
                     spacing: 8,
-                    children: selectedEducators
-                        .map((edu) => Chip(
-                              label: Text(edu?.name ?? ''),
+                    children: selectedStaff
+                        .map((staff) => Chip(
+                              label: Text(staff.name ?? ''),
                               onDeleted: () {
                                 setState(() {
-                                  selectedEducators
-                                      .removeWhere((e) => e?.id == edu?.id);
+                                  selectedStaff
+                                      .removeWhere((s) => s.id == staff.id);
                                 });
                               },
                             ))
@@ -320,58 +366,45 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                           style: TextStyle(color: Colors.black)),
                     ),
                     const SizedBox(width: 16),
-                    BlocListener<AddRoomBloc, AddRoomState>(
-                        listener: (context, state) {
-                      if (state is AddRoomFailure) {
+                    CustomButton(
+                      height: 45,
+                      width: 100,
+                      text: 'SAVE',
+                      isLoading: isLoading,
+                      ontap: () async {
+                        if (_formKey.currentState?.validate() != true) return;
+                        setState(() {
+                          isLoading = true;
+                        });
+                        final staffIds = selectedStaff.map((s) => s.id).whereType<int>().toList();
+                        final response = await RoomRepository().addRoom(
+                          roomName: name.text,
+                          roomCapacity: capacity.text,
+                          ageFrom: ageFrom.text,
+                          ageTo: ageTo.text,
+                          roomStatus: _chosenStatus,
+                          roomColor:
+                              '#${currentColor.value.toRadixString(16).padLeft(8, '0').substring(2)}',
+                          dcenterid: widget.centerId,
+                          // educators: selectedEducators
+                          //     .map((e) => e?.id)
+                          //     .whereType<int>()
+                          //     .toList(),
+                          educators: staffIds,
+                        );
+                        setState(() {
+                          isLoading = false;
+                        });
                         UIHelpers.showToast(
                           context,
-                          message: state.error,
-                          backgroundColor: AppColors.errorColor,
+                          message: response.message,
+                          backgroundColor: response.success
+                              ? AppColors.successColor
+                              : AppColors.errorColor,
                         );
-                      } else if (state is AddRoomSuccess) {
-                        UIHelpers.showToast(
-                          context,
-                          message: state.message,
-                          backgroundColor: AppColors.successColor,
-                        );
-                        Navigator.pop(context);
-                      }
-                    }, child: BlocBuilder<AddRoomBloc, AddRoomState>(
-                            builder: (context, state) {
-                      return CustomButton(
-                        height: 45,
-                        width: 100,
-                        text: 'SAVE',
-                        isLoading: state is AddRoomLoading,
-                        ontap: () {
-                          {
-                            try {
-                              context.read<AddRoomBloc>().add(
-                                  SubmitAddRoomEvent(
-                                      id: (widget.screenType == 'edit')
-                                          ? (widget.room?['id'])
-                                          : null,
-                                      centerId:
-                                          widget.room?['centerId'].toString() ??
-                                              '',
-                                      name: name.text,
-                                      capacity: capacity.text,
-                                      ageFrom: ageFrom.text,
-                                      ageTo: ageTo.text,
-                                      roomStatus: _chosenStatus,
-                                      color: currentColor.toString(),
-                                      educators: List.generate(
-                                          selectedEducators.length,
-                                          (index) =>
-                                              selectedEducators[index]?.id)));
-                            } catch (e, s) {
-                              print(e.toString());
-                              print(s.toString());
-                            }
-                          }
-                        },
-                      );
-                    })),
+                        if (response.success) Navigator.pop(context);
+                      },
+                    ),
                   ],
                 ),
               ],

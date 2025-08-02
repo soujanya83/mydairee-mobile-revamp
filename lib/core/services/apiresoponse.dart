@@ -19,6 +19,7 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
     bool dummy = false,
     Map<String, dynamic>? dummyData}) async {
   try {
+    print('Posting data to $url with data: ${jsonEncode(data)}');
     final response = await ApiServices.postData(url, data,
         filesPath: filesPath,
         fileField: fileField,
@@ -92,6 +93,29 @@ Future<ApiResponse<T?>> getAndParseData<T>(
     return ApiResponse(success: false, message: 'Something Went Wrong');
   }
 }
+
+Future<ApiResponse> deleteDataApi(String url, {Map<String, dynamic>? headers, Map<String, dynamic>? data}) async {
+  try {
+    print('Deleting data from $url');
+    final response = await ApiServices.deleteData(url, headers: headers, data: data);
+    print('Response: ${response.data}');
+    print('Success: ${response.success}');
+    print('Message: ${response.message}');
+    
+    if (response.success) {
+      return ApiResponse(success: true, message: response.message);
+    } else {
+      return ApiResponse(success: false, message: response.message);
+    }
+  } catch (e, s) {
+    print('Error in deleteDataById');
+    print('Error: $e');
+    print('Stack: $s');
+    return ApiResponse(success: false, message: 'Something Went Wrong');
+  }
+}
+
+
 
 String getApiMessage(Response response) {
   try {

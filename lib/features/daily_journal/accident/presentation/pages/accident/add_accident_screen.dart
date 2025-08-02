@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:mydiaree/core/cubit/globle_model/children_model.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/cubit/global_data_cubit.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
@@ -330,29 +332,33 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
     aNotes?.text = accident['notes'] ?? '';
   }
 
+
+///////
+  ApiResponse<ChildModel?>? childrenData;
+  final GlobalRepository repository = GlobalRepository();
+  getChildren() async {
+    // childrenData = await repository.getChildren(widget.centerid);
+  }
+
   void _showChildDialog() async {
-    final globalState = context.read<GlobalDataCubit>().state;
+    final children = childrenData?.data?.data ?? [];
+
     await showDialog<List<Map<String, String>>>(
       context: context,
       builder: (context) => CustomMultiSelectDialog(
-        itemsId: List.generate(
-          globalState.childrenData?.data.length ?? 0,
-          (index) => globalState.childrenData?.data[index].id ?? '',
-        ),
-        itemsName: List.generate(
-          globalState.childrenData?.data.length ?? 0,
-          (index) => globalState.childrenData?.data[index].name ?? '',
-        ),
+        itemsId: children.map((child) => child.id).toList(),
+        itemsName: children.map((child) => child.name).toList(),
         initiallySelectedIds: selectedChildId != null ? [selectedChildId!] : [],
         title: 'Select Child',
         onItemTap: (selectedIds) {
           setState(() {
             selectedChildId = selectedIds.isNotEmpty ? selectedIds[0] : null;
-            final children = globalState.childrenData?.data ?? [];
+
             final selectedChild = children.firstWhere(
               (child) => child.id == selectedChildId,
               orElse: () => ChildIten(id: '', name: ''),
             );
+
             currentIndex = children.indexOf(selectedChild);
             childrensFetched = true;
           });

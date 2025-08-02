@@ -23,6 +23,31 @@ class HeadCheckModel   {
     required this.createdAt,
   });
 
+  // Add this to your HeadCheckModel class
+HeadCheckModel copyWith({
+  String? id,
+  String? roomId,
+  String? diaryDate,
+  String? time,
+  String? headCount,
+  String? signature,
+  String? comments,
+  String? createdBy,
+  String? createdAt,
+}) {
+  return HeadCheckModel(
+    id: id ?? this.id,
+    roomId: roomId ?? this.roomId,
+    diaryDate: diaryDate ?? this.diaryDate,
+    time: time ?? this.time,
+    headCount: headCount ?? this.headCount,
+    signature: signature ?? this.signature,
+    comments: comments ?? this.comments,
+    createdBy: createdBy ?? this.createdBy,
+    createdAt: createdAt ?? this.createdAt,
+  );
+}
+
   factory HeadCheckModel.fromJson(Map<String, dynamic> json) {
     return HeadCheckModel(
       id: json['id']?.toString(),

@@ -9,29 +9,31 @@ import 'package:mydiaree/core/widgets/custom_multi_selected_dialog.dart';
 import 'package:mydiaree/core/widgets/custom_multiline_text_field.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
-import 'package:mydiaree/core/widgets/dropdowns/room_dropdown.dart';
-import 'package:mydiaree/features/program_plan/data/model/ChildrenAddProgramPlan.dart';
-import 'package:mydiaree/features/program_plan/data/model/UsersAddProgramPlan.dart';
+import 'package:mydiaree/core/widgets/dropdowns/room_dropdown.dart'; 
+import 'package:mydiaree/features/program_plan/data/model/children_program_plan_model.dart';
 import 'package:mydiaree/features/program_plan/data/model/program_plan_data_model.dart';
 import 'package:mydiaree/features/program_plan/data/model/program_plan_list_model.dart';
+import 'package:mydiaree/features/program_plan/data/model/user_add_program_model.dart';
 import 'package:mydiaree/features/program_plan/data/repositories/program_plan_repository.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_bloc.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_event.dart';
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/add_plan/add_plan_state.dart';
+import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_bloc.dart';
+import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_event.dart';
 import 'package:mydiaree/features/program_plan/presentation/widget/add_plan_widgets.dart';
 import 'package:mydiaree/features/program_plan/presentation/widget/eylf_wrapper.dart';
 
 class AddProgramPlanScreen extends StatefulWidget {
   final String centerId;
   final String? programPlanId;
-  final Map<String, dynamic>? programPlan;
   final String screenType;
+  final ProgramPlan? editPlanData;
 
   const AddProgramPlanScreen({
     super.key,
     required this.centerId,
     this.programPlanId,
-    this.programPlan,
+    this.editPlanData,
     required this.screenType,
   });
 
@@ -73,6 +75,8 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
   final TextEditingController languageController = TextEditingController();
   final TextEditingController cultureController = TextEditingController();
 
+  bool loading = false;
+
   // Lists for dropdowns
   final List<String> months = [
     'January',
@@ -88,6 +92,27 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
     'November',
     'December'
   ];
+
+  String getMonthNumber(String? monthName) {
+    if (monthName == null) return '';
+    final months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+    final index = months.indexOf(monthName);
+    if (index == -1) return '';
+    return (index + 1).toString().padLeft(2, '0');
+  }
 
   final List<String> years = List.generate(
       11, (index) => (DateTime.now().year - 5 + index).toString());
@@ -119,104 +144,124 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
   @override
   void initState() {
     super.initState();
-    getProgramPlan();
-    if (widget.screenType == 'edit' && widget.programPlan != null) {
+    if (programPlanData == null) {
+      getProgramPlan();
+    }
+    if (widget.screenType == 'edit' && widget.editPlanData != null) {
       _initializeFromExistingData();
     }
   }
 
   void _initializeFromExistingData() {
-    final data = widget.programPlan!;
-
-    // Set dropdown values
-    selectedMonth = data['month'];
-    selectedYear = data['year'];
-    selectedRoom = data['room_id'];
+    final data = widget.editPlanData!;
+    print('Loaded editPlanData: $data');
+    selectedMonth = data.months != null
+        ? months[(data.months! - 1).clamp(0, months.length - 1)]
+        : null;
+    print('selectedMonth: $selectedMonth');
+    selectedYear = data.years;
+    print('selectedYear: $selectedYear');
 
     // Set text fields
-    focusAreasController.text = data['focus_area'] ?? '';
-    outdoorExperiencesController.text = data['outdoor_experiences'] ?? '';
-    inquiryTopicController.text = data['inquiry_topic'] ?? '';
-    sustainabilityTopicController.text = data['sustainability_topic'] ?? '';
-    specialEventsController.text = data['special_events'] ?? '';
-    childrenVoicesController.text = data['children_voices'] ?? '';
-    familiesInputController.text = data['families_input'] ?? '';
-    groupExperienceController.text = data['group_experience'] ?? '';
-    spontaneousExperienceController.text = data['spontaneous_experience'] ?? '';
-    mindfulnessExperienceController.text =
-        data['mindfulness_experiences'] ?? '';
-    eylfController.text = data['eylf'] ?? '';
-    practicalLifeController.text = data['practical_life'] ?? '';
-    sensorialController.text = data['sensorial'] ?? '';
-    mathController.text = data['math'] ?? '';
-    languageController.text = data['language'] ?? '';
-    cultureController.text = data['culture'] ?? '';
+    focusAreasController.text = data.focusArea ?? '';
+    print('focusAreasController: ${focusAreasController.text}');
+    outdoorExperiencesController.text = data.outdoorExperiences ?? '';
+    print('outdoorExperiencesController: ${outdoorExperiencesController.text}');
+    inquiryTopicController.text = data.inquiryTopic ?? '';
+    print('inquiryTopicController: ${inquiryTopicController.text}');
+    sustainabilityTopicController.text = data.sustainabilityTopic ?? '';
+    print(
+        'sustainabilityTopicController: ${sustainabilityTopicController.text}');
+    specialEventsController.text = data.specialEvents ?? '';
+    print('specialEventsController: ${specialEventsController.text}');
+    childrenVoicesController.text = data.childrenVoices ?? '';
+    print('childrenVoicesController: ${childrenVoicesController.text}');
+    familiesInputController.text = data.familiesInput ?? '';
+    print('familiesInputController: ${familiesInputController.text}');
+    groupExperienceController.text = data.groupExperience ?? '';
+    print('groupExperienceController: ${groupExperienceController.text}');
+    spontaneousExperienceController.text = data.spontaneousExperience ?? '';
+    print(
+        'spontaneousExperienceController: ${spontaneousExperienceController.text}');
+    mindfulnessExperienceController.text = data.mindfulnessExperiences ?? '';
+    print(
+        'mindfulnessExperienceController: ${mindfulnessExperienceController.text}');
+    eylfController.text = data.eylf ?? '';
+    print('eylfController: ${eylfController.text}');
+    practicalLifeController.text = data.practicalLife ?? '';
+    print('practicalLifeController: ${practicalLifeController.text}');
+    sensorialController.text = data.sensorial ?? '';
+    print('sensorialController: ${sensorialController.text}');
+    mathController.text = data.math ?? '';
+    print('mathController: ${mathController.text}');
+    languageController.text = data.language ?? '';
+    print('languageController: ${languageController.text}');
+    cultureController.text = data.culture ?? '';
+    print('cultureController: ${cultureController.text}');
 
-    // Set selected educators and children
-    if (data['educators'] is List) {}
-    if (data['children'] is List) {}
-  }
-
-  void _showEducatorSelectionDialog() {
-    // TODO: Implement educator selection dialog similar to AddRoomScreen
-    // You can use the same pattern from AddRoomScreen's _showEducatorDialog
-  }
-
-  void _showChildrenSelectionDialog() {
-    // TODO: Implement children selection dialog
-  }
-
-  void _showEylfSelectionDialog() {
-    // TODO: Implement EYLF selection dialog
-  }
-
-  assignPracticalLifeInController(){
-    // assignEylfOutcomeInController(programPlanData?.eylfOutcomes ?? [],practicalLifeController);
-    // return;
-    print('assigning here');
-    practicalLifeController.text = '';
-    print('======================PracticalLifeController===========================');
-    for (int parentIndex = 0;
-        parentIndex < (practicalLifeData?.activity.length ?? 0);
-        parentIndex++) {
-      String activity = practicalLifeData?.activity[parentIndex].title ?? '';
-      bool isDone = false;
-      print(
-          '====================*******i*****=$parentIndex============================');
-      for (int childIndex = 0;
-          childIndex <
-              (practicalLifeData?.activity[parentIndex].subActivity.length ??
-                  0);
-          childIndex++) {
-        print(
-            '====================##########j##########=$childIndex===($parentIndex)=========================');
-        print(
-            '======value=${practicalLifeData?.activity[parentIndex].subActivity[childIndex].choosen ?? false}==========');
-
-        if (practicalLifeData
-                ?.activity[parentIndex].subActivity[childIndex].choosen ??
-            false) {
-          if (!isDone) {
-            practicalLifeController.text += '**$activity** - \n';
-            isDone = true;
+    selectedRoomId = data.roomId?.toString();
+    print('selectedRoomId: $selectedRoomId');
+    selectedChildrenIds = data.children != null
+        ? data.children!.split(',').map((e) => e.trim()).toList()
+        : [];
+    selectedEducatorIds = data.educators != null
+        ? data.educators!.split(',').map((e) => e.trim()).toList()
+        : [];
+    if (selectedRoomId != null) {
+      ProgramPlanRepository().getRoomUsers(selectedRoomId!).then((roomUsers) {
+        setState(() {
+          user = roomUsers;
+          if (user != null && user!.users!.isNotEmpty) {
+            selectedEducatorNames = user!.users!
+                .where((u) => selectedEducatorIds.contains(u.id.toString()))
+                .map((u) => u.name ?? '')
+                .toList();
           }
-
-          String subActivity = practicalLifeData
-                  ?.activity[parentIndex].subActivity[childIndex].title ??
-              '';
-          print('===================00eir0ir0====================');
-          practicalLifeController.text += '**• **$subActivity.\n';
-        }
-      }
+        });
+      });
+      ProgramPlanRepository()
+          .getRoomChildren(selectedRoomId!)
+          .then((roomChildren) {
+        setState(() {
+          children = roomChildren; 
+          if (children != null && children!.children!.isNotEmpty) {
+            selectedChildrenNames = children!.children!
+                .where((c) => selectedChildrenIds.contains(c.id.toString()))
+                .map((c) => c.name ?? '')
+                .toList();
+          }
+        });
+      });
+    } else {
+      user = null;
+      children = null;
+      selectedEducatorNames = [];
+      selectedChildrenNames = [];
     }
-    Future.delayed(Duration(seconds: 3), () {
-      print('text file is the ===========');
-      print(practicalLifeController.text);
-    });
+
+    // Set selected educators and children (assuming comma-separated string of IDs)
+    if (data.educators != null && data.educators!.isNotEmpty) {
+      selectedEducatorIds =
+          data.educators!.split(',').map((e) => e.trim()).toList();
+      print('selectedEducatorIds: $selectedEducatorIds');
+      // Optionally, set selectedEducatorNames if you have user data loaded
+    } else {
+      selectedEducatorIds = [];
+      print('selectedEducatorIds: []');
+    }
+    if (data.children != null && data.children!.isNotEmpty) {
+      selectedChildrenIds =
+          data.children!.split(',').map((e) => e.trim()).toList();
+      print('selectedChildrenIds: $selectedChildrenIds');
+      // Optionally, set selectedChildrenNames if you have children data loaded
+    } else {
+      selectedChildrenIds = [];
+      print('selectedChildrenIds: []');
+    }
   }
 
   @override
-  Widget build(BuildContext context) { 
+  Widget build(BuildContext context) {
     return CustomScaffold(
       appBar: const CustomAppBar(title: "Create Program Plan"),
       body: SingleChildScrollView(
@@ -489,7 +534,9 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                     showPracticalLifeDialog(
                       context,
                       programPlanData?.montessoriSubjects?[0],
-                      assignPracticalLifeInController,
+                      (String selectedActivities) {
+                        practicalLifeController.text = selectedActivities;
+                      },
                     );
                   },
                 ),
@@ -510,7 +557,11 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                   context: context,
                   controller: mathController,
                   onTap: () {
-                    showPracticalLifeDialog(context, programPlanData?.montessoriSubjects?[1], () {});
+                    showPracticalLifeDialog(
+                        context, programPlanData?.montessoriSubjects?[1],
+                        (String selectedActivities) {
+                      mathController.text = selectedActivities;
+                    });
                   },
                 ),
                 const SizedBox(height: 16),
@@ -540,13 +591,17 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                   title: 'EYLF',
                   context: context,
                   controller: eylfController,
-                  onTap: () {
-                    showPracticalLifeDialog(context, programPlanData?.montessoriSubjects?[0], () {});
+                  onTap: () async {
+                    await showEylfDialog(
+                      context,
+                      programPlanData?.eylfOutcomes,
+                      (String selectedActivities) {
+                        eylfController.text = selectedActivities;
+                      },
+                    );
                   },
                 ),
                 const SizedBox(height: 16),
-
-                // Additional Experiences
                 Text('Additional Experiences',
                     style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: 16),
@@ -588,8 +643,7 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                             message: state.message,
                             backgroundColor: AppColors.successColor,
                           );
-                          Navigator.pop(
-                              context); // or go to another screen if needed
+                          Navigator.pop(context);
                         }
                       },
                       child: BlocBuilder<AddPlanBloc, AddPlanState>(
@@ -598,52 +652,117 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
                             height: 45,
                             width: 100,
                             text: 'SAVE',
-                            isLoading: state is AddPlanLoading,
-                            ontap: () {
+                            isLoading: loading,
+                            ontap: () async {
+                              if (selectedMonth == null || selectedMonth!.isEmpty) {
+                              UIHelpers.showToast(
+                                context,
+                                message: 'Please select a month.',
+                                backgroundColor: AppColors.errorColor,
+                              );
+                              return;
+                              }
+                              if (selectedYear == null || selectedYear!.isEmpty) {
+                              UIHelpers.showToast(
+                                context,
+                                message: 'Please select a year.',
+                                backgroundColor: AppColors.errorColor,
+                              );
+                              return;
+                              }
+                              if (selectedRoomId == null || selectedRoomId!.isEmpty) {
+                              UIHelpers.showToast(
+                                context,
+                                message: 'Please select a room.',
+                                backgroundColor: AppColors.errorColor,
+                              );
+                              return;
+                              }
+                              if (selectedEducatorIds.isEmpty) {
+                              UIHelpers.showToast(
+                                context,
+                                message: 'Please select at least one educator.',
+                                backgroundColor: AppColors.errorColor,
+                              );
+                              return;
+                              }
+                              if (selectedChildrenIds.isEmpty) {
+                              UIHelpers.showToast(
+                                context,
+                                message: 'Please select at least one child.',
+                                backgroundColor: AppColors.errorColor,
+                              );
+                              return;
+                              }
+                              if (_formKey.currentState?.validate() != true) {
+                              return;
+                              }
+                              
                               try {
-                                context.read<AddPlanBloc>().add(
-                                      SubmitAddPlanEvent(
-                                        planId: (widget.screenType == 'edit')
-                                            ? 'id'
-                                            : null,
-                                        month: selectedMonth ?? '',
-                                        year: selectedYear ?? '',
-                                        roomId: selectedRoom ?? '',
-                                        educators: selectedEducatorIds,
-                                        children: selectedChildrenIds,
-                                        focusArea: focusAreasController.text,
-                                        outdoorExperiences:
-                                            outdoorExperiencesController.text,
-                                        inquiryTopic:
-                                            inquiryTopicController.text,
-                                        sustainabilityTopic:
-                                            sustainabilityTopicController.text,
-                                        specialEvents:
-                                            specialEventsController.text,
-                                        childrenVoices:
-                                            childrenVoicesController.text,
-                                        familiesInput:
-                                            familiesInputController.text,
-                                        groupExperience:
-                                            groupExperienceController.text,
-                                        spontaneousExperience:
-                                            spontaneousExperienceController
-                                                .text,
-                                        mindfulnessExperience:
-                                            mindfulnessExperienceController
-                                                .text,
-                                        eylf: eylfController.text,
-                                        practicalLife:
-                                            practicalLifeController.text,
-                                        sensorial: sensorialController.text,
-                                        math: mathController.text,
-                                        language: languageController.text,
-                                        culture: cultureController.text,
-                                      ),
-                                    );
+                              final ProgramPlanRepository repository =
+                                ProgramPlanRepository();
+                              setState(() {
+                                loading = true;
+                              }); 
+                              print(widget.programPlanId);
+                              print(widget.screenType);
+                              final response = await repository.addOrEditPlan(
+                                centerId: widget.centerId,
+                                planId: (widget.screenType == 'edit')
+                                  ? widget.programPlanId
+                                  : null,
+                                month: getMonthNumber(selectedMonth),
+                                year: selectedYear ?? '',
+                                roomId: selectedRoomId ?? '',
+                                educators: selectedEducatorIds,
+                                children: selectedChildrenIds,
+                                focusArea: focusAreasController.text,
+                                outdoorExperiences:
+                                  outdoorExperiencesController.text,
+                                inquiryTopic: inquiryTopicController.text,
+                                sustainabilityTopic:
+                                  sustainabilityTopicController.text,
+                                specialEvents: specialEventsController.text,
+                                childrenVoices: childrenVoicesController.text,
+                                familiesInput: familiesInputController.text,
+                                groupExperience:
+                                  groupExperienceController.text,
+                                spontaneousExperience:
+                                  spontaneousExperienceController.text,
+                                mindfulnessExperience:
+                                  mindfulnessExperienceController.text,
+                                eylf: eylfController.text,
+                                practicalLife: practicalLifeController.text,
+                                sensorial: sensorialController.text,
+                                math: mathController.text,
+                                language: languageController.text,
+                                culture: cultureController.text,
+                              );
+                              
+                              UIHelpers.showToast(
+                                context,
+                                message: response.message,
+                                backgroundColor: response.success
+                                  ? AppColors.successColor
+                                  : AppColors.errorColor,
+                              );
+                              setState(() {
+                                loading = false;
+                              });  
+                              if (response.success) {
+                                BlocProvider.of<ProgramPlanBloc>(context).add(
+                                FetchProgramPlansEvent(
+                                  centerId: widget.centerId,
+                                ),
+                                );
+                                Navigator.pop(context);
+                              }
                               } catch (e, s) {
-                                print('Error: $e');
-                                print('StackTrace: $s');
+                              print('Error: $e');
+                              print('StackTrace: $s');
+                              setState(() {
+                                loading = false;
+                              });
                               }
                             },
                           );
@@ -658,39 +777,6 @@ class _AddProgramPlanScreenState extends State<AddProgramPlanScreen> {
         ),
       ),
     );
-  }
-
-  void _submitForm() {
-    if (!_formKey.currentState!.validate()) return;
-
-    // TODO: Implement form submission
-    // You can follow the pattern from AddRoomScreen's submit logic
-
-    final formData = {
-      'center_id': widget.centerId,
-      'month': selectedMonth,
-      'year': selectedYear,
-      'room_id': selectedRoom,
-      'educators': selectedEducatorIds,
-      'children': selectedChildrenIds,
-      'focus_area': focusAreasController.text,
-      'practical_life': practicalLifeController.text,
-      'sensorial': sensorialController.text,
-      'math': mathController.text,
-      'language': languageController.text,
-      'culture': cultureController.text,
-      'eylf': eylfController.text,
-      'outdoor_experiences': outdoorExperiencesController.text,
-      'inquiry_topic': inquiryTopicController.text,
-      // Add other fields as needed
-    };
-
-    if (widget.screenType == 'edit' && widget.programPlan != null) {
-      formData['id'] = widget.programPlan!['id'];
-      // TODO: Call edit API
-    } else {
-      // TODO: Call create API
-    }
   }
 
   @override

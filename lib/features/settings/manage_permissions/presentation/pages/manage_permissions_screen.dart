@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/cubit/global_data_cubit.dart';
+import 'package:mydiaree/core/cubit/globle_model/educator_model.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
@@ -13,14 +16,14 @@ import 'package:mydiaree/features/settings/manage_permissions/presentation/bloc/
 import 'package:mydiaree/features/settings/manage_permissions/presentation/pages/assigned_user_list_screen.dart';
 
 class ManagePermissionsScreen extends StatefulWidget {
-  const ManagePermissionsScreen({super.key});
+  const ManagePermissionsScreen({super.key,});
   @override
-  State<ManagePermissionsScreen> createState() => _ManagePermissionsScreenState();
+  State<ManagePermissionsScreen> createState() =>
+      _ManagePermissionsScreenState();
 }
 
 class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
   final _formKey = GlobalKey<FormState>();
-  String? _selectedUserId;
   final Map<String, bool> _permissions = {};
   bool _selectAll = false;
   List<PermissionModel> _permissionList = [];
@@ -28,7 +31,6 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<GlobalDataCubit>().loadEducators();
     context.read<PermissionBloc>().add(FetchPermissionsEvent());
   }
 
@@ -40,6 +42,16 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
       }
     });
   }
+
+  EducatorModel? _educators;
+  String? _selectedUserId;
+
+  ApiResponse<EducatorModel?>? educatorData;
+  getEducator() async {
+    // educatorData = await repository.getEducators('1');
+  }
+
+  final GlobalRepository repository = GlobalRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +127,8 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
                           width: 90,
                           isLoading: state is PermissionLoading,
                           ontap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context){
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
                               return AssignedUserListScreen();
                             }));
                           },
@@ -123,28 +136,23 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    BlocBuilder<GlobalDataCubit, GlobalDataState>(
-                      builder: (context, globalState) {
-                        final users =
-                            globalState.educatorsData?.educators ?? [];
+                    Builder(
+                      builder: (context) {
+                        final users = _educators?.educators ?? [];
                         return DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
                             labelText: 'Select User',
                             border: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: AppColors.primaryColor),
+                              borderSide: BorderSide(color: Colors.blue),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: AppColors.primaryColor),
+                              borderSide: BorderSide(color: Colors.blue),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: AppColors.primaryColor),
+                              borderSide: BorderSide(color: Colors.blue),
                             ),
                             disabledBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: AppColors.primaryColor),
+                              borderSide: BorderSide(color: Colors.blue),
                             ),
                           ),
                           value: _selectedUserId,

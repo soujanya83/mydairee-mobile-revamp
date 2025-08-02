@@ -212,7 +212,7 @@ class AppDrawer extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const ManagePermissionsScreen()));
+                              builder: (_) =>   ManagePermissionsScreen()));
                     }),
                 // CustomDrawerTile(
                 //   title: 'Accident',

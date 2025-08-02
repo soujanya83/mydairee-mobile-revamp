@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Center;
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
-import 'package:mydiaree/features/reflection/data/model/reflection_list_model_screen.dart';
+import 'package:mydiaree/features/reflection/data/model/reflection_list_model.dart' hide Center;
 
 class ImageCarousel extends StatefulWidget {
   final List<String> images;
@@ -45,10 +47,11 @@ class _ImageCarouselState extends State<ImageCarousel> {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: CachedNetworkImage(
-                      imageUrl: imageUrl,
+                      imageUrl: AppUrls.baseApiUrl + '/' + (imageUrl ?? ''),
                       fit: BoxFit.cover,
                       imageBuilder: (context, imageProvider) => Container(
                         decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.primaryColor),
                           borderRadius: BorderRadius.circular(8),
                           image: DecorationImage(
                             image: imageProvider,
@@ -110,6 +113,7 @@ class ReflectionCard extends StatelessWidget {
   final bool permissionUpdate;
   final bool permissionDelete;
   final VoidCallback onEditPressed;
+  final VoidCallback onDeletePressed;
   final List<String> images;
   final String title;
   final String date;
@@ -126,6 +130,7 @@ class ReflectionCard extends StatelessWidget {
     required this.permissionUpdate,
     required this.permissionDelete,
     required this.onEditPressed,
+    required this.onDeletePressed,
   });
 
   @override
@@ -142,7 +147,7 @@ class ReflectionCard extends StatelessWidget {
                   ? ImageCarousel(images: images)
                   : Container(
                       height: 200,
-                      color: Colors.grey.withOpacity(.1),
+                      color: Colors.grey.withOpacity(.3),
                       child: Center(
                         child: Icon(Icons.image,
                             size: 50, color: Colors.grey[400]),
@@ -205,12 +210,12 @@ class ReflectionCard extends StatelessWidget {
                                 children: [
                                   ...List.generate(showCount, (i) {
                                     return Transform.translate(
-                                      offset: Offset(i * 24.0, 0),
+                                      offset: Offset(i * 2.0, 0),
                                       child: Padding(
                                         padding: const EdgeInsets.all(3),
                                         child: PersonItem(
                                             name: children[i].name,
-                                            imageUrl: children[i].name),
+                                            imageUrl: AppUrls.baseApiUrl + '/' + (children[i].imageUrl)),
                                       ),
                                     );
                                   }),
@@ -246,16 +251,23 @@ class ReflectionCard extends StatelessWidget {
                                 children: [
                                   ...List.generate(showCount, (i) {
                                     return Transform.translate(
-                                      offset: Offset(i * 24.0, 0),
+                                      offset: Offset(i * 2.0, 0),
                                       child: Padding(
                                         padding: const EdgeInsets.all(3),
-                                        child: PersonItem(
-                                            name: educators[i].name,
-                                            imageUrl: educators[i].imageUrl),
+                                        child: InkWell(
+                                          onTap: () {
+                                            if (kDebugMode) {
+                                              print(AppUrls.baseApiUrl + '/' + educators[i].imageUrl);
+                                            }
+                                          },
+                                          child: PersonItem(
+                                              name: educators[i].name,
+                                              imageUrl: AppUrls.baseApiUrl + '/' + educators[i].imageUrl),
+                                        ),
                                       ),
                                     );
                                   }),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 80,
                                   )
                                 ],
@@ -297,7 +309,7 @@ class ReflectionCard extends StatelessWidget {
                         width: 90,
                         height: 35,
                         color: AppColors.errorColor,
-                        ontap: () {},
+                        ontap: onDeletePressed,
                         borderRadius: 5,
                       ),
                   ],

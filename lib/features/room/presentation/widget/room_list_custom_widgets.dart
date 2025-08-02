@@ -5,14 +5,14 @@ import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 class RoomCard extends StatelessWidget {
   final String roomId;
   final String roomName;
-  final String roomColor;
+  final Color roomColor;
   final String userName;
   final String status;
   final List<String> educators;
   final bool isSelected;
   final bool permissionUpdate;
   final Function(bool) onSelectionChanged;
-  final VoidCallback onEditPressed;
+  final VoidCallback? onEditPressed;
 
   const RoomCard({
     required this.roomId,
@@ -24,7 +24,7 @@ class RoomCard extends StatelessWidget {
     required this.isSelected,
     required this.permissionUpdate,
     required this.onSelectionChanged,
-    required this.onEditPressed,
+      this.onEditPressed,
   });
 
   Color _safeHexColor(String? color) {
@@ -46,7 +46,7 @@ class RoomCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  _safeHexColor(roomColor),
+                  roomColor,
                   Colors.transparent,
                 ],
                 stops: const [0.02, 0.02],
@@ -69,7 +69,7 @@ class RoomCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      if (permissionUpdate)
+                      if (onEditPressed != null && permissionUpdate)
                         IconButton(
                           icon: const Icon(
                             Icons.edit,

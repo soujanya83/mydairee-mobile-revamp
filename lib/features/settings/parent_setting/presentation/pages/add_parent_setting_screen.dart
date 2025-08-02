@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/cubit/global_data_cubit.dart';
 import 'package:mydiaree/core/cubit/globle_model/children_model.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
@@ -20,8 +22,10 @@ import 'package:mydiaree/features/settings/parent_setting/presentation/bloc/list
 class AddParentScreen extends StatefulWidget {
   final bool isEdit;
   final ParentModel? parent;
+  final String? centerId;
 
   const AddParentScreen({
+    this.centerId,
     super.key,
     required this.isEdit,
     this.parent,
@@ -55,8 +59,7 @@ class _AddParentScreenState extends State<AddParentScreen> {
               : null;
       _children.addAll(widget.parent?.children ?? []);
     }
-    // Load children data if not already loaded
-    context.read<GlobalDataCubit>().loadChildren();
+    getChildren();
   }
 
   Future<void> _pickImage() async {
@@ -73,27 +76,60 @@ class _AddParentScreenState extends State<AddParentScreen> {
     }
   }
 
+  // Future<void> _showChildrenDialog() async {
+  //   final globalState = context.read<GlobalDataCubit>().state;
+  //   final children = globalState.childrenData?.data ?? [];
+  //   await showDialog<List<Map<String, String>>>(
+  //     context: context,
+  //     builder: (context) => CustomMultiSelectDialog(
+  //       itemsId: List.generate(
+  //         children.length,
+  //         (index) => children[index].id,
+  //       ),
+  //       itemsName: List.generate(
+  //         children.length,
+  //         (index) => children[index].name,
+  //       ),
+  //       initiallySelectedIds:
+  //           _children.map((child) => child['id'] ?? '').toList(),
+  //       title: 'Select Children',
+  //       onItemTap: (selectedIdsAndRoles) {
+  //         setState(() {
+  //           _children.clear();
+  //           _children.addAll(selectedIdsAndRoles);
+  //         });
+  //       },
+  //     ),
+  //   );
+  // }
+
+  ApiResponse<ChildModel?>? childrenData;
+  final GlobalRepository repository = GlobalRepository();
+  getChildren() async {
+    // childrenData = await repository.getChildren(widget.centerId ?? '');
+  }
+
   Future<void> _showChildrenDialog() async {
-    final globalState = context.read<GlobalDataCubit>().state;
-    final children = globalState.childrenData?.data ?? [];
-    await showDialog<List<Map<String, String>>>(
+    final children = childrenData?.data?.data ?? [];
+
+    await showDialog<List<String>>(
       context: context,
       builder: (context) => CustomMultiSelectDialog(
-        itemsId: List.generate(
-          children.length,
-          (index) => children[index].id,
-        ),
-        itemsName: List.generate(
-          children.length,
-          (index) => children[index].name,
-        ),
+        itemsId: children.map((c) => c.id).toList(),
+        itemsName: children.map((c) => c.name).toList(),
         initiallySelectedIds:
             _children.map((child) => child['id'] ?? '').toList(),
         title: 'Select Children',
-        onItemTap: (selectedIdsAndRoles) {
+        onItemTap: (selectedIds) {
           setState(() {
             _children.clear();
-            _children.addAll(selectedIdsAndRoles);
+            for (final id in selectedIds) {
+              final child = children.firstWhere((c) => c.id == id,
+                  orElse: () => ChildIten(id: '', name: ''));
+              if (child.id.isNotEmpty) {
+                _children.add({'id': child.id, 'name': child.name});
+              }
+            }
           });
         },
       ),
@@ -326,8 +362,7 @@ class _AddParentScreenState extends State<AddParentScreen> {
                           width: 100,
                           isLoading: state is ParentSettingsLoading,
                           ontap: () {
-                            if (_formKey.currentState?.validate() ??
-                                false ) {
+                            if (_formKey.currentState?.validate() ?? false) {
                               final event = widget.isEdit
                                   ? UpdateParentEvent(
                                       id: widget.parent?.id ?? '',
