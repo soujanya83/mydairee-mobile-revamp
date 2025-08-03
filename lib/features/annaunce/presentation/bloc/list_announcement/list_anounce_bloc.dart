@@ -5,13 +5,13 @@ import 'package:mydiaree/features/annaunce/presentation/bloc/list_announcement/l
 import 'package:mydiaree/features/annaunce/presentation/bloc/list_announcement/list_room_state.dart';
 
 class AnnounceListBloc extends Bloc<AnnounceListEvent, AnnounceListState> {
-   AnnoucementRepository repository = AnnoucementRepository();
+  final AnnoucementRepository repository = AnnoucementRepository();
 
   AnnounceListBloc() : super(AnnounceListInitial()) {
     on<FetchAnnounceEvent>(_onFetchAnnouncement);
     on<DeleteSelectedAnnounceEvent>(_onDeleteAnnouncement);
   }
-
+  
   Future<void> _onFetchAnnouncement(
     FetchAnnounceEvent event,
     Emitter<AnnounceListState> emit,
@@ -20,6 +20,7 @@ class AnnounceListBloc extends Bloc<AnnounceListEvent, AnnounceListState> {
     try {
       final response = await repository.getAnnouncement(
         centerId: event.centerId,
+        searchQuery: event.searchQuery,
       );
 
       if (response.success && response.data != null) {
@@ -39,12 +40,13 @@ class AnnounceListBloc extends Bloc<AnnounceListEvent, AnnounceListState> {
     emit(AnnounceListLoading());
     try {
       final response = await repository.deleteMultipleAnnouncement(
-        roomIds: event.announcement,
+        announcementIds: event.announcement,
+        userId: event.userId,
       );
 
       if (response.success) {
         add(FetchAnnounceEvent(centerId: event.centerId));
-        emit(AnnouncementDeletedState()); // Optional
+        emit(AnnouncementDeletedState(message: response.message));
       } else {
         emit(AnnounceListError(message: response.message));
       }

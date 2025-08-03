@@ -4,21 +4,22 @@ import 'add_announce_event.dart';
 import 'add_room_state.dart';
 
 class AnnounceBloc extends Bloc<AddAnnouncementEvent, AddAnnounceState> {
-   AnnoucementRepository repository = AnnoucementRepository();
+  final AnnoucementRepository repository = AnnoucementRepository();
 
   AnnounceBloc() : super(AddAnnounceInitial()) {
     on<SubmitAddAnnouncementEvent>((event, emit) async {
       emit(AddAnnounceLoading());
       try {
         final response = await repository.addOrEditAnnouncement(
-          
           id: event.id,
           title: event.title,
           text: event.text,
           eventDate: event.eventDate,
-          status: event.status,
-          createdBy: event.createdBy,
+          childIds: event.childIds,
+          userId: event.userId,
+          centerId: event.centerId,
         );
+        
         if (response.success) {
           emit(AddAnnounceSuccess(response.message));
         } else {

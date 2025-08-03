@@ -14,11 +14,10 @@ class HeadChecksBloc extends Bloc<HeadChecksEvent, HeadChecksState> {
     print('Loading HeadChecks...');
     emit(HeadChecksLoading());
     try {
-      final response = await repository.getHeadChecksData(
-      userId: event.userId,
+      final response = await repository.getHeadChecksData( 
       centerId: event.centerId,
       roomId: event.roomId,
-      date: event.date,
+      // date: event.date,
       );
       print('HeadChecks response: $response');
       if (!response.success || response.data == null) {

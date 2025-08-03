@@ -18,9 +18,9 @@ class HeadCheckCard extends StatelessWidget {
   final VoidCallback? onRemove;
   final Function(String?) onHourChanged;
   final Function(String?) onMinuteChanged;
-  final Function() onDelete;
+  final Function()? onDelete;
   final Function() onCancel;
-    final ValueChanged<String>? onHeadCountChanged;
+  final ValueChanged<String>? onHeadCountChanged;
   final ValueChanged<String>? onSignatureChanged;
   final ValueChanged<String>? onCommentsChanged;
 
@@ -36,8 +36,11 @@ class HeadCheckCard extends StatelessWidget {
     this.onRemove,
     required this.onHourChanged,
     required this.onMinuteChanged,
-    required this.onDelete,
-    required this.onCancel, this.onHeadCountChanged, this.onSignatureChanged, this.onCommentsChanged,
+    this.onDelete,
+    required this.onCancel,
+    this.onHeadCountChanged,
+    this.onSignatureChanged,
+    this.onCommentsChanged,
   });
 
   static final List<String> hours =
@@ -60,15 +63,15 @@ class HeadCheckCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: onAdd,
-                ),
-                if (onRemove != null)
-                  IconButton(
-                    icon: const Icon(Icons.remove),
-                    onPressed: onRemove,
-                  ),
+                // IconButton(
+                //   icon: const Icon(Icons.add),
+                //   onPressed: onAdd,
+                // ),
+                // if (onRemove != null)
+                //   IconButton(
+                //     icon: const Icon(Icons.remove),
+                //     onPressed: onRemove,
+                //   ),
               ],
             ),
             Row(
@@ -103,7 +106,7 @@ class HeadCheckCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 5),
-           CustomTextFormWidget(
+            CustomTextFormWidget(
               maxLines: 1,
               keyboardType: TextInputType.number,
               controller: headCountController,
@@ -117,11 +120,11 @@ class HeadCheckCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 5),
-               CustomTextFormWidget(
+            CustomTextFormWidget(
               maxLines: 1,
               controller: signatureController,
-              onChanged: (value){
-                onSignatureChanged?.call(value??'');
+              onChanged: (value) {
+                onSignatureChanged?.call(value ?? '');
               },
             ),
             const SizedBox(height: 15),
@@ -130,28 +133,27 @@ class HeadCheckCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 5),
-              CustomTextFormWidget(
+            CustomTextFormWidget(
               maxLines: 2,
               controller: commentsController,
-              onChanged: (value){
-                onCommentsChanged?.call(value??'');
+              onChanged: (value) {
+                onCommentsChanged?.call(value ?? '');
               },
             ),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-               
-                const SizedBox(width: 16),
-                CustomButton(
-                  height: 40,
-                  color: AppColors.errorColor,
-                  width: 100,
-                  text: 'Delete',
-                  ontap: onDelete,
-                ),
-              ],
-            )
+            if (onDelete != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CustomButton(
+                    height: 40,
+                    color: AppColors.errorColor,
+                    width: 100,
+                    text: 'Delete',
+                    ontap: onDelete,
+                  ),
+                ],
+              ),
           ],
         ),
       ),
@@ -172,13 +174,13 @@ class DatePickerButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      elevation: 2, borderRadius: BorderRadius.circular(5),
+      elevation: 2,
+      borderRadius: BorderRadius.circular(5),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: AppColors.primaryColor,width: 1.5),
-          borderRadius: BorderRadius.circular(5)
-        ),
+            color: Colors.white,
+            border: Border.all(color: AppColors.primaryColor, width: 1.5),
+            borderRadius: BorderRadius.circular(5)),
         height: 40,
         width: 140,
         child: Padding(
@@ -202,7 +204,7 @@ class DatePickerButton extends StatelessWidget {
                     onDateSelected(selectedDate);
                   }
                 },
-                child:const Icon(
+                child: const Icon(
                   Icons.calendar_today,
                   color: AppColors.primaryColor,
                   size: 18,

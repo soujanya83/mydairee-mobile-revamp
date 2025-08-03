@@ -1,130 +1,107 @@
 import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/features/annaunce/data/model/announcement_list_model.dart';
-
-Map<String, dynamic> dummyAnouncementListData = {
-  "announcements": [
-    {
-      "id": "1",
-      "title": "Holiday Notice",
-      "text": "School will remain closed tomorrow.",
-      "eventDate": "2025-06-25",
-      "status": "Active",
-      "createdBy": "Admin",
-      "createdAt": "2025-06-23T10:00:00Z",
-      "aid": "A123"
-    },
-    {
-      "id": "1",
-      "title": "Holiday Notice",
-      "text": "School will remain closed tomorrow.",
-      "eventDate": "2025-06-25",
-      "status": "Active",
-      "createdBy": "Admin",
-      "createdAt": "2025-06-23T10:00:00Z",
-      "aid": "A123"
-    },
-    {
-      "id": "1",
-      "title": "Holiday Notice",
-      "text": "School will remain closed tomorrow.",
-      "eventDate": "2025-06-25",
-      "status": "Active",
-      "createdBy": "Admin",
-      "createdAt": "2025-06-23T10:00:00Z",
-      "aid": "A123"
-    },
-    {
-      "id": "1",
-      "title": "Holiday Notice",
-      "text": "School will remain closed tomorrow.",
-      "eventDate": "2025-06-25",
-      "status": "Active",
-      "createdBy": "Admin",
-      "createdAt": "2025-06-23T10:00:00Z",
-      "aid": "A123"
-    },
-  ]
-};
+import 'package:mydiaree/features/annaunce/data/model/announcement_create_model.dart';
+import 'package:mydiaree/features/annaunce/data/model/announcement_view_model.dart';
 
 class AnnoucementRepository {
-  Future<ApiResponse<AnnouncementListModel?>> getAnnouncement({
+  // Get announcement list
+  Future<ApiResponse<AnnouncementsListModel?>> getAnnouncement({
     required String centerId,
     String? searchQuery,
-    String? statusFilter,
   }) async {
-    return await postAndParse(
-      AppUrls.getRooms,
-      dummy: true,
-      dummyData: dummyAnouncementListData,
-      {
-        'center_id': centerId,
-        if (searchQuery != null) 'search': searchQuery,
-        if (statusFilter != null && statusFilter != 'Select')
-          'status': statusFilter,
-      },
-      fromJson: (json) => AnnouncementListModel.fromJson(json),
+    String url = '${AppUrls.baseApiUrl}/api/announcements/list?centerid=$centerId';
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      url += '&search=$searchQuery';
+    }
+    
+    return await getAndParseData(
+      url,
+      fromJson: (json) => AnnouncementsListModel.fromJson(json),
     );
   }
 
+  // Get create announcement data (rooms, children)
+  Future<ApiResponse<AnnouncemenCreateModel?>> getCreateAnnouncementData({
+    required String centerId,
+  }) async {
+    final url = '${AppUrls.baseApiUrl}/api/announcements/create?centerid=$centerId';
+    
+    return await getAndParseData(
+      url,
+      fromJson: (json) => AnnouncemenCreateModel.fromJson(json),
+    );
+  }
+
+  // Add or edit announcement
   Future<ApiResponse> addOrEditAnnouncement({
     String? id,
     required String title,
     required String text,
     required String eventDate,
-    required String status,
-    required String createdBy,
+    required List<int> childIds,
+    required String userId,
+    required String centerId,
   }) async {
-    return await postAndParse(
-      dummy: true,
-      AppUrls.addAnnouncement,
-      {
-        if (id != null) 'id': id,
-        'title': title,
-        'text': text,
-        'eventDate': eventDate,
-        'status': status,
-        'createdBy': createdBy,
-      },
+    final url = '${AppUrls.baseApiUrl}/api/announcements/store';
+    
+    final Map<String, dynamic> data = {
+      "title": title,
+      "text": text,
+      "childId": childIds,
+      "userid": userId,
+      "centerid": centerId,
+    };
+    
+    if (id != null) {
+      data["id"] = id;
+    }
+    
+    return await postAndParse(url, data);
+  }
+
+  // View announcement details
+  Future<ApiResponse<AnnouncementViewModel?>> viewAnnouncement({
+    required String announcementId,
+  }) async {
+    final url = '${AppUrls.baseApiUrl}/api/announcements/view?annid=$announcementId';
+    
+    return await getAndParseData(
+      url,
+      fromJson: (json) => AnnouncementViewModel.fromJson(json),
     );
   }
 
-  // Update room details
-  // Future<ApiResponse> updateRoom({
-  //   required String roomId,
-  //   String? name,
-  //   String? color,
-  //   String? leadUserId,
-  //   String? status,
-  //   String? capacity,
-  //   String? ageFrom,
-  //   String? ageTo,
-  // }) async {
-  //   return postAndParse(
-  //     AppUrls.updateRoom,
-  //     dummy: true,
-  //     {
-  //       'room_id': roomId,
-  //       if (name != null) 'name': name,
-  //       if (color != null) 'color': color,
-  //       if (leadUserId != null) 'lead_user_id': leadUserId,
-  //       if (status != null) 'status': status,
-  //       if (capacity != null) 'capacity': capacity,
-  //       if (ageFrom != null) 'age_from': ageFrom,
-  //       if (ageTo != null) 'age_to': ageTo,
-  //     },
-  //   );
-  // }
-
-  Future<ApiResponse> deleteMultipleAnnouncement({
-    required List<String> roomIds,
+  // Delete announcement
+  Future<ApiResponse> deleteAnnouncement({
+    required String announcementId,
+    required String userId,
   }) async {
-    return postAndParse(
-      AppUrls.deleteMultipleRooms,
-      dummy: true,
-      {
-        'room_ids': roomIds,
-      },
-    );
+    final url = '${AppUrls.baseApiUrl}/api/announcements/delete?announcementid=$announcementId&userid=$userId';
+    
+    return await deleteDataApi(url);
+  }
+
+  // Delete multiple announcements
+  Future<ApiResponse> deleteMultipleAnnouncement({
+    required List<String> announcementIds,
+    required String userId,
+  }) async {
+    // If we have multiple deletion, we'll call delete for each one
+    // This is because the API doesn't seem to support multiple deletion in a single call
+    ApiResponse lastResponse = ApiResponse(success: true, message: 'No announcements to delete');
+    
+    for (String id in announcementIds) {
+      lastResponse = await deleteAnnouncement(
+        announcementId: id,
+        userId: userId,
+      );
+      
+      if (!lastResponse.success) {
+        return lastResponse;
+      }
+    }
+    
+    return lastResponse;
   }
 }

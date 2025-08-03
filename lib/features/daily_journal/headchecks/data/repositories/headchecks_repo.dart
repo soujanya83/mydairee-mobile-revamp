@@ -5,13 +5,12 @@ import 'package:mydiaree/features/daily_journal/headchecks/data/model/headcheks_
 import 'package:mydiaree/features/daily_journal/headchecks/data/model/room_head_check_center_model.dart';
 
 class HeadChecksRepository {
-  Future<ApiResponse<HeadCheckListModel?>> getHeadChecksData({
-    required String userId,
+  Future<ApiResponse<HeadCheckListModel?>> getHeadChecksData({ 
     required String centerId,
     String? roomId,
-    required DateTime date,
+      DateTime? date,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/headChecks?centerid=1&roomid=1';
+    final url = '${AppUrls.baseApiUrl}/api/headChecks?centerid=$centerId&roomid=$roomId';
     print(url);
     print('=============');
 
@@ -46,8 +45,7 @@ class HeadChecksRepository {
     required List<String> comments,
     required String roomId,
     required String centerId,
-    required String diaryDate,
-    required String userId,
+    required String diaryDate, 
   }) async {
     final url = '${AppUrls.baseApiUrl}/api/headchecks/store';
     final data = {
@@ -59,8 +57,7 @@ class HeadChecksRepository {
       "roomid": roomId,
       "centerid": centerId,
       "diarydate": diaryDate,
-      "headcheck": true,
-      "userid": userId,
+      "headcheck": true, 
     };
     return await postAndParse(url, data);
   }

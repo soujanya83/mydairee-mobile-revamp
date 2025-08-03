@@ -6,12 +6,18 @@ class CustomScaffold extends StatelessWidget {
   const CustomScaffold({
     super.key,
     required this.body,
-    this.appBar, this.drawer, this.extendBodyBehindAppBar
+    this.appBar,
+    this.drawer,
+    this.extendBodyBehindAppBar,
+    this.floatingActionButton,
+    this.floatingActionButtonLocation,
   });
   final Widget body;
   final PreferredSizeWidget? appBar;
   final AppDrawer? drawer;
   final bool? extendBodyBehindAppBar;
+  final FloatingActionButton? floatingActionButton;
+  final FloatingActionButtonLocation? floatingActionButtonLocation;
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
@@ -25,6 +31,8 @@ class CustomScaffold extends StatelessWidget {
         
         drawer: drawer,
         extendBodyBehindAppBar: extendBodyBehindAppBar??false,
+        floatingActionButton: floatingActionButton,
+        floatingActionButtonLocation: floatingActionButtonLocation,
         appBar: appBar ??
             AppBar(
               

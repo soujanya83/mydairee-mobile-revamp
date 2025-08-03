@@ -1,169 +1,310 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
-import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
-import 'package:mydiaree/features/healthy_menu/menu/presentation/bloc/menu_bloc.dart';
-import 'package:mydiaree/features/healthy_menu/menu/presentation/bloc/menu_event.dart';
-import 'package:mydiaree/features/healthy_menu/menu/presentation/bloc/menu_state.dart';
-import 'package:mydiaree/main.dart';
+import 'package:mydiaree/features/healthy_menu/menu/data/model/menu_model.dart';
+import 'package:mydiaree/features/healthy_menu/menu/data/repositories/menu_repository.dart';
 
 class IngredientModal extends StatefulWidget {
   final String day;
   final String mealType;
   final String selectedDate;
   final String centerId;
+  final VoidCallback? onRecipesSaved;
 
   const IngredientModal({
+    Key? key,
     required this.day,
     required this.mealType,
     required this.selectedDate,
     required this.centerId,
-    super.key,
-  });
+    this.onRecipesSaved,
+  }) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
-  _IngredientModalState createState() => _IngredientModalState();
+  State<IngredientModal> createState() => _IngredientModalState();
 }
 
 class _IngredientModalState extends State<IngredientModal> {
-  final List<int> _selectedRecipeIds = [];
+  final MenuRepository _repository = MenuRepository();
+  bool _isLoading = true;
+  RecipeResponse? _recipeResponse;
+  List<String> selectedRecipeIds = [];
+  String? _searchQuery;
 
   @override
   void initState() {
     super.initState();
-    context.read<MenuBloc>().add(FetchRecipesEvent(widget.mealType));
+    _loadRecipes();
+  }
+
+  Future<void> _loadRecipes() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _repository.getRecipes();
+      setState(() {
+        _isLoading = false;
+        if (response.success && response.data != null) {
+          _recipeResponse = response.data;
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      UIHelpers.showToast(
+        context,
+        message: 'Failed to load recipes',
+        backgroundColor: AppColors.errorColor,
+      );
+    }
+  }
+
+  List<RecipeModel> _getFilteredRecipes() {
+    if (_recipeResponse == null) return [];
+
+    // Get the recipes for the selected meal type
+    final String normalizedMealType = _getNormalizedMealType(widget.mealType);
+    final List<RecipeModel> recipes = _recipeResponse!.recipes[normalizedMealType] ?? [];
+    
+    // Filter by center ID
+    final centerId = int.tryParse(widget.centerId);
+    final centerFilteredRecipes = centerId != null 
+        ? recipes.where((recipe) => recipe.centerId == centerId).toList()
+        : recipes;
+    
+    // Apply search filter if any
+    if (_searchQuery != null && _searchQuery!.isNotEmpty) {
+      return centerFilteredRecipes.where((recipe) => 
+        recipe.itemName.toLowerCase().contains(_searchQuery!.toLowerCase())).toList();
+    }
+    
+    return centerFilteredRecipes;
+  }
+
+  String _getNormalizedMealType(String mealType) {
+    switch (mealType.toLowerCase()) {
+      case 'breakfast':
+        return 'BREAKFAST';
+      case 'morning tea':
+      case 'morning_tea':
+        return 'MORNING_TEA';
+      case 'lunch':
+        return 'LUNCH';
+      case 'afternoon tea':
+      case 'afternoon_tea':
+        return 'AFTERNOON_TEA';
+      case 'late snacks':
+      case 'late_snacks':
+        return 'LATE_SNACKS';
+      default:
+        return mealType.toUpperCase();
+    }
+  }
+
+  Future<void> _saveRecipes() async {
+    if (selectedRecipeIds.isEmpty) {
+      UIHelpers.showToast(
+        context,
+        message: 'Please select at least one recipe',
+        backgroundColor: AppColors.errorColor,
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _repository.saveRecipes(
+        selectedDate: widget.selectedDate,
+        day: widget.day,
+        mealType: widget.mealType,
+        recipeIds: selectedRecipeIds,
+        centerId: widget.centerId,
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (response.success) {
+        UIHelpers.showToast(
+          context,
+          message: 'Recipes saved successfully',
+          backgroundColor: AppColors.successColor,
+        );
+        Navigator.pop(context);
+        if (widget.onRecipesSaved != null) {
+          widget.onRecipesSaved!();
+        }
+      } else {
+        UIHelpers.showToast(
+          context,
+          message: response.message,
+          backgroundColor: AppColors.errorColor,
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      UIHelpers.showToast(
+        context,
+        message: 'Failed to save recipes',
+        backgroundColor: AppColors.errorColor,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: screenHeight * .4,
-      child: Padding(
-        padding: EdgeInsets.only(
-            top: screenHeight * .15,
-            bottom: screenHeight * .15,
-            left: 20,
-            right: 20),
-        child: PatternBackground(
-          height: 49,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                children: [
-                  UIHelpers.verticalSpace(30),
-                  Text('Add Items for ${widget.mealType}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge!
-                          .copyWith(fontSize: 20)),
-                  UIHelpers.verticalSpace(30),
-                  SizedBox(
-                    width: double.maxFinite,
-                    child: BlocListener<MenuBloc, MenuState>(
-                      listener: (context, state) {
-                        if (state is MenuSuccess) {
-                          Navigator.pop(context); // Close modal on success
-                        } else if (state is MenuError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(state.message),
-                                backgroundColor: AppColors.errorColor),
-                          );
-                        }
-                      },
-                      child: BlocBuilder<MenuBloc, MenuState>(
-                        builder: (context, state) {
-                          if (state is MenuLoading) {
-                            return Column(
-                              children: [
-                                SizedBox(
-                                  height: screenHeight * .2,
-                                ),
-                                const Center(
-                                    child: CircularProgressIndicator(
-                                  color: AppColors.primaryColor,
-                                )),
-                              ],
-                            );
-                          } else if (state is MenuRecipesLoaded) {
-                            return SingleChildScrollView(
-                              child: Column(
-                                children: state.recipes.map((recipe) {
-                                  return CheckboxListTile(
-                                    title: Text(recipe.itemName),
-                                    value:
-                                        _selectedRecipeIds.contains(recipe.id),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        if (value == true) {
-                                          _selectedRecipeIds.add(recipe.id);
-                                        } else {
-                                          _selectedRecipeIds.remove(recipe.id);
-                                        }
-                                      });
-                                    },
-                                    activeColor: AppColors.primaryColor,
-                                  );
-                                }).toList(),
-                              ),
-                            );
-                          } else if (state is MenuError) {
-                            return Text('Error: ${state.message}',
-                                style: const TextStyle(color: Colors.red));
-                          }
-                          return const Text('Loading recipes...',
-                              style: TextStyle(color: Colors.grey));
-                        },
-                      ),
-                    ),
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+          maxWidth: MediaQuery.of(context).size.width * 0.9,
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Select Recipes for ${widget.day} - ${widget.mealType}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomButton(
-                      text: 'Cancel',
-                      height: 37,
-                      width: 90,
-                      borderRadius: 10,
-                      textAppTextStyles:
-                          Theme.of(context).textTheme.labelMedium,
-                      ontap: () => Navigator.pop(context),
-                    ),
-                    const SizedBox(
-                      width: 30,
-                    ),
-                    CustomButton(
-                      text: 'Save',
-                      height: 37,
-                      width: 90,
-                      borderRadius: 10,
-                      textAppTextStyles:
-                          Theme.of(context).textTheme.labelMedium,
-                      ontap: () {
-                        context.read<MenuBloc>().add(SaveMenuItemEvent(
-                              centerId: widget.centerId,
-                              date: widget.selectedDate,
-                              day: widget.day,
-                              mealType: widget.mealType,
-                              recipeIds: _selectedRecipeIds,
-                            ));
-                      },
-                    ),
-                  ],
                 ),
-              )
-            ],
-          ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Search recipes...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _recipeResponse == null
+                      ? const Center(child: Text('No recipes available'))
+                      : _buildRecipesList(),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                CustomButton(
+                  text: 'Cancel',
+                  color: Colors.grey,
+                  ontap: () => Navigator.pop(context),
+                ),
+                const SizedBox(width: 16),
+                CustomButton(
+                  text: 'Save',
+                  isLoading: _isLoading,
+                  ontap: _saveRecipes,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRecipesList() {
+    final recipes = _getFilteredRecipes();
+    
+    if (recipes.isEmpty) {
+      return const Center(child: Text('No recipes available for this meal type'));
+    }
+    
+    return ListView.builder(
+      itemCount: recipes.length,
+      itemBuilder: (context, index) {
+        final recipe = recipes[index];
+        final isSelected = selectedRecipeIds.contains(recipe.id.toString());
+        
+        return ListTile(
+          leading: recipe.mediaUrl != null && recipe.mediaUrl!.isNotEmpty
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Image.network(
+                    '${AppUrls.baseApiUrl}/${recipe.mediaUrl}',
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 50,
+                        height: 50,
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.image_not_supported),
+                      );
+                    },
+                  ),
+                )
+              : Container(
+                  width: 50,
+                  height: 50,
+                  color: Colors.grey.shade200,
+                  child: const Icon(Icons.image_not_supported),
+                ),
+          title: Text(recipe.itemName),
+          subtitle: Text('Created by: ${recipe.createdByName}'),
+          trailing: Checkbox(
+            value: isSelected,
+            activeColor: AppColors.primaryColor,
+            onChanged: (value) {
+              setState(() {
+                if (value == true) {
+                  selectedRecipeIds.add(recipe.id.toString());
+                } else {
+                  selectedRecipeIds.remove(recipe.id.toString());
+                }
+              });
+            },
+          ),
+          onTap: () {
+            setState(() {
+              if (isSelected) {
+                selectedRecipeIds.remove(recipe.id.toString());
+              } else {
+                selectedRecipeIds.add(recipe.id.toString());
+              }
+            });
+          },
+        );
+      },
     );
   }
 }

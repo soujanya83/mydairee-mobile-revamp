@@ -1,29 +1,44 @@
-abstract class MenuEvent {}
+import 'package:equatable/equatable.dart';
 
-class FetchCentersEvent extends MenuEvent {}
+abstract class MenuEvent extends Equatable {
+  const MenuEvent();
 
-class FetchRecipesEvent extends MenuEvent {
-  final String mealType;
-  FetchRecipesEvent(this.mealType);
+  @override
+  List<Object?> get props => [];
 }
 
 class FetchMenuItemsEvent extends MenuEvent {
-  final int centerId;
-  final String date;
-  FetchMenuItemsEvent(this.centerId, this.date);
+  final String? centerId;
+  final String selectedDate;
+
+  const FetchMenuItemsEvent(this.centerId, this.selectedDate);
+
+  @override
+  List<Object?> get props => [centerId, selectedDate];
 }
 
-class SaveMenuItemEvent extends MenuEvent {
-  final String centerId;
-  final String date;
+class FetchRecipesEvent extends MenuEvent {
+  const FetchRecipesEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class SaveRecipesEvent extends MenuEvent {
+  final String selectedDate;
   final String day;
   final String mealType;
-  final List<int> recipeIds;
-  SaveMenuItemEvent({
-    required this.centerId,
-    required this.date,
+  final List<String> recipeIds;
+  final String centerId;
+
+  const SaveRecipesEvent({
+    required this.selectedDate,
     required this.day,
     required this.mealType,
     required this.recipeIds,
+    required this.centerId,
   });
+
+  @override
+  List<Object?> get props => [selectedDate, day, mealType, recipeIds, centerId];
 }

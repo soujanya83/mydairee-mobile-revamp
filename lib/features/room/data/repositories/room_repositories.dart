@@ -4,56 +4,56 @@ import 'package:mydiaree/features/room/data/model/childrens_room_model.dart';
 import 'package:mydiaree/features/room/data/model/room_list_model.dart';
 import 'package:mydiaree/features/room/data/model/staff_model.dart' show Staff, StaffListModel;
 
-Map<String, dynamic> dummyRoomListData = {
-  "rooms": [
-    {
-      "id": "1",
-      "name": "Room A",
-      "color": "#FF5733",
-      "userName": "John Doe",
-      "status": "Active",
-      "capacity": 20,
-      "ageFrom": 2,
-      "ageTo": 5,
-      "educatorIds": ["1", "2"],
-      "child": [
-        {"name": "Child 1"},
-        {"name": "Child 2"}
-      ]
-    },
-    {
-      "id": "2",
-      "name": "Room B",
-      "color": "#33FF57",
-      "userName": "Jane Smith",
-      "status": "Active",
-      "capacity": 15,
-      "ageFrom": 3,
-      "ageTo": 6,
-      "educatorIds": ["2", "3"],
-      "child": [
-        {"name": "Child 3"}
-      ]
-    },
-    {
-      "id": "3",
-      "name": "Room C",
-      "color": "#3357FF",
-      "userName": "Mike Johnson",
-      "status": "Inactive",
-      "capacity": 10,
-      "ageFrom": 1,
-      "ageTo": 3,
-      "educatorIds": ["1", "3"],
-      "child": []
-    }
-  ],
-  "centers": [
-    {"id": "1", "centerName": "Main Center"},
-    {"id": "2", "centerName": "North Branch"},
-    {"id": "3", "centerName": "South Branch"}
-  ]
-};
+// Map<String, dynamic> dummyRoomListData = {
+//   "rooms": [
+//     {
+//       "id": "1",
+//       "name": "Room A",
+//       "color": "#FF5733",
+//       "userName": "John Doe",
+//       "status": "Active",
+//       "capacity": 20,
+//       "ageFrom": 2,
+//       "ageTo": 5,
+//       "educatorIds": ["1", "2"],
+//       "child": [
+//         {"name": "Child 1"},
+//         {"name": "Child 2"}
+//       ]
+//     },
+//     {
+//       "id": "2",
+//       "name": "Room B",
+//       "color": "#33FF57",
+//       "userName": "Jane Smith",
+//       "status": "Active",
+//       "capacity": 15,
+//       "ageFrom": 3,
+//       "ageTo": 6,
+//       "educatorIds": ["2", "3"],
+//       "child": [
+//         {"name": "Child 3"}
+//       ]
+//     },
+//     {
+//       "id": "3",
+//       "name": "Room C",
+//       "color": "#3357FF",
+//       "userName": "Mike Johnson",
+//       "status": "Inactive",
+//       "capacity": 10,
+//       "ageFrom": 1,
+//       "ageTo": 3,
+//       "educatorIds": ["1", "3"],
+//       "child": []
+//     }
+//   ],
+//   "centers": [
+//     {"id": "1", "centerName": "Main Center"},
+//     {"id": "2", "centerName": "North Branch"},
+//     {"id": "3", "centerName": "South Branch"}
+//   ]
+// };
 
 class RoomRepository {
   Future<ApiResponse<RoomListModel?>> getRooms({
@@ -63,8 +63,8 @@ class RoomRepository {
   }) async {
     return await postAndParse(
       AppUrls.getRooms,
-      dummy: true,
-      dummyData: dummyRoomListData,
+      // dummy: true,
+      // dummyData: dummyRoomListData,
       {
         'user_center_id': centerId,
       },

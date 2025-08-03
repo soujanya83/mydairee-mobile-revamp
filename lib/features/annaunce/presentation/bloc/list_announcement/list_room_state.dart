@@ -24,32 +24,21 @@ class AnnounceListError extends AnnounceListState {
 }
 
 class AnnounceListLoaded extends AnnounceListState {
-  final AnnouncementListModel announcementData;
+  final AnnouncementsListModel announcementData;
 
   const AnnounceListLoaded({
     required this.announcementData,
   });
 
-  AnnounceListLoaded copyWith({
-    List<Map<String, dynamic>>? rooms,
-    List<Map<String, dynamic>>? filteredRooms,
-    List<Map<String, dynamic>>? centers,
-    int? selectedCenterIndex,
-    String? searchQuery,
-    String? statusFilter,
-    Map<String, bool>? selectedRooms,
-    DeletionStatus? deletionStatus,
-  }) {
-    return AnnounceListLoaded(
-      announcementData: announcementData,
-    );
-  }
-
   @override
-  List<Object> get props => [
-        announcementData,
-      ];
+  List<Object> get props => [announcementData];
 }
 
-
-class AnnouncementDeletedState extends AnnounceListState {}
+class AnnouncementDeletedState extends AnnounceListState {
+  final String message;
+  
+  const AnnouncementDeletedState({required this.message});
+  
+  @override
+  List<Object> get props => [message];
+}
