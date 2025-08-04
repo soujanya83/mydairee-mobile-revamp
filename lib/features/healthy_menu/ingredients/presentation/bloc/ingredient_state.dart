@@ -1,4 +1,6 @@
-import 'package:mydiaree/features/healthy_menu/reciepe/data/model/reciepe_model.dart';
+
+
+import 'package:mydiaree/features/healthy_menu/ingredients/data/model/ingredient_model.dart';
 
 abstract class IngredientState {}
 

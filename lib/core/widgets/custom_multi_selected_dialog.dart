@@ -94,6 +94,7 @@ class _CustomMultiSelectDialogState extends State<CustomMultiSelectDialog> {
                   child: const Text('Cancel'),
                 ),
                 const SizedBox(width: 8),
+                
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,

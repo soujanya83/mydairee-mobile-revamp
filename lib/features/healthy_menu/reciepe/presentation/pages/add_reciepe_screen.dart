@@ -1,86 +1,232 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:html/parser.dart' as html_parser;
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
-import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/data/model/reciepe_model.dart';
-import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/add_edit/add_reciepe_bloc.dart';
-import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/add_edit/add_reciepe_event.dart';
-import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/add_edit/add_reciepe_state.dart';
+import 'package:mydiaree/features/healthy_menu/reciepe/data/repositories/reciepe_repository.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/list/reciepe_bloc.dart';
-import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/list/reciepe_event.dart';
-import 'package:mydiaree/main.dart';
 
 class AddRecipeScreen extends StatefulWidget {
-  final RecipeModel? recipe;
-
-  const AddRecipeScreen({super.key, this.recipe});
+  final String centerId;
+  final String? recipeId;
+  
+  const AddRecipeScreen({
+    super.key,
+    required this.centerId,
+    this.recipeId,
+  });
 
   @override
-  _AddRecipeScreenState createState() => _AddRecipeScreenState();
+  State<AddRecipeScreen> createState() => _AddRecipeScreenState();
 }
 
 class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _itemNameController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  final RecipeRepository _repository = RecipeRepository();
+  
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  
+  bool _isLoading = false;
+  bool _isSaving = false;
+  
   String? _selectedMealType;
-  IngredientModel? _selectedIngredient;
+  String? _selectedIngredientId;
+  
   File? _selectedImage;
-  String? _mealTypeError;
-  String? _ingredientError;
-  final List<String> _mealTypes = [
-    'BREAKFAST',
-    'LUNCH',
-    'SNACKS',
-    'MORNING_TEA',
-    'AFTERNOON_TEA',
-  ];
-
+  List<String> _mealTypes = [];
+  List<IngredientModel> _ingredients = [];
+  RecipeEditModel? _recipeForEdit;
+  
   @override
   void initState() {
     super.initState();
-    context.read<AddRecipeBloc>().add(FetchIngredientsForAddEvent());
-
-    // Prefill fields if editing a recipe
-    if (widget.recipe != null) {
-      _itemNameController.text = widget.recipe!.itemName;
-      _descriptionController.text = widget.recipe!.description;
-      _selectedMealType = widget.recipe!.type;
-      // Ingredient will be set after ingredients are loaded in BlocListener
-    }
+    _loadInitialData();
   }
-
-  @override
-  void dispose() {
-    _itemNameController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      final sizeInMB = file.lengthSync() / (1024 * 1024);
-      if (sizeInMB <= 5) {
+  
+  Future<void> _loadInitialData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      // First fetch recipes to get meal types and ingredients
+      final recipesResponse = await _repository.fetchRecipes();
+      
+      if (recipesResponse.success && recipesResponse.data != null) {
         setState(() {
-          _selectedImage = file;
+          _mealTypes = recipesResponse.data!.uniqueMealTypes;
+          _ingredients = recipesResponse.data!.ingredients;
         });
+        
+        // If editing, fetch the recipe details
+        if (widget.recipeId != null) {
+          final editResponse = await _repository.getRecipeForEdit(widget.recipeId!);
+          
+          if (editResponse.success && editResponse.data != null) {
+            final recipeData = editResponse.data!.recipe;
+            setState(() {
+              _recipeForEdit = recipeData;
+              _nameController.text = recipeData.itemName;
+              _selectedMealType = recipeData.type;
+              
+              // HTML decode the recipe text
+              String description = recipeData.recipe;
+              if (description.contains('&lt;p&gt;')) {
+                try {
+                  description = html_parser.parse(description).body?.text ?? description;
+                } catch (e) {
+                  // If parsing fails, keep the original description
+                  print("HTML parsing error: $e");
+                }
+              }
+              _descriptionController.text = description;
+              
+              // Set ingredient ID if available
+              // This needs to be implemented if the API returns the ingredient
+            });
+          } else {
+            UIHelpers.showToast(
+              context,
+              message: editResponse.message,
+              backgroundColor: AppColors.errorColor,
+            );
+          }
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Image must be under 5MB')),
+        UIHelpers.showToast(
+          context,
+          message: recipesResponse.message,
+          backgroundColor: AppColors.errorColor,
         );
       }
+    } catch (e) {
+      print("Error loading initial data: $e");
+      UIHelpers.showToast(
+        context,
+        message: 'Failed to load data: ${e.toString()}',
+        backgroundColor: AppColors.errorColor,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  
+  Future<void> _pickImage() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+      
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _selectedImage = File(result.files.single.path!);
+        });
+      }
+    } catch (e) {
+      print("Error picking image: $e");
+      UIHelpers.showToast(
+        context,
+        message: 'Failed to pick image',
+        backgroundColor: AppColors.errorColor,
+      );
+    }
+  }
+  
+  Future<void> _saveRecipe() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    
+    if (_selectedMealType == null) {
+      UIHelpers.showToast(
+        context,
+        message: 'Please select a meal type',
+        backgroundColor: AppColors.errorColor,
+      );
+      return;
+    }
+    
+    if (_selectedIngredientId == null) {
+      UIHelpers.showToast(
+        context,
+        message: 'Please select an ingredient',
+        backgroundColor: AppColors.errorColor,
+      );
+      return;
+    }
+    
+    setState(() {
+      _isSaving = true;
+    });
+    
+    try {
+      final List<String>? filesPath = _selectedImage != null ? [_selectedImage!.path] : null;
+      
+      final ApiResponse response;
+      
+      if (widget.recipeId != null) {
+        // Update existing recipe
+        response = await _repository.updateRecipe(
+          recipeId: widget.recipeId!,
+          itemName: _nameController.text,
+          mealType: _selectedMealType!,
+          ingredient: _selectedIngredientId!,
+          recipe: _descriptionController.text,
+          centerId: widget.centerId,
+          filesPath: filesPath,
+        );
+      } else {
+        // Add new recipe
+        response = await _repository.addRecipe(
+          itemName: _nameController.text,
+          mealType: _selectedMealType!,
+          ingredient: _selectedIngredientId!,
+          recipe: _descriptionController.text,
+          centerId: widget.centerId,
+          filesPath: filesPath,
+        );
+      }
+      
+      setState(() {
+        _isSaving = false;
+      });
+      
+      if (response.success) {
+        UIHelpers.showToast(
+          context,
+          message: widget.recipeId != null ? 'Recipe updated successfully' : 'Recipe added successfully',
+          backgroundColor: AppColors.successColor,
+        );
+        Navigator.pop(context);
+      } else {
+        UIHelpers.showToast(
+          context,
+          message: response.message,
+          backgroundColor: AppColors.errorColor,
+        );
+      }
+    } catch (e) {
+      print("Error saving recipe: $e");
+      setState(() {
+        _isSaving = false;
+      });
+      UIHelpers.showToast(
+        context,
+        message: 'Failed to save recipe: ${e.toString()}',
+        backgroundColor: AppColors.errorColor,
+      );
     }
   }
 
@@ -88,294 +234,190 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   Widget build(BuildContext context) {
     return CustomScaffold(
       appBar: CustomAppBar(
-        title: widget.recipe == null ? 'Add Recipe' : 'Edit Recipe',
+        title: widget.recipeId != null ? "Edit Recipe" : "Add Recipe",
       ),
-      body: BlocListener<AddRecipeBloc, AddRecipeState>(
-        listener: (context, state) {
-          if (state is AddRecipeSuccess) {
-            Navigator.pop(context);
-            context.read<RecipeBloc>().add(FetchRecipesEvent(1)); // Refresh recipes
-          } else if (state is AddRecipeError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.errorColor,
-              ),
-            );
-          } else if (state is AddRecipeIngredientsLoaded && widget.recipe != null) {
-            // Prefill ingredient after ingredients are loaded
-            if (_selectedIngredient == null) {
-              final ingredient = state.ingredients.firstWhere(
-                (ing) => ing.id == widget.recipe!.ingredientId,
-                // orElse: () => null,
-              );
-              if (ingredient != null) {
-                setState(() {
-                  _selectedIngredient = ingredient;
-                });
-              }
-            }
-          }
-        },
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Item Name
-                CustomTextFormWidget(
-                  controller: _itemNameController,
-                  hintText: 'Item Name',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter item name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Meal Type
-                CustomDropdown<String>(
-                  height: 50,
-                  value: _selectedMealType,
-                  items: _mealTypes,
-                  hint: 'Select Meal Type',
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedMealType = value;
-                      _mealTypeError = null;
-                    });
-                  },
-                  displayItem: (type) => type.replaceAll('_', ' ').toLowerCase().capitalize(),
-                ),
-                if (_mealTypeError != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      _mealTypeError!,
-                      style: const TextStyle(color: AppColors.errorColor, fontSize: 12),
-                    ),
-                  ),
-                const SizedBox(height: 16),
-                // Ingredient
-                BlocBuilder<AddRecipeBloc, AddRecipeState>(
-                  builder: (context, state) {
-                    List<IngredientModel> ingredients = [];
-                    if (state is AddRecipeIngredientsLoaded) {
-                      ingredients = state.ingredients;
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CustomDropdown<IngredientModel>(
-                          height: 50,
-                          value: _selectedIngredient,
-                          items: ingredients,
-                          hint: 'Select Ingredient',
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedIngredient = value;
-                              _ingredientError = null;
-                            });
-                          },
-                          displayItem: (ingredient) => ingredient.name,
-                        ),
-                        if (_ingredientError != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              _ingredientError!,
-                              style: const TextStyle(color: AppColors.errorColor, fontSize: 12),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Description
-                CustomTextFormWidget(
-                  title: 'Description Recipe',
-                  maxLines: 5,
-                  minLines: 5,
-                  controller: _descriptionController,
-                  hintText: 'Enter description',
-                ),
-                const SizedBox(height: 16),
-                // Image Upload
-                Row(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (_selectedImage != null)
-                            Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    height: 150,
-                                    width: 150,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: AppColors.primaryColor),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Image.file(
-                                      _selectedImage!,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: GestureDetector(
-                                    onTap: _pickImage,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      color: AppColors.primaryColor.withOpacity(0.7),
-                                      child: const Text(
-                                        'Change',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          else if (widget.recipe != null && widget.recipe!.imageUrl.isNotEmpty)
-                            Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    height: 150,
-                                    width: 150,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: AppColors.primaryColor),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Image.network(
-                                      widget.recipe!.imageUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: GestureDetector(
-                                    onTap: _pickImage,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      color: AppColors.primaryColor.withOpacity(0.7),
-                                      child: const Text(
-                                        'Edit',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          else
-                            GestureDetector(
-                              onTap: _pickImage,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  height: 150,
-                                  width: 150,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: AppColors.primaryColor),
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: AppColors.white,
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      'Upload Image',
-                                      style: TextStyle(
-                                        color: AppColors.primaryColor,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            '(Under 5 MB Only)',
-                            style: TextStyle(fontSize: 12, color: Colors.green),
-                          ),
-                        ],
+                    // Recipe Name
+                    CustomTextFormWidget(
+                      controller: _nameController,
+                      title: 'Recipe Name',
+                      hintText: 'Enter recipe name',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter recipe name';
+                        }
+                        return null;
+                      },
+                    ),
+                    UIHelpers.verticalSpace(16),
+                    
+                    // Meal Type
+                    Text(
+                      'Meal Type',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryColor,
                       ),
                     ),
+                    UIHelpers.verticalSpace(8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          hint: const Text('Select Meal Type'),
+                          value: _selectedMealType,
+                          items: _mealTypes.map((type) {
+                            return DropdownMenuItem(
+                              value: type,
+                              child: Text(_formatMealType(type)),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedMealType = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    UIHelpers.verticalSpace(16),
+                    
+                    // Ingredient
+                    Text(
+                      'Main Ingredient',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    UIHelpers.verticalSpace(8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          hint: const Text('Select Ingredient'),
+                          value: _selectedIngredientId,
+                          items: _ingredients.map((ingredient) {
+                            return DropdownMenuItem(
+                              value: ingredient.id.toString(),
+                              child: Text(ingredient.name),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedIngredientId = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    UIHelpers.verticalSpace(16),
+                    
+                    // Description
+                    CustomTextFormWidget(
+                      controller: _descriptionController,
+                      title: 'Recipe Description',
+                      hintText: 'Enter recipe description',
+                      maxLines: 5,
+                      minLines: 5,
+                    ),
+                    UIHelpers.verticalSpace(16),
+                    
+                    // Image Upload
+                    Text(
+                      'Recipe Image',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    UIHelpers.verticalSpace(8),
+                    InkWell(
+                      onTap: _pickImage,
+                      child: Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: _selectedImage != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  _selectedImage!,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : _recipeForEdit != null
+                                ? Center(
+                                    child: Text(
+                                      'Tap to change image',
+                                      style: TextStyle(
+                                        color: AppColors.primaryColor,
+                                      ),
+                                    ),
+                                  )
+                                : const Center(
+                                    child: Icon(
+                                      Icons.add_photo_alternate_outlined,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                      ),
+                    ),
+                    UIHelpers.verticalSpace(24),
+                    
+                    // Save Button
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: CustomButton(text: widget.recipeId != null ? 'Update Recipe' : 'Add Recipe',
+                        isLoading: _isSaving,
+                        ontap: (){
+                          _saveRecipe();
+                        },
+                        // width: double.infinity,
+                        ),
+                    ),
+                    // CustomButton(
+
+                    //   text: 'save',
+                    //   // text: widget.recipeId != null ? 'Update Recipe' : 'Add Recipe',
+                    //   isLoading: _isSaving,
+                    //       ontap: _saveRecipe,
+                    //       width: double.infinity,
+                    // ),
                   ],
                 ),
-                UIHelpers.verticalSpace(40),
-                CustomButton(
-                  text: 'Save',
-                  width: screenWidth * 0.9,
-                  borderRadius: 10,
-                  textAppTextStyles: Theme.of(context).textTheme.labelMedium,
-                  ontap: () {
-                    setState(() {
-                      _mealTypeError = _selectedMealType == null ? 'Please select a meal type' : null;
-                      _ingredientError = _selectedIngredient == null ? 'Please select an ingredient' : null;
-                    });
-                    if (_formKey.currentState!.validate() && _mealTypeError == null && _ingredientError == null) {
-                      if (widget.recipe == null) {
-                        context.read<AddRecipeBloc>().add(CreateRecipeEvent(
-                              itemName: _itemNameController.text,
-                              mealType: _selectedMealType!,
-                              ingredientId: _selectedIngredient!.id,
-                              description: _descriptionController.text,
-                              imagePath: _selectedImage?.path ?? '',
-                              creator: 'Deepti (Superadmin)', // Replace with actual user
-                            ));
-                      } else {
-                        context.read<AddRecipeBloc>().add(EditRecipeEvent(
-                              id: widget.recipe!.id,
-                              itemName: _itemNameController.text,
-                              mealType: _selectedMealType!,
-                              ingredientId: _selectedIngredient!.id,
-                              description: _descriptionController.text,
-                              imagePath: _selectedImage?.path ?? widget.recipe!.imageUrl,
-                              creator: 'Deepti (Superadmin)', // Replace with actual user
-                            ));
-                      }
-                    }
-                  },
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
-}
-
-// Extension to capitalize meal type strings
-extension StringExtension on String {
-  String capitalize() {
-    return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
+  
+  String _formatMealType(String type) {
+    return type.replaceAll('_', ' ').toLowerCase().split(' ').map((word) => 
+      word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '').join(' ');
   }
 }

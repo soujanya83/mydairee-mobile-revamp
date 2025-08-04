@@ -42,13 +42,19 @@ class MenuRepository {
       'day': day,
       'meal_type': mealType,
       'center_id': centerId,
+      'recipe_ids': recipeIds, // Convert list to comma-separated string
     };
     
     // Add recipe_ids as separate fields
-    for (int i = 0; i < recipeIds.length; i++) {
-      data['recipe_ids[$i]'] = recipeIds[i];
-    }
+    // for (int i = 0; i < recipeIds.length; i++) {
+    //   data['recipe_ids[$i]'] = recipeIds[i];
+    // }
     
     return await ApiServices.postData(url, data);
+  }
+  
+  Future<ApiResponse> deleteMenuItem(String menuId) async {
+    final url = '${AppUrls.baseApiUrl}/api/menu/$menuId';
+    return await deleteDataApi(url);
   }
 }

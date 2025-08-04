@@ -21,7 +21,6 @@ import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/bloc/ac
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:mydiaree/features/healthy_menu/ingredients/presentation/bloc/ingredient_bloc.dart';
 import 'package:mydiaree/features/healthy_menu/menu/presentation/bloc/menu_bloc.dart';
-import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/add_edit/add_reciepe_bloc.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/bloc/list/reciepe_bloc.dart';
 import 'package:mydiaree/features/learning_and_progress/presentation/bloc/list/learning_and_progress_bloc.dart';
 import 'package:mydiaree/features/learning_and_progress/presentation/bloc/view_progress/view_progress_bloc.dart';
@@ -111,7 +110,6 @@ class MyApp extends StatelessWidget {
             create: (context) => AssignerPermissionUserBloc()),
         BlocProvider<MenuBloc>(create: (context) => MenuBloc()),
         BlocProvider<RecipeBloc>(create: (context) => RecipeBloc()),
-        BlocProvider<AddRecipeBloc>(create: (context) => AddRecipeBloc()),
         BlocProvider<IngredientBloc>(create: (context) => IngredientBloc()),
         BlocProvider<LearningAndProgressBloc>(create: (context) => LearningAndProgressBloc()),
         BlocProvider<ViewProgressBloc>(create: (context) => ViewProgressBloc()),

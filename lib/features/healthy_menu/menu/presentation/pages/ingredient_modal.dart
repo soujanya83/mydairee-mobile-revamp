@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
+import 'package:mydiaree/core/services/api_services.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
-import 'package:mydiaree/features/healthy_menu/menu/data/model/menu_model.dart';
 import 'package:mydiaree/features/healthy_menu/menu/data/repositories/menu_repository.dart';
 
 class IngredientModal extends StatefulWidget {
@@ -11,7 +12,7 @@ class IngredientModal extends StatefulWidget {
   final String mealType;
   final String selectedDate;
   final String centerId;
-  final VoidCallback? onRecipesSaved;
+  final Function onRecipesSaved;
 
   const IngredientModal({
     Key? key,
@@ -19,7 +20,7 @@ class IngredientModal extends StatefulWidget {
     required this.mealType,
     required this.selectedDate,
     required this.centerId,
-    this.onRecipesSaved,
+    required this.onRecipesSaved,
   }) : super(key: key);
 
   @override
@@ -29,30 +30,51 @@ class IngredientModal extends StatefulWidget {
 class _IngredientModalState extends State<IngredientModal> {
   final MenuRepository _repository = MenuRepository();
   bool _isLoading = true;
-  RecipeResponse? _recipeResponse;
-  List<String> selectedRecipeIds = [];
-  String? _searchQuery;
+  bool _isSaving = false;
+  List<RecipeByTypeModel> _recipes = [];
+  final List<String> _selectedRecipeIds = [];
 
   @override
   void initState() {
     super.initState();
-    _loadRecipes();
+    _loadRecipesByType();
   }
 
-  Future<void> _loadRecipes() async {
+  Future<void> _loadRecipesByType() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final response = await _repository.getRecipes();
+      // Get the normalized meal type
+      final String normalizedType = _getNormalizedMealType(widget.mealType);
+      
+      // Use the API endpoint from Postman
+      final url = '${AppUrls.baseApiUrl}/api/get-recipes-by-type?type=$normalizedType';
+      
+      final response = await ApiServices.getData(url);
+
       setState(() {
         _isLoading = false;
-        if (response.success && response.data != null) {
-          _recipeResponse = response.data;
+        if (response.success) {
+          // Parse the recipes from the response
+          final recipesJson = response.data['recipes'] as List<dynamic>;
+          _recipes = recipesJson
+              .map((json) => RecipeByTypeModel(
+                    id: json['id'] as int,
+                    itemName: json['itemName'] as String,
+                  ))
+              .toList();
+        } else {
+          UIHelpers.showToast(
+            context,
+            message: response.message,
+            backgroundColor: AppColors.errorColor,
+          );
         }
       });
     } catch (e) {
+      print("Error loading recipes by type: $e");
       setState(() {
         _isLoading = false;
       });
@@ -64,26 +86,59 @@ class _IngredientModalState extends State<IngredientModal> {
     }
   }
 
-  List<RecipeModel> _getFilteredRecipes() {
-    if (_recipeResponse == null) return [];
-
-    // Get the recipes for the selected meal type
-    final String normalizedMealType = _getNormalizedMealType(widget.mealType);
-    final List<RecipeModel> recipes = _recipeResponse!.recipes[normalizedMealType] ?? [];
+  Future<void> _saveSelectedRecipes() async {
     
-    // Filter by center ID
-    final centerId = int.tryParse(widget.centerId);
-    final centerFilteredRecipes = centerId != null 
-        ? recipes.where((recipe) => recipe.centerId == centerId).toList()
-        : recipes;
-    
-    // Apply search filter if any
-    if (_searchQuery != null && _searchQuery!.isNotEmpty) {
-      return centerFilteredRecipes.where((recipe) => 
-        recipe.itemName.toLowerCase().contains(_searchQuery!.toLowerCase())).toList();
+    if (_selectedRecipeIds.isEmpty) {
+      UIHelpers.showToast(
+        context,
+        message: 'Please select at least one recipe',
+        backgroundColor: AppColors.errorColor,
+      );
+      return;
     }
-    
-    return centerFilteredRecipes;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final response = await _repository.saveRecipes(
+        selectedDate: widget.selectedDate,
+        day: widget.day,
+        mealType: _getNormalizedMealType(widget.mealType),
+        recipeIds: _selectedRecipeIds,
+        centerId: widget.centerId,
+      );
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      if (response.success) {
+        UIHelpers.showToast(
+          context,
+          message: 'Recipes added to menu successfully',
+          backgroundColor: AppColors.successColor,
+        );
+        Navigator.pop(context);
+        widget.onRecipesSaved();
+      } else {
+        UIHelpers.showToast(
+          context,
+          message: response.message,
+          backgroundColor: AppColors.errorColor,
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSaving = false;
+      });
+      UIHelpers.showToast(
+        context,
+        message: 'Failed to save recipes',
+        backgroundColor: AppColors.errorColor,
+      );
+    }
   }
 
   String _getNormalizedMealType(String mealType) {
@@ -106,205 +161,173 @@ class _IngredientModalState extends State<IngredientModal> {
     }
   }
 
-  Future<void> _saveRecipes() async {
-    if (selectedRecipeIds.isEmpty) {
-      UIHelpers.showToast(
-        context,
-        message: 'Please select at least one recipe',
-        backgroundColor: AppColors.errorColor,
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await _repository.saveRecipes(
-        selectedDate: widget.selectedDate,
-        day: widget.day,
-        mealType: widget.mealType,
-        recipeIds: selectedRecipeIds,
-        centerId: widget.centerId,
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (response.success) {
-        UIHelpers.showToast(
-          context,
-          message: 'Recipes saved successfully',
-          backgroundColor: AppColors.successColor,
-        );
-        Navigator.pop(context);
-        if (widget.onRecipesSaved != null) {
-          widget.onRecipesSaved!();
-        }
-      } else {
-        UIHelpers.showToast(
-          context,
-          message: response.message,
-          backgroundColor: AppColors.errorColor,
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      UIHelpers.showToast(
-        context,
-        message: 'Failed to save recipes',
-        backgroundColor: AppColors.errorColor,
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
+    
     return Dialog(
+      backgroundColor: Colors.white,
+      elevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
+        padding: const EdgeInsets.all(16),
+        color: Colors.white,
         width: double.infinity,
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-          maxWidth: MediaQuery.of(context).size.width * 0.9,
+          maxHeight: screenSize.height * 0.7,
+          maxWidth: screenSize.width * 0.9,
         ),
-        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Select Recipes for ${widget.day} - ${widget.mealType}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    'Select ${widget.mealType} Recipes',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search recipes...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+            const Divider(height: 24),
+            
+            // Day info
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Day: ${widget.day}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
             ),
             const SizedBox(height: 16),
+            
+            // Content area - recipes list
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _recipeResponse == null
-                      ? const Center(child: Text('No recipes available'))
-                      : _buildRecipesList(),
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : _recipes.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.no_food,
+                                size: 48,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No recipes available for this meal type',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: ListView.builder(
+                            itemCount: _recipes.length,
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            itemBuilder: (context, index) {
+                              final recipe = _recipes[index];
+                              final isSelected = _selectedRecipeIds.contains(recipe.id.toString());
+                              
+                              return Card(
+                                elevation: 1,
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  side: BorderSide(
+                                    color: isSelected ? AppColors.primaryColor.withOpacity(0.3) : Colors.transparent,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: CheckboxListTile(
+                                  title: Text(
+                                    recipe.itemName,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                    ),
+                                  ),
+                                  value: isSelected,
+                                  activeColor: AppColors.primaryColor,
+                                  controlAffinity: ListTileControlAffinity.leading,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  dense: true,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      if (value == true) {
+                                        _selectedRecipeIds.add(recipe.id.toString());
+                                      } else {
+                                        _selectedRecipeIds.remove(recipe.id.toString());
+                                      }
+                                    });
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
             ),
+            
+            // Button area
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                CustomButton(
-                  text: 'Cancel',
-                  color: Colors.grey,
-                  ontap: () => Navigator.pop(context),
-                ),
-                const SizedBox(width: 16),
-                CustomButton(
-                  text: 'Save',
-                  isLoading: _isLoading,
-                  ontap: _saveRecipes,
-                ),
-              ],
+            SafeArea(
+              child: CustomButton(
+                text: 'Add to Menu',
+                isLoading: _isSaving,
+                ontap: _saveSelectedRecipes,
+                width: double.infinity,
+                height: 48,
+                borderRadius: 8,
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildRecipesList() {
-    final recipes = _getFilteredRecipes();
-    
-    if (recipes.isEmpty) {
-      return const Center(child: Text('No recipes available for this meal type'));
-    }
-    
-    return ListView.builder(
-      itemCount: recipes.length,
-      itemBuilder: (context, index) {
-        final recipe = recipes[index];
-        final isSelected = selectedRecipeIds.contains(recipe.id.toString());
-        
-        return ListTile(
-          leading: recipe.mediaUrl != null && recipe.mediaUrl!.isNotEmpty
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: Image.network(
-                    '${AppUrls.baseApiUrl}/${recipe.mediaUrl}',
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 50,
-                        height: 50,
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.image_not_supported),
-                      );
-                    },
-                  ),
-                )
-              : Container(
-                  width: 50,
-                  height: 50,
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.image_not_supported),
-                ),
-          title: Text(recipe.itemName),
-          subtitle: Text('Created by: ${recipe.createdByName}'),
-          trailing: Checkbox(
-            value: isSelected,
-            activeColor: AppColors.primaryColor,
-            onChanged: (value) {
-              setState(() {
-                if (value == true) {
-                  selectedRecipeIds.add(recipe.id.toString());
-                } else {
-                  selectedRecipeIds.remove(recipe.id.toString());
-                }
-              });
-            },
-          ),
-          onTap: () {
-            setState(() {
-              if (isSelected) {
-                selectedRecipeIds.remove(recipe.id.toString());
-              } else {
-                selectedRecipeIds.add(recipe.id.toString());
-              }
-            });
-          },
-        );
-      },
-    );
-  }
+// Model for recipe response
+class RecipeByTypeModel {
+  final int id;
+  final String itemName;
+
+  RecipeByTypeModel({
+    required this.id,
+    required this.itemName,
+  });
 }
