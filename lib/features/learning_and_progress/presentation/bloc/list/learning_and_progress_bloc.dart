@@ -14,7 +14,7 @@ final LearningAndProgressRepository _repository = LearningAndProgressRepository(
   Future<void> _onFetchChildren(FetchChildrenEvent event, Emitter<LearningAndProgressState> emit) async {
     emit(LearningAndProgressLoading());
     try {
-      final children = await _repository.fetchChildren(event.centerId);
+      final children = await _repository.fetchChildrenData(event.centerId);
       emit(LearningAndProgressLoaded(children));
     } catch (e) {
       emit(LearningAndProgressError('Failed to fetch children: $e'));

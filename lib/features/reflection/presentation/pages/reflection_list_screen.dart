@@ -17,6 +17,7 @@ import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflect
 import 'package:mydiaree/features/reflection/presentation/pages/add_reflection_screen.dart';
 import 'package:mydiaree/features/reflection/presentation/widget/reflection_list_custom_widgets.dart';
 import 'package:mydiaree/features/room/presentation/widget/room_list_custom_widgets.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 
 // ignore: must_be_immutable
 class ReflectionListScreen extends StatefulWidget {
@@ -81,9 +82,8 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
   }
 
   final TextEditingController searchController = TextEditingController();
-  bool permissionAdd = true;
-  bool permissionUpdate = true;
-  bool permissionDelete = true;
+  bool get canModify => !UserTypeHelper.isParent;
+
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
@@ -119,63 +119,63 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                         const Spacer(),
-                        OutlinedButton(
-                          onPressed: () {
-                            showMaterialModalBottomSheet(
-                              context: context,
-                              builder: (context) => FiltersModal(
-                                centerId: selectedCenterId,
-                                children: [
-                                  FilterChildModel(
-                                      name: 'Vicky',
-                                      imageUrl: 'https://example.com/vicky.jpg',
-                                      id: '1'),
-                                  FilterChildModel(
-                                      name: 'John',
-                                      imageUrl: 'https://example.com/john.jpg',
-                                      id: '2'),
-                                  FilterChildModel(
-                                      name: 'Jane',
-                                      imageUrl: 'https://example.com/jane.jpg',
-                                      id: '3'),
-                                  FilterChildModel(
-                                      name: 'Doe',
-                                      imageUrl: 'https://example.com/doe.jpg',
-                                      id: '4'),
-                                ],
-                                staff: [
-                                  FilterEucatorModel(
-                                    name: 'John Doe',
-                                    imageUrl: 'https://example.com/john.jpg',
-                                    id: '1',
-                                  ),
-                                  FilterEucatorModel(
-                                    name: 'Jane Smith',
-                                    imageUrl: 'https://example.com/jane.jpg',
-                                    id: '2',
-                                  ),
-                                  FilterEucatorModel(
-                                    name: 'Doe John',
-                                    imageUrl: 'https://example.com/doe.jpg',
-                                    id: '3',
-                                  ),
-                                  FilterEucatorModel(
-                                    name: 'Vicky',
-                                    imageUrl: 'https://example.com/vicky.jpg',
-                                    id: '4',
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                          child: const Text('FILTERS'),
-                          style: OutlinedButton.styleFrom(
-                            side:
-                                const BorderSide(color: AppColors.primaryColor),
-                          ),
-                        ),
+                        // OutlinedButton(
+                        //   onPressed: () {
+                        //     showMaterialModalBottomSheet(
+                        //       context: context,
+                        //       builder: (context) => FiltersModal(
+                        //         centerId: selectedCenterId,
+                        //         children: [
+                        //           FilterChildModel(
+                        //               name: 'Vicky',
+                        //               imageUrl: 'https://example.com/vicky.jpg',
+                        //               id: '1'),
+                        //           FilterChildModel(
+                        //               name: 'John',
+                        //               imageUrl: 'https://example.com/john.jpg',
+                        //               id: '2'),
+                        //           FilterChildModel(
+                        //               name: 'Jane',
+                        //               imageUrl: 'https://example.com/jane.jpg',
+                        //               id: '3'),
+                        //           FilterChildModel(
+                        //               name: 'Doe',
+                        //               imageUrl: 'https://example.com/doe.jpg',
+                        //               id: '4'),
+                        //         ],
+                        //         staff: [
+                        //           FilterEucatorModel(
+                        //             name: 'John Doe',
+                        //             imageUrl: 'https://example.com/john.jpg',
+                        //             id: '1',
+                        //           ),
+                        //           FilterEucatorModel(
+                        //             name: 'Jane Smith',
+                        //             imageUrl: 'https://example.com/jane.jpg',
+                        //             id: '2',
+                        //           ),
+                        //           FilterEucatorModel(
+                        //             name: 'Doe John',
+                        //             imageUrl: 'https://example.com/doe.jpg',
+                        //             id: '3',
+                        //           ),
+                        //           FilterEucatorModel(
+                        //             name: 'Vicky',
+                        //             imageUrl: 'https://example.com/vicky.jpg',
+                        //             id: '4',
+                        //           ),
+                        //         ],
+                        //       ),
+                        //     );
+                        //   },
+                        //   child: const Text('FILTERS'),
+                        //   style: OutlinedButton.styleFrom(
+                        //     side:
+                        //         const BorderSide(color: AppColors.primaryColor),
+                        //   ),
+                        // ),
                         const SizedBox(width: 8),
-                        if (permissionAdd)
+                        if (canModify)
                           UIHelpers.addButton(
                             context: context,
                             ontap: () {
@@ -292,8 +292,8 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                                           ))
                                       .toList() ??
                                   [],
-                              permissionUpdate: permissionUpdate,
-                              permissionDelete: permissionDelete,
+                              permissionUpdate: canModify,
+                              permissionDelete: canModify,
                               onEditPressed: () {
                                 Navigator.push(
                                   context,

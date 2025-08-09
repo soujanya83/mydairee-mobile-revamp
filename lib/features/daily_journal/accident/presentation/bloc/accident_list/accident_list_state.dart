@@ -1,16 +1,52 @@
 import 'package:mydiaree/features/daily_journal/accident/data/models/accident_list_response_model.dart';
-import 'package:mydiaree/features/daily_journal/accident/data/repositories/accident_repo.dart';
 
-abstract class AccidentState {}
+abstract class AccidentListState {}
 
-class AccidentLoadingState extends AccidentState {}
+class AccidentListInitial extends AccidentListState {}
 
-class AccidentLoadedState extends AccidentState {
-  final List<AccidentListData> accidents;
-  AccidentLoadedState({required this.accidents});
+class AccidentListLoading extends AccidentListState {}
+
+class AccidentListLoaded extends AccidentListState {
+  final AccidentListResponseModel response;
+  final String? selectedCenterId;
+  final String? selectedRoomId;
+  final String searchQuery;
+  
+  AccidentListLoaded({
+    required this.response,
+    this.selectedCenterId,
+    this.selectedRoomId,
+    this.searchQuery = '',
+  });
+  
+  AccidentListLoaded copyWith({
+    AccidentListResponseModel? response,
+    String? selectedCenterId,
+    String? selectedRoomId,
+    String? searchQuery,
+  }) {
+    return AccidentListLoaded(
+      response: response ?? this.response,
+      selectedCenterId: selectedCenterId ?? this.selectedCenterId,
+      selectedRoomId: selectedRoomId ?? this.selectedRoomId,
+      searchQuery: searchQuery ?? this.searchQuery,
+    );
+  }
+  
+  List<AccidentModel> get filteredAccidents {
+    final accidents = response.data.accidents;
+    
+    if (searchQuery.isEmpty) {
+      return accidents;
+    }
+    
+    return accidents.where((accident) => 
+      accident.child_name.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+  }
 }
 
-class AccidentErrorState extends AccidentState {
+class AccidentListError extends AccidentListState {
   final String message;
-  AccidentErrorState({required this.message});
+  
+  AccidentListError(this.message);
 }

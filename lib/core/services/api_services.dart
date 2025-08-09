@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as Math;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
@@ -23,142 +24,132 @@ class ApiServices {
     }
   }
 
-  
-static Future<ApiResponse> getData(
-  String url, {
-  Map<String, dynamic>? headers,
-  Map<String, dynamic>? queryParameters,
-  bool dummy = false,
-  Map<String, dynamic>? dummyData,
-}) async {
-  final dio = Dio();
+  static Future<ApiResponse> getData(
+    String url, {
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? dummyData,
+  }) async {
+    final dio = Dio();
 
-  try {
-    if (dummy) {
-      print('Dummy GET triggered');
-      print('Dummy Data: $dummyData');
-      await Future.delayed(const Duration(seconds: 2));
-      return ApiResponse(
-        data: dummyData,
-        success: true,
-        message: 'Dummy get successful',
-      );
-    }
+    try {
+      if (dummyData != null) {
+        print('Dummy GET triggered');
+        print('Dummy Data: $dummyData');
+        await Future.delayed(const Duration(seconds: 2));
+        return ApiResponse(
+          data: dummyData,
+          success: true,
+          message: 'Dummy get successful',
+        );
+      }
 
-    // Prepare headers
+      // Prepare headers
       Options? options;
       options = Options(
-        headers: headers??{
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ${await getToken()}',
-
-        },
+        headers: headers ?? await getAuthHeaders(),
         validateStatus: (status) {
           return true;
         },
       );
-    
 
-    // Print Debug Info
-    print('Sending GET request');
-    print('URL: $url');
-    if (queryParameters != null) {
-      print('Query Parameters: $queryParameters');
-    }
-    if (headers != null) {
-      print('Headers: $headers');
-    }
+      // Debug authentication
+      final authToken = await getToken();
+      print('=================================');
+      print('authotoken $authToken');
 
-    // Perform request
-    final response = await dio.get(
-      url,
-      queryParameters: queryParameters,
-      options: options,
-    );
+      // Print Debug Info
+      print('Sending GET request');
+      print('URL: $url');
+      if (queryParameters != null) {
+        print('Query Parameters: $queryParameters');
+      }
+      if (headers != null) {
+        print('Headers: $headers');
+      }
 
-    // Debug response
-    print('Response Received');
-    print('Status Code: ${response.statusCode}');
-    print('Response Data: ${response.data}');
-
-    // Handle response
-    if (validApiResponse(response)) {
-      return ApiResponse(
-        success: true,
-        data: response.data,
-        message: getApiMessage(response),
+      // Perform request
+      final response = await dio.get(
+        url,
+        queryParameters: queryParameters,
+        options: options,
       );
-    } else {
-      return ApiResponse(
-        success: false,
-        data: response.data,
-        message: getApiMessage(response),
-      );
+
+      // Debug response
+      print('Response Received');
+      print('Status Code: ${response.statusCode}');
+      print('Response Data: ${response.data}');
+      if (validApiResponse(response)) {
+        return ApiResponse(
+          success: true,
+          data: response.data,
+          message: getApiMessage(response),
+        );
+      } else {
+        return ApiResponse(
+          success: false,
+          data: response.data,
+          message: getApiMessage(response),
+        );
+      }
+    } catch (e, s) {
+      print('Error in getData');
+      print('Error: $e');
+      print('Stack: $s');
+      return ApiResponse(success: false, message: 'Something Went Wrong');
     }
-  } catch (e, s) {
-    print('Error in getData');
-    print('Error: $e');
-    print('Stack: $s');
-    return ApiResponse(success: false, message: 'Something Went Wrong');
   }
-}
 
-static Future<ApiResponse> deleteData(
-  String url, {
-  Map<String, dynamic>? headers,  
-  dynamic data,
-}) async {
-  final dio = Dio();
+  static Future<ApiResponse> deleteData(
+    String url, {
+    Map<String, dynamic>? headers,
+    dynamic data,
+  }) async {
+    final dio = Dio();
 
-  try { 
-
-    Options options = Options(
-      method: 'DELETE',
-      headers: headers ?? {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${await getToken()}',
-      },
-      validateStatus: (status) => true,
-    );
-
-    print('Sending DELETE request');
-    print('URL: $url'); 
-    if (headers != null) {
-      print('Headers: $headers');
-    }
-
-    final response = await dio.request(
-      url,
-      options: options,
-      data: data,
-    );
-
-    print('Response Received');
-    print('Status Code: ${response.statusCode}');
-    print('Response Data: ${response.data}');
-
-    if (validApiResponse(response)) {
-      return ApiResponse(
-        success: true,
-        data: response.data,
-        message: getApiMessage(response),
+    try {
+      Options options = Options(
+        method: 'DELETE',
+        headers: headers ?? await getAuthHeaders(),
+        validateStatus: (status) => true,
       );
-    } else {
-      return ApiResponse(
-        success: false,
-        data: response.data,
-        message: getApiMessage(response),
+
+      print('Sending DELETE request');
+      print('URL: $url');
+      if (headers != null) {
+        print('Headers: $headers');
+      }
+
+      final response = await dio.request(
+        url,
+        options: options,
+        data: data,
       );
+
+      print('Response Received');
+      print('Status Code: ${response.statusCode}');
+      print('Response Data: ${response.data}');
+
+      if (validApiResponse(response)) {
+        return ApiResponse(
+          success: true,
+          data: response.data,
+          message: getApiMessage(response),
+        );
+      } else {
+        return ApiResponse(
+          success: false,
+          data: response.data,
+          message: getApiMessage(response),
+        );
+      }
+    } catch (e, s) {
+      print('Error in deleteData');
+      print('Error: $e');
+      print('Stack: $s');
+      return ApiResponse(success: false, message: 'Something Went Wrong');
     }
-  } catch (e, s) {
-    print('Error in deleteData');
-    print('Error: $e');
-    print('Stack: $s');
-    return ApiResponse(success: false, message: 'Something Went Wrong');
   }
-}
 
   static Future<ApiResponse> postData(String url, dynamic data,
       {Map<String, dynamic>? headers,
@@ -170,16 +161,15 @@ static Future<ApiResponse> deleteData(
     try {
       Options? options;
       options = Options(
-        headers: headers??{
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ${await getToken()}',
-
-        },
+        headers: headers ?? await getAuthHeaders(),
         validateStatus: (status) {
           return true;
         },
       );
+
+      // Debug authentication
+      final authToken = await getToken();
+      print('Using auth token: ${authToken != null ? (authToken.substring(0, Math.min(10, authToken.length)) + "...") : "NULL"}');
 
       dynamic body = data;
       List<MultipartFile>? files;
@@ -266,6 +256,25 @@ static Future<ApiResponse> deleteData(
       'statusCode': 200,
       'message': 'Dummy post successful',
       'data': data,
+    };
+  }
+
+  static Future<Map<String, dynamic>> getAuthHeaders() async {
+    final token = await getToken();
+    print('here is the token: $token');
+
+    if (token == null || token.isEmpty) {
+      print("WARNING: No authentication token available");
+      return {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+    }
+
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
     };
   }
 }

@@ -31,6 +31,7 @@ class _ViewProgressScreenState extends State<ViewProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
+    
     return CustomScaffold(
       appBar: const CustomAppBar(
         title: "View Progress",

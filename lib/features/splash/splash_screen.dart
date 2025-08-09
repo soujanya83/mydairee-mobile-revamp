@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_asset.dart';
 import 'package:mydiaree/core/services/shared_preference_service.dart';
+import 'package:mydiaree/features/auth/admin/presentation/pages/admin/login_screen.dart';
 import 'package:mydiaree/features/auth/admin/presentation/pages/admin/user_type_screen.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
 
@@ -29,14 +30,19 @@ class _SplashScreenState extends State<SplashScreen> {
         );
       } else {
         // If no token, navigate to UserTypeScreen
-        Navigator.pushReplacement(
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (_) => const UserTypeScreen(),
+        //   ),
+        // );
+          Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => const UserTypeScreen(),
+            builder: (_) => const LoginScreen(),
           ),
         );
       }
-      ;
     });
   }
 

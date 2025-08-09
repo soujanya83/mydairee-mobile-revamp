@@ -12,17 +12,18 @@ import 'package:mydiaree/features/daily_journal/accident/data/models/create_acci
 class AccidentRepository {
   final String baseUrl = 'https://mydiaree.com.au/api';
 
-  Future<ApiResponse<AccidentListResponseModel?>> fetchAccidents({
+  Future<ApiResponse<AccidentListResponseModel?>> getAccidents({
     required String centerId,
-    required String roomId,
+    String? roomId,
   }) async {
-    final url = '$baseUrl/Accidents/list?centerid=$centerId&roomid=$roomId';
+    final url = '$baseUrl/Accidents/list?centerid=$centerId${roomId != null ? '&roomid=$roomId' : ''}';
+    
     return await getAndParseData<AccidentListResponseModel>(
       url,
       fromJson: (json) => AccidentListResponseModel.fromJson(json),
     );
   }
-
+  
   Future<ApiResponse<CreateAccidentResponseModel?>> getCreateAccidentData({
     required String centerId,
     required String roomId,
@@ -34,7 +35,7 @@ class AccidentRepository {
     );
   }
 
-  Future<ApiResponse<ChildDetailsResponseModel?>> getChildDetails({
+  Future<ApiResponse<ChildDetailsResponseModel?>> getChildDetails( {
     required String childId,
   }) async {
     final url = '$baseUrl/Accident/getChildDetails';
@@ -187,6 +188,8 @@ class AccidentRepository {
     };
 
     FormData formData = FormData.fromMap(data);
+    print('============');
+    print(data);
     return await ApiServices.postData(url, formData);
   }
 }

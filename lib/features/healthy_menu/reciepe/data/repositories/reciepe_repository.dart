@@ -6,7 +6,7 @@ import 'package:mydiaree/features/healthy_menu/reciepe/data/model/reciepe_model.
 class RecipeRepository {
   // Fetch all recipes with their categories
   Future<ApiResponse<RecipeResponseModel?>> fetchRecipes() async {
-    final url = '${AppUrls.baseApiUrl}/api/healthy-recipes';
+    final url = '${AppUrls.baseUrl}/api/healthy-recipes';
     
     return await postAndParse<RecipeResponseModel>(
       url,
@@ -17,7 +17,7 @@ class RecipeRepository {
   
   // Delete a recipe
   Future<ApiResponse> deleteRecipe(String recipeId) async {
-    final url = '${AppUrls.baseApiUrl}/api/recipe/delete/$recipeId';
+    final url = '${AppUrls.baseUrl}/api/recipe/delete/$recipeId';
     return await deleteDataApi(url);
   }
   
@@ -30,7 +30,7 @@ class RecipeRepository {
     required String centerId,
     List<String>? filesPath,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/recipe/store';
+    final url = '${AppUrls.baseUrl}/api/recipe/store';
 
     final Map<String, dynamic> data = {
       'itemName': itemName,
@@ -52,7 +52,7 @@ class RecipeRepository {
   
   // Get recipe details for editing
   Future<ApiResponse<RecipeEditResponseModel?>> getRecipeForEdit(String recipeId) async {
-    final url = '${AppUrls.baseApiUrl}/api/recipe/edit/$recipeId';
+    final url = '${AppUrls.baseUrl}/api/recipe/edit/$recipeId';
     
     return await getAndParseData<RecipeEditResponseModel>(
       url,
@@ -70,7 +70,7 @@ class RecipeRepository {
     required String centerId,
     List<String>? filesPath,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/recipe/update/$recipeId';
+    final url = '${AppUrls.baseUrl}/api/recipe/update/$recipeId';
     
     final Map<String, dynamic> data = {
       'itemName': itemName,

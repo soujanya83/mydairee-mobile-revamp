@@ -14,6 +14,7 @@ import 'package:mydiaree/features/room/presentation/widget/room_list_custom_widg
 import 'package:mydiaree/main.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 
 // ignore: must_be_immutable
 class ProgramPlansListScreen extends StatelessWidget {
@@ -24,6 +25,8 @@ class ProgramPlansListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isParent = UserTypeHelper.isParent;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final bloc = context.read<ProgramPlanBloc>();
       final state = bloc.state;
@@ -71,7 +74,7 @@ class ProgramPlansListScreen extends StatelessWidget {
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [ 
+                children: [
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -87,22 +90,24 @@ class ProgramPlansListScreen extends StatelessWidget {
                                   ?.copyWith(fontSize: 20),
                             ),
                             const Spacer(),
-                            UIHelpers.addButton(
-                              context: context,
-                              ontap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AddProgramPlanScreen(
-                                      centerId: selectedCenterId.isEmpty
-                                          ? '1'
-                                          : selectedCenterId,
-                                      screenType: 'add',
+                            // Add button – only for non-parents
+                            if (!isParent)
+                              UIHelpers.addButton(
+                                context: context,
+                                ontap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddProgramPlanScreen(
+                                        centerId: selectedCenterId.isEmpty
+                                            ? '1'
+                                            : selectedCenterId,
+                                        screenType: 'add',
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
+                                  );
+                                },
+                              ),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -131,8 +136,8 @@ class ProgramPlansListScreen extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final plan = plans[index];
                         final isSelected = selectedProgramIds.contains(plan.id);
+                        // disable edit/delete for parents
                         return ProgramPlanCard(
-                          
                           index: index,
                           isSelected: isSelected,
                           onSelect: (selected) {
@@ -144,31 +149,33 @@ class ProgramPlansListScreen extends StatelessWidget {
                               }
                             });
                           },
-                          onEditPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AddProgramPlanScreen(
-                                  programPlanId: plan.id.toString(),
-                                  editPlanData: plan,
-                                  centerId: selectedCenterId.isEmpty
-                                      ? '1'
-                                      : selectedCenterId,
-                                  screenType: 'edit',
-                                ),
-                              ),
-                            );
-                          },
-                          onDeletePressed: () {
-                            showDeleteConfirmationDialog(context, () {
-                              context.read<ProgramPlanBloc>().add(
-                                    DeleteProgramPlanEvent(
-                                      planId: plan.id.toString(),
+                          onEditPressed: isParent
+                              ? () {}
+                              : () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => AddProgramPlanScreen(
+                                        programPlanId: plan.id.toString(),
+                                        editPlanData: plan,
+                                        centerId: selectedCenterId.isEmpty
+                                            ? '1'
+                                            : selectedCenterId,
+                                        screenType: 'edit',
+                                      ),
                                     ),
-                                  );
-                              Navigator.pop(context);
-                            });
-                          },
+                                  ),
+                          onDeletePressed: isParent
+                              ? () {}
+                              : () {
+                                  showDeleteConfirmationDialog(context, () {
+                                    context.read<ProgramPlanBloc>().add(
+                                          DeleteProgramPlanEvent(
+                                            planId: plan.id.toString(),
+                                          ),
+                                        );
+                                    Navigator.pop(context);
+                                  });
+                                },
                           onPrintPressed: () {
                             UIHelpers.showToast(
                               context,
@@ -186,7 +193,7 @@ class ProgramPlansListScreen extends StatelessWidget {
                     );
                   }),
                   // Delete Button
-                  if (selectedProgramIds.isNotEmpty)
+                  if (!isParent && selectedProgramIds.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: ElevatedButton(
@@ -506,19 +513,22 @@ class ProgramPlanCard extends StatelessWidget {
                     //   onPressed: onPrintPressed,
                     // ),
                     const SizedBox(width: 8),
-                    CustomActionButton(
-                      icon: Icons.edit,
-                      color: AppColors.primaryColor,
-                      tooltip: 'Edit',
-                      onPressed: onEditPressed,
-                    ),
-                    const SizedBox(width: 8),
-                    CustomActionButton(
-                      icon: Icons.delete,
-                      color: AppColors.errorColor,
-                      tooltip: 'Delete',
-                      onPressed: onDeletePressed,
-                    ),
+                    // hide edit/delete icons for parents
+                    if (!UserTypeHelper.isParent) ...[
+                      CustomActionButton(
+                        icon: Icons.edit,
+                        color: AppColors.primaryColor,
+                        tooltip: 'Edit',
+                        onPressed: onEditPressed,
+                      ),
+                      const SizedBox(width: 8),
+                      CustomActionButton(
+                        icon: Icons.delete,
+                        color: AppColors.errorColor,
+                        tooltip: 'Delete',
+                        onPressed: onDeletePressed,
+                      ),
+                    ],
                   ],
                 ),
               ],

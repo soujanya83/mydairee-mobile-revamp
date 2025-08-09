@@ -21,25 +21,25 @@ class AccidentListResponseModel {
 }
 
 class AccidentListData {
-  final String centerId;
+  final String centerid;
   final String date;
-  final String roomId;
-  final String roomName;
-  final String roomColor;
+  final String roomid;
+  final String roomname;
+  final String roomcolor;
   final List<RoomModel> rooms;
-  final List<ChildModel> children;
+  final List<ChildModel> childs;
   final List<AccidentModel> accidents;
   final List<CenterModel> centers;
   final String selectedCenter;
 
   AccidentListData({
-    required this.centerId,
+    required this.centerid,
     required this.date,
-    required this.roomId,
-    required this.roomName,
-    required this.roomColor,
+    required this.roomid,
+    required this.roomname,
+    required this.roomcolor,
     required this.rooms,
-    required this.children,
+    required this.childs,
     required this.accidents,
     required this.centers,
     required this.selectedCenter,
@@ -47,14 +47,14 @@ class AccidentListData {
 
   factory AccidentListData.fromJson(Map<String, dynamic> json) {
     return AccidentListData(
-      centerId: json['centerid'] ?? '',
+      centerid: json['centerid'] ?? '',
       date: json['date'] ?? '',
-      roomId: json['roomid'] ?? '',
-      roomName: json['roomname'] ?? '',
-      roomColor: json['roomcolor'] ?? '',
+      roomid: json['roomid'].toString(),
+      roomname: json['roomname'] ?? '',
+      roomcolor: json['roomcolor'] ?? '',
       rooms: List<RoomModel>.from(
           (json['rooms'] ?? []).map((x) => RoomModel.fromJson(x))),
-      children: List<ChildModel>.from(
+      childs: List<ChildModel>.from(
           (json['childs'] ?? []).map((x) => ChildModel.fromJson(x))),
       accidents: List<AccidentModel>.from(
           (json['accidents'] ?? []).map((x) => AccidentModel.fromJson(x))),
@@ -74,8 +74,8 @@ class RoomModel {
   final int ageFrom;
   final int ageTo;
   final String status;
-  final int centerId;
-  final dynamic createdBy;
+  final int centerid;
+  final dynamic created_by;
 
   RoomModel({
     required this.id,
@@ -86,8 +86,8 @@ class RoomModel {
     required this.ageFrom,
     required this.ageTo,
     required this.status,
-    required this.centerId,
-    required this.createdBy,
+    required this.centerid,
+    required this.created_by,
   });
 
   factory RoomModel.fromJson(Map<String, dynamic> json) {
@@ -100,8 +100,8 @@ class RoomModel {
       ageFrom: json['ageFrom'] ?? 0,
       ageTo: json['ageTo'] ?? 0,
       status: json['status'] ?? '',
-      centerId: json['centerid'] ?? 0,
-      createdBy: json['created_by'],
+      centerid: json['centerid'] ?? 0,
+      created_by: json['created_by'],
     );
   }
 }
@@ -117,9 +117,11 @@ class ChildModel {
   final String gender;
   final String status;
   final String daysAttending;
-  final int centerId;
+  final int centerid;
   final int createdBy;
   final String createdAt;
+  final String? created_at;
+  final String? updated_at;
 
   ChildModel({
     required this.id,
@@ -132,9 +134,11 @@ class ChildModel {
     required this.gender,
     required this.status,
     required this.daysAttending,
-    required this.centerId,
+    required this.centerid,
     required this.createdBy,
     required this.createdAt,
+    this.created_at,
+    this.updated_at,
   });
 
   factory ChildModel.fromJson(Map<String, dynamic> json) {
@@ -149,43 +153,45 @@ class ChildModel {
       gender: json['gender'] ?? '',
       status: json['status'] ?? '',
       daysAttending: json['daysAttending'] ?? '',
-      centerId: json['centerid'] ?? 0,
+      centerid: json['centerid'] ?? 0,
       createdBy: json['createdBy'] ?? 0,
       createdAt: json['createdAt'] ?? '',
+      created_at: json['created_at'],
+      updated_at: json['updated_at'],
     );
   }
 }
 
 class AccidentModel {
   final int id;
-  final String childName;
-  final String childGender;
-  final int roomId;
-  final String incidentDate;
-  final String? ackParentName;
-  final int addedBy;
+  final String child_name;
+  final String child_gender;
+  final int roomid;
+  final String incident_date;
+  final String? ack_parent_name;
+  final int added_by;
   final String username;
 
   AccidentModel({
     required this.id,
-    required this.childName,
-    required this.childGender,
-    required this.roomId,
-    required this.incidentDate,
-    this.ackParentName,
-    required this.addedBy,
+    required this.child_name,
+    required this.child_gender,
+    required this.roomid,
+    required this.incident_date,
+    this.ack_parent_name,
+    required this.added_by,
     required this.username,
   });
 
   factory AccidentModel.fromJson(Map<String, dynamic> json) {
     return AccidentModel(
       id: json['id'] ?? 0,
-      childName: json['child_name'] ?? '',
-      childGender: json['child_gender'] ?? '',
-      roomId: json['roomid'] ?? 0,
-      incidentDate: json['incident_date'] ?? '',
-      ackParentName: json['ack_parent_name'],
-      addedBy: json['added_by'] ?? 0,
+      child_name: json['child_name'] ?? '',
+      child_gender: json['child_gender'] ?? '',
+      roomid: json['roomid'] ?? 0,
+      incident_date: json['incident_date'] ?? '',
+      ack_parent_name: json['ack_parent_name'],
+      added_by: json['added_by'] ?? 0,
       username: json['username'] ?? '',
     );
   }
@@ -193,38 +199,38 @@ class AccidentModel {
 
 class CenterModel {
   final int id;
-  final dynamic userId;
+  final dynamic user_id;
   final String centerName;
   final String adressStreet;
   final String addressCity;
   final String addressState;
   final String addressZip;
-  final String createdAt;
-  final String updatedAt;
+  final String created_at;
+  final String updated_at;
 
   CenterModel({
     required this.id,
-    this.userId,
+    this.user_id,
     required this.centerName,
     required this.adressStreet,
     required this.addressCity,
     required this.addressState,
     required this.addressZip,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.created_at,
+    required this.updated_at,
   });
 
   factory CenterModel.fromJson(Map<String, dynamic> json) {
     return CenterModel(
       id: json['id'] ?? 0,
-      userId: json['user_id'],
+      user_id: json['user_id'],
       centerName: json['centerName'] ?? '',
       adressStreet: json['adressStreet'] ?? '',
       addressCity: json['addressCity'] ?? '',
       addressState: json['addressState'] ?? '',
       addressZip: json['addressZip'] ?? '',
-      createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
+      created_at: json['created_at'] ?? '',
+      updated_at: json['updated_at'] ?? '',
     );
   }
 }

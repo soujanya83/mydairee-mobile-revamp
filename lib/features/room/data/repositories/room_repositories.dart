@@ -103,7 +103,7 @@ class RoomRepository {
 
 
 Future<ApiResponse<StaffListModel?>> getStaffList() async {
-  const url = '${AppUrls.baseApiUrl}/api/staffs';
+  const url = '${AppUrls.baseUrl}/api/staffs';
   return await getAndParseData(
     url,
     fromJson: (json) => StaffListModel.fromJson(json),
@@ -153,7 +153,7 @@ Future<ApiResponse<StaffListModel?>> getStaffList() async {
 
   Future<ApiResponse<ChildrensRoomModel?>> getChildrenByRoomId(
       String roomId) async {
-    final url = '${AppUrls.baseApiUrl}/api/room/$roomId/children';
+    final url = '${AppUrls.baseUrl}/api/room/$roomId/children';
     return await getAndParseData(
       url,
       fromJson: (json) => ChildrensRoomModel.fromJson(json),

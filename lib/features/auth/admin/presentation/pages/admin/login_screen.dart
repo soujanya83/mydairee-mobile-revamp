@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/services/shared_preference_service.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/features/auth/admin/presentation/bloc/login/login_bloc.dart';
 import 'package:mydiaree/features/auth/admin/presentation/bloc/login/login_event.dart';
@@ -17,7 +18,6 @@ import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_status_bar_widget.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 
-// ignore: must_be_immutable
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -95,43 +95,43 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       UIHelpers.verticalSpace(10),
-                      Row(
-                        children: [
-                          StatefulBuilder(
-                            builder: (context, setState) {
-                              return Checkbox(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                value: isRemembered,
-                                onChanged: (value) {
-                                  setState(() {
-                                    isRemembered = value!;
-                                  });
-                                },
-                                fillColor: const WidgetStatePropertyAll(
-                                    AppColors.primaryColor),
-                              );
-                            },
-                          ),
-                          Text(AppTexts.rememberMe,
-                              style: Theme.of(context).textTheme.bodySmall),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return const ForgotPasswordScreen();
-                              }));
-                            },
-                            child: Text(AppTexts.forgotPassword,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
-                                    .copyWith(color: AppColors.primaryColor)),
-                          )
-                        ],
-                      ),
+                      // Row(
+                      //   children: [
+                      //     StatefulBuilder(
+                      //       builder: (context, setState) {
+                      //         return Checkbox(
+                      //           shape: RoundedRectangleBorder(
+                      //             borderRadius: BorderRadius.circular(5),
+                      //           ),
+                      //           value: isRemembered,
+                      //           onChanged: (value) {
+                      //             setState(() {
+                      //               isRemembered = value!;
+                      //             });
+                      //           },
+                      //           fillColor: const WidgetStatePropertyAll(
+                      //               AppColors.primaryColor),
+                      //         );
+                      //       },
+                      //     ),
+                      //     Text(AppTexts.rememberMe,
+                      //         style: Theme.of(context).textTheme.bodySmall),
+                      //     const Spacer(),
+                      //     GestureDetector(
+                      //       onTap: () {
+                      //         Navigator.push(context,
+                      //             MaterialPageRoute(builder: (context) {
+                      //           return const ForgotPasswordScreen();
+                      //         }));
+                      //       },
+                      //       child: Text(AppTexts.forgotPassword,
+                      //           style: Theme.of(context)
+                      //               .textTheme
+                      //               .bodySmall!
+                      //               .copyWith(color: AppColors.primaryColor)),
+                      //     )
+                      //   ],
+                      // ),
                       UIHelpers.verticalSpace(10),
                       BlocListener<LoginBloc, LoginState>(
                           listener: (context, state)async {
@@ -147,23 +147,36 @@ class _LoginScreenState extends State<LoginScreen> {
                             message: state.message,
                             backgroundColor: AppColors.successColor,
                           );
-                          print(state.loginData?.message);
-                          print(state.loginData?.token);
-                          final token = state.loginData?.token; // Replace 'token' with your actual key
-                          await saveToken(token??'');
-                         
+                          final token = state.loginData?.token;
                           
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return DashboardScreen();
-                          }));
+                          if (token != null && token.isNotEmpty){
+                            print("Token saved: $token");
+                            await saveToken(token);
+                            await Future.delayed(const Duration(milliseconds: 100));
+                            
+                            final savedToken = await getToken();
+                            if (kDebugMode) {
+                              print("Token verification: ${savedToken != null && savedToken.isNotEmpty}");
+                            }
+                            await UserTypeHelper.saveUserType(state.loginData?.user?.userType??'');
+                            // ignore: use_build_context_synchronously
+                            Navigator.push(context, MaterialPageRoute(builder: (context) {
+                              return DashboardScreen();
+                            }));
+                          } else {
+                            UIHelpers.showToast(
+                              context,
+                              message: "Authentication failed - Token missing",
+                              backgroundColor: AppColors.errorColor,
+                            );
+                          }
                         }
                       }, child: BlocBuilder<LoginBloc, LoginState>(
                               builder: (context, state) {
                         return CustomButton(
                           text: AppTexts.login,
                           isLoading: state is LoginLoading,
-                          ontap: () {
+                          ontap: (){
                             if (_formKey.currentState!.validate()) {
                               context.read<LoginBloc>().add(LoginSubmitted(
                                     email: emailController.text,
@@ -174,19 +187,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       })),
                       UIHelpers.verticalSpace(10),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return SignUpScreen();
-                          }));
-                        },
-                        child: Text(AppTexts.dontHaveAccount,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall!
-                                .copyWith(color: AppColors.primaryColor)),
-                      )
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     Navigator.push(context,
+                      //         MaterialPageRoute(builder: (context) {
+                      //       return SignUpScreen();
+                      //     }));
+                      //   },
+                      //   child: Text(AppTexts.dontHaveAccount,
+                      //       style: Theme.of(context)
+                      //           .textTheme
+                      //           .bodySmall!
+                      //           .copyWith(color: AppColors.primaryColor)),
+                      // )
                     ],
                   ),
                 )),

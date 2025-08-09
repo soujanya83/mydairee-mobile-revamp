@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_action_button.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
@@ -151,6 +152,7 @@ class _RecipeScreenState extends State<RecipeScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 const SizedBox(width: 16),
+                if (!UserTypeHelper.isParent)
                 CustomButton(
                   text: 'Add Recipes',
                   height: 36,
@@ -273,7 +275,7 @@ class _RecipeScreenState extends State<RecipeScreen> {
                 builder: (context) => Dialog(
                   child: Image.network(
                     recipe.mediaUrl != null && recipe.mediaUrl!.isNotEmpty
-                        ? '${AppUrls.baseApiUrl}/${recipe.mediaUrl}'
+                        ? '${AppUrls.baseUrl}/${recipe.mediaUrl}'
                         : 'https://mydiaree.com.au/uploads/superadmins/1749498975.jpeg',
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) =>
@@ -284,7 +286,7 @@ class _RecipeScreenState extends State<RecipeScreen> {
             },
             child: Image.network(
               recipe.mediaUrl != null && recipe.mediaUrl!.isNotEmpty
-                  ? '${AppUrls.baseApiUrl}/${recipe.mediaUrl}'
+                  ? '${AppUrls.baseUrl}/${recipe.mediaUrl}'
                   : 'https://mydiaree.com.au/uploads/superadmins/1749498975.jpeg',
               height: screenHeight * .1,
               width: double.infinity,
@@ -336,6 +338,7 @@ class _RecipeScreenState extends State<RecipeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                   if (!UserTypeHelper.isParent)
                     CustomActionButton(
                       padding: const EdgeInsets.all(4),
                       iconSize: 15,

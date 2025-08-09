@@ -27,9 +27,9 @@ class CustomNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('custom image url');
-    print(imageUrl);
-    print('Full URL: ${fullUrl ?? ('${AppUrls.baseApiUrl}/${imageUrl ?? ''}')}');
+    // print('custom image url');
+    // print(imageUrl);
+    // print('Full URL: ${fullUrl ?? ('${AppUrls.baseUrl}/${imageUrl ?? ''}')}');
     return GestureDetector(
       onTap: !isImageShow
           ? null
@@ -39,14 +39,14 @@ class CustomNetworkImage extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => FullScreenImage(
-                    imageUrl: AppUrls.baseApiUrl + (imageUrl ?? ''),
+                    imageUrl: AppUrls.baseUrl + (imageUrl ?? ''),
                   ),
                 ),
               );
             },
   
       child: CachedNetworkImage(
-        imageUrl: fullUrl ?? ('${AppUrls.baseApiUrl}/${imageUrl ?? ''}'),
+        imageUrl: fullUrl ?? ('${AppUrls.baseUrl}/${imageUrl ?? ''}'),
         width: width,
         height: height,
         fit: fit,

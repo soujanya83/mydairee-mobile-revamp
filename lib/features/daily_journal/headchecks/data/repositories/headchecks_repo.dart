@@ -10,7 +10,7 @@ class HeadChecksRepository {
     String? roomId,
       DateTime? date,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/headChecks?centerid=$centerId&roomid=$roomId';
+    final url = '${AppUrls.baseUrl}/api/headChecks?centerid=$centerId&roomid=$roomId';
     print(url);
     print('=============');
 
@@ -28,7 +28,7 @@ class HeadChecksRepository {
 
   Future<ApiResponse<RoomHeadChecksCenterModel?>> getCenterRooms(
       String centerId) async {
-    final url = '${AppUrls.baseApiUrl}/api/headchecks/getCenterRooms';
+    final url = '${AppUrls.baseUrl}/api/headchecks/getCenterRooms';
     final data = {'centerid': centerId};
     return await postAndParse(
       url,
@@ -47,7 +47,7 @@ class HeadChecksRepository {
     required String centerId,
     required String diaryDate, 
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/headchecks/store';
+    final url = '${AppUrls.baseUrl}/api/headchecks/store';
     final data = {
       "hour": hours,
       "mins": mins,
@@ -64,7 +64,7 @@ class HeadChecksRepository {
 
   Future<ApiResponse> deleteHeadCheck(String headCheckId) async {
     final url =
-        '${AppUrls.baseApiUrl}/api/headcheckdelete?headCheckId=$headCheckId';
+        '${AppUrls.baseUrl}/api/headcheckdelete?headCheckId=$headCheckId';
     return await postAndParse(url, {});
   }
 }

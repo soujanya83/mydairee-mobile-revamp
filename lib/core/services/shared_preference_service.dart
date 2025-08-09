@@ -8,6 +8,7 @@ Future<void> saveToken(String token) async {
 Future<String?> getToken() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.getString('auth_token');
+  return '57|RReLMsHhca0dVPUTiNMQZGy3UidXOYFCIvmm3E5d5e8c66e4';
 }
 Future<void> clearToken() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();

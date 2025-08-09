@@ -50,7 +50,7 @@ class _IngredientModalState extends State<IngredientModal> {
       final String normalizedType = _getNormalizedMealType(widget.mealType);
       
       // Use the API endpoint from Postman
-      final url = '${AppUrls.baseApiUrl}/api/get-recipes-by-type?type=$normalizedType';
+      final url = '${AppUrls.baseUrl}/api/get-recipes-by-type?type=$normalizedType';
       
       final response = await ApiServices.getData(url);
 

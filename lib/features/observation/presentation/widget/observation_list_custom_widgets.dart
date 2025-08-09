@@ -126,7 +126,7 @@ class ObservationCard extends StatelessWidget {
                     child: CustomNetworkImage(
                       placeholder: SizedBox(),
                       errorWidget: SizedBox(),
-                      imageUrl: mediaUrl!,
+                      fullUrl: mediaUrl!,
                     ),
                   ),
                 ),

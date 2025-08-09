@@ -8,26 +8,18 @@ class DailyTrackingBloc extends Bloc<DailyTrackingEvent, DailyTrackingState> {
 
   DailyTrackingBloc() : super(DailyTrackingLoading()) {
     on<LoadDailyTrackingEvent>(_onLoadDailyTracking);
-    on<SaveActivityEvent>(_onSaveActivity);
+    // on<SaveActivityEvent>(_onSaveActivity);
   }
 
   Future<void> _onLoadDailyTracking(LoadDailyTrackingEvent event, Emitter<DailyTrackingState> emit) async {
     emit(DailyTrackingLoading());
     try {
-      final children = await repository.getChildren();
-      emit(DailyTrackingLoaded(children: children, isActivitySaved: false));
+      final data = await repository.getDailyDiaree(centerId: event.centerId, date: event.date,roomId: event.roomId);
+      emit(DailyTrackingLoaded(diareeData: data.data, isActivitySaved: false));
     } catch (e) {
       emit(DailyTrackingError(message: e.toString()));
     }
   }
 
-  Future<void> _onSaveActivity(SaveActivityEvent event, Emitter<DailyTrackingState> emit) async {
-    try {
-      await repository.saveActivity(event.childIds, event.activity);
-      final children = await repository.getChildren();
-      emit(DailyTrackingLoaded(children: children, isActivitySaved: true));
-    } catch (e) {
-      emit(DailyTrackingError(message: e.toString()));
-    }
-  }
+
 }

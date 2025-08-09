@@ -6,7 +6,12 @@ abstract class DailyTrackingEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadDailyTrackingEvent extends DailyTrackingEvent {}
+class LoadDailyTrackingEvent extends DailyTrackingEvent {
+    final String centerId;
+     final String? roomId;
+    final DateTime? date;
+    LoadDailyTrackingEvent({required this.centerId, this.roomId, this.date,} );
+}
 
 class SaveActivityEvent extends DailyTrackingEvent {
   final List<String> childIds;

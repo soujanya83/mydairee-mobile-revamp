@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
@@ -98,43 +99,44 @@ class _IngredientListScreenState extends State<IngredientListScreen> {
                   return Column(
                     children: [
                       const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            CustomButton(
-                              text: 'Add Ingredient',
-                              height: 36,
-                              width: 120,
-                              borderRadius: 8,
-                              textAppTextStyles: Theme.of(context).textTheme.labelMedium,
-                              ontap: () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const AddIngredientScreen(),
-                                  ),
-                                );
-                                
-                                if (result == true) {
-                                  _loadIngredients();
-                                }
-                              },
-                            ),
-                          ],
+                      // ← only show add button if not a parent
+                      if (!UserTypeHelper.isParent) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              CustomButton(
+                                text: 'Add Ingredient',
+                                height: 36,
+                                width: 120,
+                                borderRadius: 8,
+                                textAppTextStyles:
+                                    Theme.of(context).textTheme.labelMedium,
+                                ontap: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const AddIngredientScreen(),
+                                    ),
+                                  );
+                                  if (result == true) _loadIngredients();
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
+                        const SizedBox(height: 10),
+                      ],
                       Expanded(
                         child: ListView.builder(
                           padding: const EdgeInsets.all(16.0),
-                          itemCount: state.ingredients.length + 1, // +1 for header
+                          itemCount: state.ingredients.length + 1,
                           itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return _buildTableHeader(context);
-                            }
-                            final ingredient = state.ingredients[index - 1] as IngredientModel;
+                            if (index == 0) return _buildTableHeader(context);
+                            final ingredient =
+                                state.ingredients[index - 1] as IngredientModel;
                             return _buildIngredientRow(ingredient, index - 1);
                           },
                         ),
@@ -220,62 +222,62 @@ class _IngredientListScreenState extends State<IngredientListScreen> {
                     ?.copyWith(fontSize: 14),
               ),
             ),
-            SizedBox(
-              width: 120,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CustomActionButton(
-                    icon: Icons.edit_rounded,
-                    color: AppColors.primaryColor,
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddIngredientScreen(
-                            ingredientId: ingredient.id,
+            // ← only show edit/delete if not a parent
+            if (!UserTypeHelper.isParent)
+              SizedBox(
+                width: 120,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomActionButton(
+                      icon: Icons.edit_rounded,
+                      color: AppColors.primaryColor,
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddIngredientScreen(
+                              ingredientId: ingredient.id,
+                            ),
                           ),
-                        ),
-                      );
-                      
-                      if (result == true) {
-                        _loadIngredients();
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  CustomActionButton(
-                    icon: Icons.delete,
-                    color: AppColors.errorColor,
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Confirm Delete'),
-                          content: Text('Delete this ingredient: ${ingredient.name}?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _deleteIngredient(ingredient.id);
-                              },
-                              child: const Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
+                        );
+                        if (result == true) _loadIngredients();
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    CustomActionButton(
+                      icon: Icons.delete,
+                      color: AppColors.errorColor,
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Confirm Delete'),
+                            content: Text(
+                                'Delete this ingredient: ${ingredient.name}?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _deleteIngredient(ingredient.id);
+                                },
+                                child: const Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),

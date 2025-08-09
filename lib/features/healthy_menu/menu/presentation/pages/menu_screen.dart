@@ -13,6 +13,7 @@ import 'package:mydiaree/features/daily_journal/headchecks/presentation/widget/h
 import 'package:mydiaree/features/healthy_menu/menu/data/model/menu_model.dart';
 import 'package:mydiaree/features/healthy_menu/menu/data/repositories/menu_repository.dart';
 import 'package:mydiaree/features/healthy_menu/menu/presentation/pages/ingredient_modal.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -115,7 +116,7 @@ class _MenuScreenState extends State<MenuScreen>
       final String normalizedType = _getNormalizedMealType(mealType);
       
       // Use the API endpoint from Postman
-      final url = '${AppUrls.baseApiUrl}/api/get-recipes-by-type?type=$normalizedType';
+      final url = '${AppUrls.baseUrl}/api/get-recipes-by-type?type=$normalizedType';
       
       final response = await ApiServices.getData(url);
       
@@ -464,10 +465,12 @@ class _MenuScreenState extends State<MenuScreen>
     String day,
     String mealType,
   ) {
+   final isParent = UserTypeHelper.isParent;
     final items = _menuItems
         .where((item) =>
             item.day.toUpperCase() == day.toUpperCase() &&
-            item.mealType.toUpperCase() == _getNormalizedMealType(mealType).toUpperCase())
+            item.mealType.toUpperCase() ==
+                _getNormalizedMealType(mealType).toUpperCase())
         .toList();
 
     return Column(
@@ -484,6 +487,7 @@ class _MenuScreenState extends State<MenuScreen>
                 decoration: TextDecoration.underline,
               ),
             ),
+           if (!isParent)
             CustomButton(
               text: 'Add Item',
               height: 30,
@@ -499,8 +503,6 @@ class _MenuScreenState extends State<MenuScreen>
                   );
                   return;
                 }
-                
-                // Load recipes by type and show in multi-select dialog
                 _loadRecipesAndShowDialog(day, mealType);
               },
             ),
@@ -514,13 +516,14 @@ class _MenuScreenState extends State<MenuScreen>
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.7, // Further reduced to make cards taller
+                  childAspectRatio: 0.7,
                   crossAxisSpacing: 15,
                   mainAxisSpacing: 15,
                 ),
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
+                 // still respect parent: don't show delete button
                   return Card(
                     elevation: 3,
                     shadowColor: Colors.black26,
@@ -530,11 +533,9 @@ class _MenuScreenState extends State<MenuScreen>
                       side: BorderSide(color: Colors.grey.shade200, width: 1),
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Image part with rounded corners
                         Expanded(
-                          flex: 6, // Increased image area
+                          flex: 6,
                           child: ClipRRect(
                             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                             child: Container(
@@ -544,7 +545,7 @@ class _MenuScreenState extends State<MenuScreen>
                               ),
                               child: item.mediaUrl != null && item.mediaUrl!.isNotEmpty
                                   ? Image.network(
-                                      '${AppUrls.baseApiUrl}/${item.mediaUrl}',
+                                      '${AppUrls.baseUrl}/${item.mediaUrl}',
                                       fit: BoxFit.cover,
                                       errorBuilder: (_, __, ___) => Center(
                                         child: Icon(
@@ -577,16 +578,13 @@ class _MenuScreenState extends State<MenuScreen>
                             ),
                           ),
                         ),
-                        // Info part with better padding and spacing
                         Expanded(
                           flex: 5,
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Item name with better styling
                                 Text(
                                   item.name,
                                   style: const TextStyle(
@@ -599,12 +597,9 @@ class _MenuScreenState extends State<MenuScreen>
                                 ),
                                 const SizedBox(height: 8),
                                 
-                                // Date and delete icon in a row
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    // Date with better styling
                                     Expanded(
                                       child: Text(
                                         DateFormat('MMM dd, yyyy').format(
@@ -617,11 +612,12 @@ class _MenuScreenState extends State<MenuScreen>
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    // Delete button
+                                    if (!isParent)
                                     Material(
                                       color: Colors.transparent,
                                       child: InkWell(
-                                        onTap: () => _showDeleteConfirmation(context, item.id.toString()),
+                                        onTap: () => _showDeleteConfirmation(
+                                            context, item.id.toString()),
                                         borderRadius: BorderRadius.circular(20),
                                         child: Container(
                                           padding: const EdgeInsets.all(6),

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/features/annaunce/presentation/pages/announcement_list_screen.dart';
+import 'package:mydiaree/features/auth/admin/presentation/pages/admin/login_screen.dart';
 import 'package:mydiaree/features/daily_journal/accident/presentation/pages/accident/accident_list_screen.dart';
+import 'package:mydiaree/features/daily_journal/accident/presentation/pages/accident_list_screen.dart';
 import 'package:mydiaree/features/daily_journal/daily_diaree/presentation/pages/daily_diaree_screen.dart';
 import 'package:mydiaree/features/daily_journal/headchecks/presentation/pages/accident/headchecks_list_screen.dart';
-import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/pages/accident/sleepcheck_list_screen.dart';
+import 'package:mydiaree/features/daily_journal/sleepchecks%20copy/presentation/pages/accident/sleepcheck_list_screen.dart';
+import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/pages/sleep_check_list_screen.dart';
 import 'package:mydiaree/features/healthy_menu/ingredients/presentation/pages/ingredient_list_screen.dart';
 import 'package:mydiaree/features/healthy_menu/menu/presentation/pages/menu_screen.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/pages/reciepe_screen.dart';
@@ -22,12 +26,15 @@ import 'package:mydiaree/features/settings/staff_setting/presentation/pages/staf
 import 'package:mydiaree/features/settings/super_admin_settings/presentation/pages/supere_admin_settings_screen.dart';
 import 'package:mydiaree/features/snapshot/presentation/pages/snapshot_screen.dart';
 import 'package:mydiaree/main.dart';
+import 'package:mydiaree/features/auth/admin/presentation/pages/admin/user_type_screen.dart';
+import 'package:mydiaree/core/services/shared_preference_service.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final bool isParent = UserTypeHelper.isParent;
     var divier = const Divider(height: 1, color: AppColors.black);
     return Drawer(
       child: PatternBackground(
@@ -37,7 +44,9 @@ class AppDrawer extends StatelessWidget {
             CustomDrawerTile(
               icon: Icons.home,
               title: 'Dashboard',
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+              },
             ),
             divier,
             CustomDrawerExpansionTile(
@@ -105,14 +114,16 @@ class AppDrawer extends StatelessWidget {
               onTap: () => Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const SnapshotScreen())),
             ),
+             if(!isParent)
             divier,
+            if(!isParent)
             CustomDrawerTile(
               icon: Icons.campaign,
               title: 'Announcements',
               onTap: () => Navigator.push(context,
                   MaterialPageRoute(builder: (_) => AnnouncementsListScreen())),
-            ),
-            divier,
+            ), if(!isParent)
+            divier, if(!isParent)
             CustomDrawerTile(
               icon: Icons.apartment,
               title: 'Rooms',
@@ -123,8 +134,10 @@ class AppDrawer extends StatelessWidget {
             CustomDrawerTile(
               icon: Icons.production_quantity_limits,
               title: 'L & P',
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const LearningAndProgressScreen())),
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const LearningAndProgressScreen())),
             ),
             divier,
             CustomDrawerExpansionTile(
@@ -154,15 +167,15 @@ class AppDrawer extends StatelessWidget {
                               builder: (_) => const IngredientListScreen()));
                     }),
               ],
-            ),
-            divier,
+            ), if(!isParent)
+            divier, if(!isParent)
             CustomDrawerTile(
               icon: Icons.security_rounded,
               title: 'Service Details',
               onTap: () => Navigator.push(context,
                   MaterialPageRoute(builder: (_) => ServiceDetailsScreen())),
-            ),
-            divier,
+            ), if(!isParent)
+            divier, if(!isParent)
             CustomDrawerExpansionTile(
               icon: Icons.book,
               title: 'Settings',
@@ -212,7 +225,7 @@ class AppDrawer extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) =>   ManagePermissionsScreen()));
+                              builder: (_) => ManagePermissionsScreen()));
                     }),
                 // CustomDrawerTile(
                 //   title: 'Accident',
@@ -439,9 +452,21 @@ logoutDialog(BuildContext context) {
                   label: 'Confirm sign out',
                   button: true,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      // Clear the authentication token
+                      await clearToken();
+
+                      // Close the dialog
                       Navigator.pop(context);
-                      // Perform logout (e.g., clear auth token, navigate to login screen)
+
+                      // Navigate to UserTypeScreen and clear navigation stack
+                      // ignore: use_build_context_synchronously
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                        (route) => false, // This removes all previous routes
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.errorColor,

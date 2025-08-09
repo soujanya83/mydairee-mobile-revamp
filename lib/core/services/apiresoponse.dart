@@ -25,6 +25,15 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
         fileField: fileField,
         dummy: dummy,
         dummyData: dummyData);
+      if(dummyData != null) { 
+        print('Dummy Data: $dummyData');
+        await Future.delayed(const Duration(seconds: 2));
+        return ApiResponse(
+          success: true,
+          data: fromJson != null ? fromJson(dummyData) : null,
+          message: '',
+        );
+      }
     print('Response: ${response.data}');
     print('Success: ${response.success}');
     print('Message: ${response.message}');
@@ -46,16 +55,14 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
 
 Future<ApiResponse<T?>> getAndParseData<T>(
   String url, { 
-  T Function(dynamic json)? fromJson,
-  bool dummy = false,
+  T Function(dynamic json)? fromJson, 
   Map<String, dynamic>? dummyData,
   Map<String, dynamic>? queryParameters,
 }) async {
   try {
     final response = await ApiServices.getData(
       url,
-      queryParameters: queryParameters,
-      dummy: dummy,
+      queryParameters: queryParameters, 
       dummyData: dummyData,
     );
     print('Response: ${response.data}');

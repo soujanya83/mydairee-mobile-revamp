@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/child_model.dart';
+import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/daily_diaree_model.dart';
 
 abstract class DailyTrackingState extends Equatable {
   @override
@@ -9,13 +10,11 @@ abstract class DailyTrackingState extends Equatable {
 class DailyTrackingLoading extends DailyTrackingState {}
 
 class DailyTrackingLoaded extends DailyTrackingState {
-  final List<ChildModel> children;
+  final DailyDiareeModel? diareeData;
   final bool isActivitySaved;
 
-  DailyTrackingLoaded({required this.children, this.isActivitySaved = false});
+  DailyTrackingLoaded({  this.diareeData, this.isActivitySaved = false});
 
-  @override
-  List<Object> get props => [children, isActivitySaved];
 }
 
 class DailyTrackingError extends DailyTrackingState {

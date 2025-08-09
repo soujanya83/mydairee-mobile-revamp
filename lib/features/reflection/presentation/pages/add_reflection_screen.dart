@@ -702,7 +702,7 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                     child: isImage
                                         ? Image.network(
-                                            AppUrls.baseApiUrl +'/'+ ( media?.mediaUrl ?? ''),
+                                            AppUrls.baseUrl +'/'+ ( media?.mediaUrl ?? ''),
                                             width: double.infinity,
                                             height: double.infinity,
                                             fit: BoxFit.cover,
@@ -733,7 +733,7 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                                         });
 
                                         final url =
-                                            '${AppUrls.baseApiUrl}/api/reflection/reflection-media';
+                                            '${AppUrls.baseUrl}/api/reflection/reflection-media';
                                         final data = {
                                           'id': mediaId,
                                         };

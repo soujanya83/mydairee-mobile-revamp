@@ -47,7 +47,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: CachedNetworkImage(
-                      imageUrl: AppUrls.baseApiUrl + '/' + (imageUrl ?? ''),
+                      imageUrl: AppUrls.baseUrl + '/' + (imageUrl ?? ''),
                       fit: BoxFit.cover,
                       imageBuilder: (context, imageProvider) => Container(
                         decoration: BoxDecoration(
@@ -215,7 +215,7 @@ class ReflectionCard extends StatelessWidget {
                                         padding: const EdgeInsets.all(3),
                                         child: PersonItem(
                                             name: children[i].name,
-                                            imageUrl: AppUrls.baseApiUrl + '/' + (children[i].imageUrl)),
+                                            imageUrl: AppUrls.baseUrl + '/' + (children[i].imageUrl)),
                                       ),
                                     );
                                   }),
@@ -257,12 +257,12 @@ class ReflectionCard extends StatelessWidget {
                                         child: InkWell(
                                           onTap: () {
                                             if (kDebugMode) {
-                                              print(AppUrls.baseApiUrl + '/' + educators[i].imageUrl);
+                                              print(AppUrls.baseUrl + '/' + educators[i].imageUrl);
                                             }
                                           },
                                           child: PersonItem(
                                               name: educators[i].name,
-                                              imageUrl: AppUrls.baseApiUrl + '/' + educators[i].imageUrl),
+                                              imageUrl: AppUrls.baseUrl + '/' + educators[i].imageUrl),
                                         ),
                                       ),
                                     );

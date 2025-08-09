@@ -1,63 +1,214 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
+import 'package:mydiaree/core/services/api_services.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
+import 'package:mydiaree/features/observation/data/model/add_new_observation_response.dart' hide Center;
+import 'package:mydiaree/features/observation/data/model/observation_links_response.dart';
+import 'package:mydiaree/features/observation/data/model/observation_list_response.dart';
 import 'package:mydiaree/features/observation/presentation/widget/observation_list_custom_widgets.dart';
 
+String stripHtmlTags(String htmlString) {
+  if (htmlString.isEmpty) return '';
+  
+  return htmlString
+      .replaceAll(RegExp(r'<[^>]*>'), '')
+      .replaceAll('&lt;', '<') 
+      .replaceAll('&gt;', '>')
+      .replaceAll('&amp;', '&')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('\n', ' ')
+      .trim(); 
+}
+
 class ObservationLinkingScreen extends StatefulWidget {
-  const ObservationLinkingScreen({super.key});
+  final AddNewObservationData? observationData;
+  final String observationId;
+  
+  const ObservationLinkingScreen({
+    super.key, 
+    this.observationData,
+    this.observationId = '',
+  });
 
   @override
-  State<ObservationLinkingScreen> createState() =>
-      _ObservationLinkingScreenState();
+  State<ObservationLinkingScreen> createState() => _ObservationLinkingScreenState();
 }
 
 class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
-  final List<Observation> linkedObservations = [
-    Observation(
-      id: '280',
-      imageUrl: 'https://mydiaree.com.au/67e1a161c7455.jpg',
-      title: '',
-      createdBy: 'Deepti2',
-    ),
-    Observation(
-      id: '287',
-      imageUrl: 'https://mydiaree.com.au/67e26cc5edcc7.jpg',
-      title: '',
-      createdBy: 'Deepti2',
-    ),
-  ];
-
-  final List<Observation> allObservations = [
-    Observation(
-      id: '372',
-      imageUrl: '/67ff8213d8540.jpg',
-      title: '',
-      createdBy: 'Deepti2',
-    ),
-    Observation(
-      id: '381',
-      imageUrl: '/6801ce217a034.jpg',
-      title: '',
-      createdBy: 'Deepti2',
-    ),
-    Observation(
-      id: '454',
-      imageUrl: '/682edc09bf6ac.png',
-      title: 'title up',
-      createdBy: 'Deepti2',
-    ),
-  ];
-
-  final Set<String> selectedObservationIds = {};
+  List<ObservationListItem> allObservations = [];
+  List<ObservationListItem> linkedObservations = [];
+  List<int> linkedObservationIds = [];
+  Set<int> selectedObservationIds = {};
+  bool isLoading = true;
+  bool isSaving = false;
   final TextEditingController _searchController = TextEditingController();
+  final dio = Dio();
 
   @override
   void initState() {
     super.initState();
-    selectedObservationIds.addAll(linkedObservations.map((o) => o.id));
+    _fetchData();
+  }
+  
+  Future<void> _fetchData() async {
+    setState(() {
+      isLoading = true;
+    });
+    
+    try {
+      // Fetch linked observation IDs
+      await _fetchLinkedObservationIds();
+      
+      // Fetch all observations
+      await _fetchAllObservations();
+      
+      // Update linked observations list
+      _updateLinkedObservations();
+      
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching data: $e');
+      setState(() {
+        isLoading = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading observations: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  
+  void _updateLinkedObservations() {
+    linkedObservations = allObservations
+        .where((obs) => linkedObservationIds.contains(obs.id))
+        .toList();
+  }
+  
+  Future<void> _fetchLinkedObservationIds() async {
+    try {
+      final headers = await ApiServices.getAuthHeaders();
+      
+      final response = await dio.get(
+        '${AppUrls.baseUrl}/api/observation/observationslink?obsId=${widget.observationId}&center_id=1',
+        options: Options(
+          headers: headers,
+        ),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final linksResponse = ObservationLinksResponse.fromJson(data);
+        
+        setState(() {
+          linkedObservationIds = linksResponse.linkedIds;
+          selectedObservationIds = Set.from(linkedObservationIds);
+        });
+        
+        print('Linked observation IDs: $linkedObservationIds');
+      }
+    } catch (e) {
+      print('Error fetching linked observations: $e');
+      linkedObservationIds = [];
+    }
+  }
+  
+  Future<void> _fetchAllObservations() async {
+    try {
+      final headers = await ApiServices.getAuthHeaders();
+      
+      final response = await dio.get(
+        'https://mydiaree.com.au/api/observation/view?center_id=1',
+        options: Options(
+          headers: headers,
+        ),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final obsResponse = ObservationListResponse.fromJson(data);
+        
+        // Filter out the current observation
+        final filteredObservations = obsResponse.observations
+            .where((obs) => obs.id.toString() != widget.observationId)
+            .toList();
+        
+        setState(() {
+          allObservations = filteredObservations;
+        });
+        
+        print('Fetched ${allObservations.length} observations');
+      }
+    } catch (e) {
+      print('Error fetching all observations: $e');
+      throw e;
+    }
+  }
+  
+  Future<void> _submitSelectedLinks() async {
+    try {
+      setState(() {
+        isSaving = true;
+      });
+      
+      final headers = await ApiServices.getAuthHeaders();
+      
+      var formData = FormData();
+      formData.fields.add(MapEntry('obsId', widget.observationId));
+      
+      for (var id in selectedObservationIds) {
+        formData.fields.add(MapEntry('observation_ids[]', id.toString()));
+      }
+      
+      var response = await dio.post(
+        'https://mydiaree.com.au/api/observation/submit-selectedoblink',
+        options: Options(
+          headers: headers,
+        ),
+        data: formData,
+      );
+      
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Observation links saved successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Refresh data
+        await _fetchData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${response.statusMessage}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error saving observation links: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        isSaving = false;
+      });
+    }
   }
 
   void _showObservationModal(BuildContext context) {
@@ -67,6 +218,13 @@ class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
+            final filteredObservations = allObservations
+                .where((obs) =>
+                    stripHtmlTags(obs.title).toLowerCase().contains(
+                        _searchController.text.toLowerCase()) ||
+                    _searchController.text.isEmpty)
+                .toList();
+                
             return PatternBackground(
               padding: const EdgeInsets.all(16),
               height: MediaQuery.of(context).size.height * 0.9,
@@ -84,69 +242,177 @@ class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
                   ),
                   const SizedBox(height: 16),
                   Expanded(
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      itemCount: allObservations
-                          .where((obs) =>
-                              obs.title.toLowerCase().contains(
-                                  _searchController.text.toLowerCase()) ||
-                              _searchController.text.isEmpty)
-                          .length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                        childAspectRatio: 0.7,
-                      ),
-                      itemBuilder: (context, index) {
-                        final filteredObservations = allObservations
-                            .where((obs) =>
-                                obs.title.toLowerCase().contains(
-                                    _searchController.text.toLowerCase()) ||
-                                _searchController.text.isEmpty)
-                            .toList();
-                        final observation = filteredObservations[index];
-                        return SmallObservationCard(
-                          id: observation.id,
-                          title: observation.title,
-                          userName: observation.createdBy,
-                          isSelected:
+                    child: isLoading 
+                      ? const Center(child: CircularProgressIndicator())
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          itemCount: filteredObservations.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                            childAspectRatio: 0.7,
+                          ),
+                          itemBuilder: (context, index) {
+                            final observation = filteredObservations[index];
+                            return _buildObservationCard(
+                              observation,
                               selectedObservationIds.contains(observation.id),
-                          isLinked: linkedObservations
-                              .any((o) => o.id == observation.id),
-                          onTap: () {
-                            setModalState(() {
-                              if (selectedObservationIds
-                                  .contains(observation.id)) {
-                                selectedObservationIds.remove(observation.id);
-                              } else {
-                                selectedObservationIds.add(observation.id);
-                              }
-                            });
+                              linkedObservationIds.contains(observation.id),
+                              () {
+                                setModalState(() {
+                                  if (selectedObservationIds.contains(observation.id)) {
+                                    selectedObservationIds.remove(observation.id);
+                                  } else {
+                                    selectedObservationIds.add(observation.id);
+                                  }
+                                });
+                              },
+                            );
                           },
-                        );
-                      },
-                    ),
+                        ),
                   ),
                   const SizedBox(height: 16),
-                  CustomButton(
-                      text: 'Save',
-                      ontap: () {
-                        setState(() {
-                          linkedObservations.clear();
-                          linkedObservations.addAll(allObservations.where(
-                              (obs) =>
-                                  selectedObservationIds.contains(obs.id)));
-                        });
-                        Navigator.pop(context);
-                      }),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      CustomButton(
+                        text: 'Save',
+                        height: 35,
+                        width: 100,
+                        isLoading: isSaving,
+                        ontap: () async {
+                          Navigator.pop(context);
+                          await _submitSelectedLinks();
+                        }
+                      ),
+                    ],
+                  ),
                 ],
               ),
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildObservationCard(
+      ObservationListItem observation, 
+      bool isSelected, 
+      bool isLinked, 
+      VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryColor.withOpacity(0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryColor : Colors.grey.shade300,
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (observation.previewImage.isNotEmpty)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(
+                        'https://mydiaree.com.au/${observation.previewImage}',
+                        height: 80,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 80,
+                            width: double.infinity,
+                            color: Colors.grey.shade200,
+                            child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                          );
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  Text(
+                    stripHtmlTags(observation.title),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'By: ${observation.user.name}',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (isLinked && !isSelected)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.green),
+                      ),
+                      child: const Text(
+                        'Linked',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor,
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(2),
+                  child: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -180,7 +446,7 @@ class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
                   height: 40,
                   text: '+ Link Reflection',
                   ontap: () {
-                    //  _showObservationModal(context);
+                    // TODO: Implement link reflection functionality
                   },
                 ),
               ],
@@ -192,47 +458,38 @@ class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView.builder(
-                itemCount: linkedObservations.length,
-                itemBuilder: (context, index) {
-                  final obs = linkedObservations[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: ObservationCard(
-                      title: obs.title,
-                      author: obs.createdBy,
-                      approvedBy: 'Admin', // Provide actual value if available
-                      dateAdded:
-                          '2023-06-15T14:30:00', // Provide actual value if available
-                      mediaUrl: obs.imageUrl,
-                      montessoriCount: 0,
-                      eylfCount: 0,
-                      status: 'Published', // Provide actual value if available
-                      onTap: () {
-                        // Handle card tap
+              child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : linkedObservations.isEmpty
+                  ? const Center(child: Text('No linked observations'))
+                  : ListView.builder(
+                      itemCount: linkedObservations.length,
+                      itemBuilder: (context, index) {
+                        final obs = linkedObservations[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: ObservationCard(
+                            title: stripHtmlTags(obs.title),
+                            author: obs.user.name,
+                            approvedBy: obs.approver != null ? 'Admin' : 'Pending',
+                            dateAdded: obs.dateAdded,
+                            mediaUrl: obs.previewImage.isNotEmpty 
+                                ? 'https://mydiaree.com.au/${obs.previewImage}'
+                                : '',
+                            montessoriCount: 0, // You can update this if needed
+                            eylfCount: 0,       // You can update this if needed
+                            status: obs.status,
+                            onTap: () {
+                              // Handle navigation to observation details
+                            },
+                          ),
+                        );
                       },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
       ),
     );
   }
-}
-
-class Observation {
-  final String id;
-  final String imageUrl;
-  final String title;
-  final String createdBy;
-
-  Observation({
-    required this.id,
-    required this.imageUrl,
-    required this.title,
-    required this.createdBy,
-  });
 }

@@ -266,7 +266,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                     image: recipe.mediaUrl != null && recipe.mediaUrl!.isNotEmpty
                         ? DecorationImage(
                             image: NetworkImage(
-                              '${AppUrls.baseApiUrl}/${recipe.mediaUrl}',
+                              '${AppUrls.baseUrl}/${recipe.mediaUrl}',
                             ),
                             fit: BoxFit.cover,
                             onError: (_, __) => const Icon(Icons.image_not_supported),

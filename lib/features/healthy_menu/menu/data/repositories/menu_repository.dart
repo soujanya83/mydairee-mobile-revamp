@@ -5,7 +5,7 @@ import 'package:mydiaree/features/healthy_menu/menu/data/model/menu_model.dart';
 
 class MenuRepository {
   Future<ApiResponse<MenuResponse?>> getMenuItems(String? selectedDate, {String? centerId}) async {
-    final url = '${AppUrls.baseApiUrl}/api/healthy-menu';
+    final url = '${AppUrls.baseUrl}/api/healthy-menu';
     final data = {
       if (selectedDate != null) 'selected_date': selectedDate,
       if (centerId != null) 'center_id': centerId,
@@ -19,7 +19,7 @@ class MenuRepository {
   }
   
   Future<ApiResponse<RecipeResponse?>> getRecipes() async {
-    final url = '${AppUrls.baseApiUrl}/api/healthy-recipes';
+    final url = '${AppUrls.baseUrl}/api/healthy-recipes';
     
     return await postAndParse<RecipeResponse>(
       url,
@@ -35,7 +35,7 @@ class MenuRepository {
     required List<String> recipeIds,
     required String centerId,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/save-recipes';
+    final url = '${AppUrls.baseUrl}/api/save-recipes';
     
     final Map<String, dynamic> data = {
       'selected_date': selectedDate,
@@ -54,7 +54,7 @@ class MenuRepository {
   }
   
   Future<ApiResponse> deleteMenuItem(String menuId) async {
-    final url = '${AppUrls.baseApiUrl}/api/menu/$menuId';
+    final url = '${AppUrls.baseUrl}/api/menu/$menuId';
     return await deleteDataApi(url);
   }
 }

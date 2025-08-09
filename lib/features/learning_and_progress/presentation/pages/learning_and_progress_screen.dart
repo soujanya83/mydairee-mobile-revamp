@@ -75,41 +75,41 @@ class _LearningAndProgressScreenState extends State<LearningAndProgressScreen> {
             ),
           ),
           // Children Grid
-          BlocConsumer<LearningAndProgressBloc, LearningAndProgressState>(
-            listener: (context, state) {
-              if (state is LearningAndProgressDeleted) {
-                UIHelpers.showToast(
-                  context,
-                  message: state.message,
-                  backgroundColor: AppColors.successColor,
-                );
-                setState(() {
-                  _selectedChildIds.clear();
-                });
-              } else if (state is LearningAndProgressError) {
-                UIHelpers.showToast(
-                  context,
-                  message: state.message,
-                  backgroundColor: AppColors.errorColor,
-                );
-              }
-            },
-            builder: (context, state) {
-              if (state is LearningAndProgressLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is LearningAndProgressError) {
-                return Center(child: Text(state.message));
-              } else if (state is LearningAndProgressLoaded) {
-                final children = state.children
-                    .where((child) =>
-                        child.name.toLowerCase().contains(_searchQuery))
-                    .toList();
-                if (children.isEmpty && _searchQuery.isNotEmpty) {
-                  return _buildNoResults();
+          Expanded(
+            child: BlocConsumer<LearningAndProgressBloc, LearningAndProgressState>(
+              listener: (context, state) {
+                if (state is LearningAndProgressDeleted) {
+                  UIHelpers.showToast(
+                    context,
+                    message: state.message,
+                    backgroundColor: AppColors.successColor,
+                  );
+                  setState(() {
+                    _selectedChildIds.clear();
+                  });
+                } else if (state is LearningAndProgressError) {
+                  UIHelpers.showToast(
+                    context,
+                    message: state.message,
+                    backgroundColor: AppColors.errorColor,
+                  );
                 }
-                return Expanded(
-                  child: GridView.builder(
-                    padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+              },
+              builder: (context, state) {
+                if (state is LearningAndProgressLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is LearningAndProgressError) {
+                  return Center(child: Text(state.message));
+                } else if (state is LearningAndProgressLoaded) {
+                  final children = state.children
+                      .where((child) =>
+                          child.name.toLowerCase().contains(_searchQuery))
+                      .toList();
+                  if (children.isEmpty && _searchQuery.isNotEmpty) {
+                    return _buildNoResults();
+                  }
+                  return GridView.builder(
+                    padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
                     shrinkWrap: true,
                     physics: const ScrollPhysics(),
                     gridDelegate:
@@ -117,13 +117,14 @@ class _LearningAndProgressScreenState extends State<LearningAndProgressScreen> {
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
-                      childAspectRatio: 0.75,
+                      childAspectRatio: 0.6,
                     ),
                     itemCount: children.length,
                     itemBuilder: (context, index) {
                       final child = children[index];
                       final isSelected = _selectedChildIds.contains(child.id);
                       return ChildCard(
+                        isDelete: false,
                         child: child,
                         index: index,
                         isSelected: isSelected,
@@ -143,20 +144,20 @@ class _LearningAndProgressScreenState extends State<LearningAndProgressScreen> {
                           }));
                         },
                         onDeletePressed: () {
-                          showDeleteConfirmationDialog(context, () {
-                            context.read<LearningAndProgressBloc>().add(
-                                  DeleteChildrenEvent([child.id], '1'),
-                                );
-                            Navigator.pop(context);
-                          });
+                          // showDeleteConfirmationDialog(context, () {
+                          //   context.read<LearningAndProgressBloc>().add(
+                          //         DeleteChildrenEvent([child.id], '1'),
+                          //       );
+                          //   Navigator.pop(context);
+                          // });
                         },
                       );
                     },
-                  ),
-                );
-              }
-              return const SizedBox();
-            },
+                  );
+                }
+                return const SizedBox();
+              },
+            ),
           ),
         ],
       ),
@@ -193,138 +194,6 @@ class _LearningAndProgressScreenState extends State<LearningAndProgressScreen> {
       ),
     );
   }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.5),
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 10,
-        backgroundColor: Colors.white,
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          constraints: BoxConstraints(
-            maxWidth: screenWidth * 0.9,
-            maxHeight: screenHeight * 0.4,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Semantics(
-                label: 'Logout warning icon',
-                child: Icon(
-                  Icons.warning_rounded,
-                  size: 32,
-                  color: AppColors.errorColor.withOpacity(0.9),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Semantics(
-                label: 'Confirm Sign Out',
-                child: Text(
-                  'Confirm Sign Out',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.black,
-                        letterSpacing: 0.5,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Semantics(
-                label: 'Are you sure you want to sign out of your account?',
-                child: Text(
-                  'Are you sure you want to sign out of your account?',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 13,
-                        color: Colors.grey[800],
-                        height: 1.5,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Semantics(
-                    label: 'Cancel sign out',
-                    button: true,
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          side: BorderSide(
-                              color: AppColors.primaryColor, width: 1),
-                        ),
-                        minimumSize: const Size(100, 40),
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style:
-                            Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primaryColor,
-                                ),
-                      ),
-                    ),
-                  ),
-                  Semantics(
-                    label: 'Confirm sign out',
-                    button: true,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        // Perform logout
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.errorColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        elevation: 2,
-                        minimumSize: const Size(100, 40),
-                      ),
-                      child: Text(
-                        'Sign Out',
-                        style:
-                            Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class ChildCard extends StatelessWidget {
@@ -334,6 +203,8 @@ class ChildCard extends StatelessWidget {
   final Function(bool) onSelect;
   final VoidCallback onViewProgress;
   final VoidCallback onDeletePressed;
+  
+  final bool isDelete;
 
   const ChildCard({
     required this.child,
@@ -342,7 +213,7 @@ class ChildCard extends StatelessWidget {
     required this.onSelect,
     required this.onViewProgress,
     required this.onDeletePressed,
-    super.key,
+    super.key, required this.isDelete,
   });
 
   @override
@@ -400,7 +271,7 @@ class ChildCard extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withOpacity(0.3)
+                            Colors.black.withAlpha((0.3 * 255).toInt())
                           ],
                         ),
                       ),
@@ -457,7 +328,7 @@ class ChildCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withOpacity(0.2),
+                            color: AppColors.primaryColor.withAlpha((0.2 * 255).toInt()),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -490,8 +361,8 @@ class ChildCard extends StatelessWidget {
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: child.gender.toLowerCase() == 'male'
-                                ? Colors.blue.withOpacity(0.2)
-                                : Colors.pink.withOpacity(0.2),
+                                ? Colors.blue.withAlpha((0.2 * 255).toInt())
+                                : Colors.pink.withAlpha((0.2 * 255).toInt()),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -537,6 +408,7 @@ class ChildCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
+                        if(isDelete)
                         CustomActionButton(
                           icon: Icons.delete,
                           color: AppColors.errorColor,

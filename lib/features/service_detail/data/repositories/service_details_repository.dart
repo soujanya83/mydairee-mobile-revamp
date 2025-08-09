@@ -7,7 +7,7 @@ class ServiceDetailsRepository {
   Future<ApiResponse<ServiceDetailsResponse?>> getServiceDetails({
     required String centerId,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/ServiceDetails?user_center_id=$centerId';
+    final url = '${AppUrls.baseUrl}/api/ServiceDetails?user_center_id=$centerId';
     
     return await getAndParseData(
       url,
@@ -19,7 +19,7 @@ class ServiceDetailsRepository {
   Future<ApiResponse> saveServiceDetails({
     required Map<String, dynamic> serviceData,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/ServiceDetails';
+    final url = '${AppUrls.baseUrl}/api/ServiceDetails';
     
     return await postAndParse(
       url,

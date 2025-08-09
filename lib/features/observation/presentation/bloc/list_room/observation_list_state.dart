@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:mydiaree/features/observation/data/model/observation_list_model.dart';
+import 'package:mydiaree/features/observation/data/model/child_response.dart';
+import 'package:mydiaree/features/observation/data/model/observation_api_response.dart';
+import 'package:mydiaree/features/observation/data/model/staff_response.dart';
 
 enum DeletionStatus { initial, inProgress, success, failure }
 
@@ -24,15 +26,27 @@ class ObservationListError extends ObservationListState {
 }
 
 class ObservationListLoaded extends ObservationListState {
-  final ObservationListModel observationsData;
+  final ObservationApiResponse observationsData;
+  final List<ChildObservationModel> children;
+  final List<StaffModel> staff;
+  final bool isSearching;
+  final bool isFiltering;
 
   const ObservationListLoaded({
     required this.observationsData,
+    this.children = const [],
+    this.staff = const [],
+    this.isSearching = false,
+    this.isFiltering = false,
   });
 
   @override
   List<Object> get props => [
         observationsData,
+        children,
+        staff,
+        isSearching,
+        isFiltering,
       ];
 }
 

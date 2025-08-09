@@ -16,12 +16,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
             event.password,
           );
           if (response.success){
-            emit(LoginSuccess(
-                message: response.data?.message??'', loginData: response.data));
+            emit(LoginSuccess(message: response.data?.message??'', loginData: response.data));
           } else {
             emit(LoginError(message: response.message));
           }
-        } catch (e, s) {
+        } catch (e) {
           emit(LoginError(message: defaultErrorMessage()));
         }
         emit(LoginInitial());

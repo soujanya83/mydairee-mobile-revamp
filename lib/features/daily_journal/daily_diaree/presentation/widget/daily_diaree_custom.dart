@@ -6,47 +6,42 @@ import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_network_image.dart';
 import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/child_model.dart';
+import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/daily_diaree_model.dart';
 
-class ChildCard extends StatefulWidget {
-  final ChildModel child;
+class ChildCard extends StatelessWidget {
+  final ChildElement? child;
+  final String imageUrl;
   final VoidCallback onAddEntriesPressed;
+  final int activitiesCount;
+  final int meals;
+  final int naps;
 
   const ChildCard({
     super.key,
     required this.child,
     required this.onAddEntriesPressed,
+    required this.imageUrl,
+    required this.activitiesCount,
+    required this.meals,
+    required this.naps,
   });
 
-  @override
-  _ChildCardState createState() => _ChildCardState();
-}
-
-class _ChildCardState extends State<ChildCard> {
-  late ChildModel _child;
-
   // Initialize state with the provided child model
-  @override
-  void initState() {
-    super.initState();
-    _child = widget.child;
-  }
-
-  // Add a new activity to the child's activities
   void _addActivity(ActivityModel activity) {
-    setState(() {
-      _child = ChildModel(
-        id: _child.id,
-        name: _child.name,
-        age: _child.age,
-        avatarPath: _child.avatarPath,
-        activities: List.from(_child.activities)..add(activity),
-      );
-    });
-    UIHelpers.showToast(
-      context,
-      message: 'Activity added successfully',
-      backgroundColor: AppColors.successColor,
-    );
+    // setState((){
+    //   _child = ChildElement(
+    //     id: _child.id,
+    //     name: _child.name,
+    //     age: _child.age,
+    //     avatarPath: _child.avatarPath,
+    //     activities: List.from(_child.activities)..add(activity),
+    //   );
+    // });
+    // UIHelpers.showToast(
+    //   context,
+    //   message: 'Activity added successfully',
+    //   backgroundColor: AppColors.successColor,
+    // );
   }
 
   @override
@@ -66,13 +61,10 @@ class _ChildCardState extends State<ChildCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Child information (avatar, name, age, date)
             _buildChildInfo(context),
             const SizedBox(height: 12),
-            // Statistics (activities, meals, naps)
             _buildStats(context),
             const SizedBox(height: 12),
-            // Activity sections in a scrollable column
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -82,87 +74,229 @@ class _ChildCardState extends State<ChildCard> {
                       context,
                       'breakfast',
                       onAddEntryPressed: () {
-                        _showItemBasedDialog(context, 'breakfast');
+                        // _showItemBasedDialog(context, 'breakfast');
                       },
-                      item: 'Not-Update',
-                      comments: 'No Breakfast',
+                      time: child?.breakfast?.startTime,
+                      item: child?.breakfast?.item,
+                      comments: child?.breakfast?.comments,
                     ),
-                    // Morning Tea section
                     _buildActivitySection(
                       context,
                       'morning-tea',
+                      time: child?.morningTea?.startTime,
                       onAddEntryPressed: () {
-                        _showItemBasedDialog(context, 'morning-tea');
+                        // _showItemBasedDialog(context, 'morning-tea');
                       },
-                      item: 'Not-Update',
-                      comments: 'No Morning Tea',
+                      item: child?.morningTea?.item,
+                      comments: child?.morningTea?.comments,
                     ),
-                    // Lunch section
                     _buildActivitySection(
                       context,
                       'lunch',
+                      time: child?.lunch?.startTime,
                       onAddEntryPressed: () {
-                        _showItemBasedDialog(context, 'lunch');
+                        // _showItemBasedDialog(context, 'lunch');
                       },
-                      item: 'Not-Update',
-                      comments: 'No Lunch',
+                      item: child?.lunch?.item,
+                      comments: child?.lunch?.comments,
                     ),
-                    // Afternoon Tea section
                     _buildActivitySection(
                       context,
                       'afternoon-tea',
+                      time: child?.afternoonTea?.startTime,
                       onAddEntryPressed: () {
-                        _showItemBasedDialog(context, 'afternoon-tea');
+                        // _showItemBasedDialog(context, 'afternoon-tea');
                       },
-                      item: 'Not-Update',
-                      comments: 'No Afternoon Tea',
+                      item: child?.afternoonTea?.item,
+                      comments: child?.afternoonTea?.comments,
                     ),
                     // Snacks section
                     _buildActivitySection(
                       context,
                       'snacks',
+                      time: child?.snacks?.startTime,
                       onAddEntryPressed: () {
-                        _showItemBasedDialog(context, 'snacks');
+                        // _showItemBasedDialog(context, 'snacks');
                       },
-                      item: 'Not-Update',
-                      comments: 'No Snacks',
+                      item: child?.snacks?.item,
+                      comments: child?.snacks?.comments,
                     ),
                     // Sleep section (multiple entries)
-                    _buildActivitySectionMultiple(
-                      context,
-                      'sleep',
-                      onAddEntryPressed: () {
-                        _showSleepDialog(context);
-                      },
-                      comments: 'No Multiple Activities',
-                    ),
+                    // _buildActivitySectionMultiple(
+                    //   context,
+                    //   'sleep',
+                    //   onAddEntryPressed: () {
+                    //     _showSleepDialog(context);
+                    //   },
+                    //   comments: 'No Multiple Activities',
+                    // ),
+                    // Theme(
+                    //   data: Theme.of(context)
+                    //       .copyWith(dividerColor: AppColors.primaryColor),
+                    //   child: ExpansionTile(
+                    //     // leading: FaIcon(
+                    //     //   _getActivityIcon(type),
+                    //     //   size: 20,
+                    //     //   color: Theme.of(context).primaryColor,
+                    //     // ),
+                    //     title: Row(
+                    //       children: [
+                    //         SizedBox(
+                    //           width: 90,
+                    //           child: Text(
+                    //             '',
+                    //             // type.replaceAll('-', ' ').capitalize(),
+                    //             style: Theme.of(context).textTheme.titleMedium,
+                    //           ),
+                    //         ),
+                    //         const SizedBox(width: 8),
+                    //         // _buildStatusBadge(context, type, status ?? 'Not Update'),
+                    //       ],
+                    //     ),
+                    //     children: [
+                    //       Row(
+                    //         mainAxisAlignment: MainAxisAlignment.end,
+                    //         children: [
+                    //           ElevatedButton(
+                    //             onPressed: () {},
+                    //             style: ElevatedButton.styleFrom(
+                    //               padding: const EdgeInsets.symmetric(
+                    //                   horizontal: 16, vertical: 0),
+                    //               backgroundColor: AppColors.white,
+                    //               // side: BorderSide(color: _getButtonColor(type)),
+                    //               foregroundColor: Colors.white,
+                    //             ),
+                    //             child: Text(
+                    //               'Add',
+                    //               style: Theme.of(context)
+                    //                   .textTheme
+                    //                   .titleMedium
+                    //                   ?.copyWith(fontSize: 14),
+                    //             ),
+                    //           ),
+                    //         ],
+                    //       ),
+
+                    //       // Padding(
+                    //       //   padding:
+                    //       //       const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    //       //   child: Column(
+                    //       //     crossAxisAlignment: CrossAxisAlignment.end,
+                    //       //     children: [
+                    //       //       const SizedBox(height: 8),
+                    //       //       ListView.builder(
+                    //       //         shrinkWrap: true,
+                    //       //         physics: const NeverScrollableScrollPhysics(),
+                    //       //         itemCount: ,
+                    //       //         itemBuilder: (context, index) {
+                    //       //           final activity = _child.activities[index];
+                    //       //           return Container(
+                    //       //             margin: const EdgeInsets.only(
+                    //       //               bottom: 8,
+                    //       //             ),
+                    //       //             decoration: BoxDecoration(
+                    //       //               color: AppColors.white,
+                    //       //               borderRadius: BorderRadius.circular(12),
+                    //       //               gradient: LinearGradient(
+                    //       //                 colors: [
+                    //       //                   _getStatusColor(status ?? 'Not Update'),
+                    //       //                   AppColors.white,
+                    //       //                 ],
+                    //       //                 stops: const [0.02, 0.02],
+                    //       //               ),
+                    //       //             ),
+                    //       //             child: Stack(
+                    //       //               children: [
+                    //       //                 Padding(
+                    //       //                   padding: const EdgeInsets.only(
+                    //       //                       left: 20, right: 20, top: 16, bottom: 16),
+                    //       //                   child: Column(
+                    //       //                     crossAxisAlignment: CrossAxisAlignment.start,
+                    //       //                     children: [
+                    //       //                         _buildActivityItem(context, 'Sleep Time',
+                    //       //                             activity.sleepTime ?? 'Not-Update'),
+                    //       //                         _buildActivityItem(context, 'Wake Time',
+                    //       //                             activity.wakeTime ?? 'Not-Update'),
+                    //       //                       // if (type == 'sleep') ...[
+                    //       //                       //   _buildActivityItem(context, 'Sleep Time',
+                    //       //                       //       activity.sleepTime ?? 'Not-Update'),
+                    //       //                       //   _buildActivityItem(context, 'Wake Time',
+                    //       //                       //       activity.wakeTime ?? 'Not-Update'),
+                    //       //                       // ] else
+                    //       //                       //   _buildActivityItem(context, 'Time',
+                    //       //                       //       activity.time ?? 'Not-Update'),
+                    //       //                       // if (activity.item != null)
+                    //       //                       //   _buildActivityItem(
+                    //       //                       //       context, 'Item', activity.item!),
+                    //       //                       // if (activity.status != null &&
+                    //       //                       //     activity.type == 'toileting')
+                    //       //                       //   _buildActivityItem(
+                    //       //                       //       context, 'Status', activity.status!,
+                    //       //                       //       isBadge: true),
+                    //       //                       // if (activity.comments != null)
+                    //       //                       //   _buildActivityItem(
+                    //       //                       //       context, 'Comments', activity.comments!),
+                    //       //                     ],
+                    //       //                   ),
+                    //       //                 ),
+                    //       //                 Positioned(
+                    //       //                   top: 10,
+                    //       //                   right: 10,
+                    //       //                   child: CircleAvatar(
+                    //       //                     radius: 18,
+                    //       //                     backgroundColor:
+                    //       //                         _getButtonColor('').withOpacity(.5),
+                    //       //                     child: IconButton(
+                    //       //                       icon: const Icon(
+                    //       //                         Icons.edit_outlined,
+                    //       //                         size: 20,
+                    //       //                         color: AppColors.black,
+                    //       //                       ),
+                    //       //                       onPressed: (){},
+                    //       //                       color: _getButtonColor(''),
+                    //       //                       iconSize: 20,
+                    //       //                     ),
+                    //       //                   ),
+                    //       //                 ),
+                    //       //               ],
+                    //       //             ),
+                    //       //           );
+                    //       //         },
+                    //       //       ),
+                    //       //     ],
+                    //       //   ),
+                    //       // ),
+                    //     ],
+                    //   ),
+                    // )
+                 
                     // Toileting section (multiple entries)
-                    _buildActivitySectionMultiple(
-                      context,
-                      'toileting',
-                      onAddEntryPressed: () {
-                        _showToiletingDialog(context);
-                      },
-                      comments: 'No Multiple Activities',
-                    ),
-                    // Bottle section (multiple entries)
-                    _buildActivitySectionMultiple(
-                      context,
-                      'bottle',
-                      onAddEntryPressed: () {
-                        _showItemBasedDialog(context, 'bottle');
-                      },
-                      comments: 'No Multiple Activities',
-                    ),
-                    // Sunscreen section (multiple entries)
-                    _buildActivitySectionMultiple(
-                      context,
-                      'sunscreen',
-                      onAddEntryPressed: () {
-                        _showTimeAndCommentDialog(context, 'sunscreen');
-                      },
-                      comments: 'No Multiple Activities',
-                    ),
+                    // _buildActivitySectionMultiple(
+                    //   context,
+                    //   'toileting',
+                    //   onAddEntryPressed: () {
+                    //     _showToiletingDialog(context);
+                    //   },
+                    //   comments: 'No Multiple Activities',
+                    // ),
+                    // // Bottle section (multiple entries)
+                    // _buildActivitySectionMultiple(
+                    //   context,
+                    //   'bottle',
+                    //   onAddEntryPressed: () {
+                    //     _showItemBasedDialog(context, 'bottle');
+                    //   },
+                    //   comments: 'No Multiple Activities',
+                    // ),
+                    // // Sunscreen section (multiple entries)
+                    // _buildActivitySectionMultiple(
+                    //   context,
+                    //   'sunscreen',
+                    //   onAddEntryPressed: () {
+                    //     _showTimeAndCommentDialog(context, 'sunscreen');
+                    //   },
+                    //   comments: 'No Multiple Activities',
+                    // ),
                   ],
                 ),
               ),
@@ -184,7 +318,7 @@ class _ChildCardState extends State<ChildCard> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(60),
             child: CustomNetworkImage(
-              imageUrl: _child.avatarPath,
+              imageUrl: imageUrl,
               errorWidget: Container(
                 height: 50,
                 width: 50,
@@ -199,7 +333,7 @@ class _ChildCardState extends State<ChildCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _child.name,
+              'name',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             Row(
@@ -207,7 +341,7 @@ class _ChildCardState extends State<ChildCard> {
                 const FaIcon(FontAwesomeIcons.cakeCandles, size: 13),
                 const SizedBox(width: 4),
                 Text(
-                  'Age: ${_child.age} years',
+                  'Age: age years',
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ],
@@ -233,9 +367,9 @@ class _ChildCardState extends State<ChildCard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildStatItem(context, '9', 'Activities'),
-        _buildStatItem(context, '3', 'Meals'),
-        _buildStatItem(context, '2', 'Naps'),
+        _buildStatItem(context, '$activitiesCount', 'Activities'),
+        _buildStatItem(context, '$meals', 'Meals'),
+        _buildStatItem(context, '$naps', 'Naps'),
       ],
     );
   }
@@ -285,7 +419,7 @@ class _ChildCardState extends State<ChildCard> {
               ),
             ),
             const SizedBox(width: 8),
-            _buildStatusBadge(context, type, status ?? 'Not Update'),
+            // _buildStatusBadge(context, type, status ?? 'Not Update'),
           ],
         ),
         children: [
@@ -355,152 +489,8 @@ class _ChildCardState extends State<ChildCard> {
     );
   }
 
-  Widget _buildActivitySectionMultiple(
-    BuildContext context,
-    String type, {
-    String? time,
-    String? item,
-    String? comments,
-    String? status,
-    String? sleepTime,
-    String? wakeTime,
-    required VoidCallback onAddEntryPressed,
-  }) {
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: AppColors.primaryColor),
-      child: ExpansionTile(
-        leading: FaIcon(
-          _getActivityIcon(type),
-          size: 20,
-          color: Theme.of(context).primaryColor,
-        ),
-        title: Row(
-          children: [
-            SizedBox(
-              width: 90,
-              child: Text(
-                type.replaceAll('-', ' ').capitalize(),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            const SizedBox(width: 8),
-            _buildStatusBadge(context, type, status ?? 'Not Update'),
-          ],
-        ),
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ElevatedButton(
-                onPressed: onAddEntryPressed,
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  backgroundColor: AppColors.white,
-                  side: BorderSide(color: _getButtonColor(type)),
-                  foregroundColor: Colors.white,
-                ),
-                child: Text(
-                  'Add ${type.replaceAll('-', ' ').capitalize()}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const SizedBox(height: 8),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _child.activities.length,
-                  itemBuilder: (context, index) {
-                    final activity = _child.activities[index];
-                    return Container(
-                      margin: const EdgeInsets.only(
-                        bottom: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        gradient: LinearGradient(
-                          colors: [
-                            _getStatusColor(status ?? 'Not Update'),
-                            AppColors.white,
-                          ],
-                          stops: const [0.02, 0.02],
-                        ),
-                      ),
-                      child: Stack(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 20, right: 20, top: 16, bottom: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (type == 'sleep') ...[
-                                  _buildActivityItem(context, 'Sleep Time',
-                                      activity.sleepTime ?? 'Not-Update'),
-                                  _buildActivityItem(context, 'Wake Time',
-                                      activity.wakeTime ?? 'Not-Update'),
-                                ] else
-                                  _buildActivityItem(context, 'Time',
-                                      activity.time ?? 'Not-Update'),
-                                if (activity.item != null)
-                                  _buildActivityItem(
-                                      context, 'Item', activity.item!),
-                                if (activity.status != null &&
-                                    activity.type == 'toileting')
-                                  _buildActivityItem(
-                                      context, 'Status', activity.status!,
-                                      isBadge: true),
-                                if (activity.comments != null)
-                                  _buildActivityItem(
-                                      context, 'Comments', activity.comments!),
-                              ],
-                            ),
-                          ),
-                          Positioned(
-                            top: 10,
-                            right: 10,
-                            child: CircleAvatar(
-                              radius: 18,
-                              backgroundColor:
-                                  _getButtonColor(type).withOpacity(.5),
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.edit_outlined,
-                                  size: 20,
-                                  color: AppColors.black,
-                                ),
-                                onPressed: onAddEntryPressed,
-                                color: _getButtonColor(type),
-                                iconSize: 20,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildActivitySectionMultiple(
 
-  // Build status badge
   Widget _buildStatusBadge(BuildContext context, String type, String status) {
     final status = 'Not Update';
     return Container(
@@ -1010,7 +1000,6 @@ class _ChildCardState extends State<ChildCard> {
     );
   }
 
-  // Dialog for activities with Time and Comments
   void _showTimeAndCommentDialog(BuildContext context, String type) {
     final timeController = TextEditingController();
     final commentsController = TextEditingController();
@@ -1189,3 +1178,149 @@ extension StringExtension on String {
         .join(' ');
   }
 }
+
+
+  // Widget _buildActivitySectionMultiple(
+  //   BuildContext context,
+  //   String type, {
+  //   String? time,
+  //   String? item,
+  //   String? comments,
+  //   String? status,
+  //   String? sleepTime,
+  //   String? wakeTime,
+  //   required VoidCallback onAddEntryPressed,
+  // }) {
+  //   return Theme(
+  //     data: Theme.of(context).copyWith(dividerColor: AppColors.primaryColor),
+  //     child: ExpansionTile(
+  //       // leading: FaIcon(
+  //       //   _getActivityIcon(type),
+  //       //   size: 20,
+  //       //   color: Theme.of(context).primaryColor,
+  //       // ),
+  //       title: Row(
+  //         children: [
+  //           SizedBox(
+  //             width: 90,
+  //             child: Text(
+  //               type.replaceAll('-', ' ').capitalize(),
+  //               style: Theme.of(context).textTheme.titleMedium,
+  //             ),
+  //           ),
+  //           const SizedBox(width: 8),
+  //           // _buildStatusBadge(context, type, status ?? 'Not Update'),
+  //         ],
+  //       ),
+  //       children: [
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.end,
+  //           children: [
+  //             ElevatedButton(
+  //               onPressed: onAddEntryPressed,
+  //               style: ElevatedButton.styleFrom(
+  //                 padding:
+  //                     const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+  //                 backgroundColor: AppColors.white,
+  //                 // side: BorderSide(color: _getButtonColor(type)),
+  //                 foregroundColor: Colors.white,
+  //               ),
+  //               child: Text(
+  //                 'Add ${type.replaceAll('-', ' ').capitalize()}',
+  //                 style: Theme.of(context)
+  //                     .textTheme
+  //                     .titleMedium
+  //                     ?.copyWith(fontSize: 14),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         Padding(
+  //           padding:
+  //               const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.end,
+  //             children: [
+  //               const SizedBox(height: 8),
+  //               ListView.builder(
+  //                 shrinkWrap: true,
+  //                 physics: const NeverScrollableScrollPhysics(),
+  //                 itemCount: _child.activities.length,
+  //                 itemBuilder: (context, index) {
+  //                   final activity = _child.activities[index];
+  //                   return Container(
+  //                     margin: const EdgeInsets.only(
+  //                       bottom: 8,
+  //                     ),
+  //                     decoration: BoxDecoration(
+  //                       color: AppColors.white,
+  //                       borderRadius: BorderRadius.circular(12),
+  //                       gradient: LinearGradient(
+  //                         colors: [
+  //                           _getStatusColor(status ?? 'Not Update'),
+  //                           AppColors.white,
+  //                         ],
+  //                         stops: const [0.02, 0.02],
+  //                       ),
+  //                     ),
+  //                     child: Stack(
+  //                       children: [
+  //                         Padding(
+  //                           padding: const EdgeInsets.only(
+  //                               left: 20, right: 20, top: 16, bottom: 16),
+  //                           child: Column(
+  //                             crossAxisAlignment: CrossAxisAlignment.start,
+  //                             children: [
+  //                               if (type == 'sleep') ...[
+  //                                 _buildActivityItem(context, 'Sleep Time',
+  //                                     activity.sleepTime ?? 'Not-Update'),
+  //                                 _buildActivityItem(context, 'Wake Time',
+  //                                     activity.wakeTime ?? 'Not-Update'),
+  //                               ] else
+  //                                 _buildActivityItem(context, 'Time',
+  //                                     activity.time ?? 'Not-Update'),
+  //                               if (activity.item != null)
+  //                                 _buildActivityItem(
+  //                                     context, 'Item', activity.item!),
+  //                               if (activity.status != null &&
+  //                                   activity.type == 'toileting')
+  //                                 _buildActivityItem(
+  //                                     context, 'Status', activity.status!,
+  //                                     isBadge: true),
+  //                               if (activity.comments != null)
+  //                                 _buildActivityItem(
+  //                                     context, 'Comments', activity.comments!),
+  //                             ],
+  //                           ),
+  //                         ),
+  //                         Positioned(
+  //                           top: 10,
+  //                           right: 10,
+  //                           child: CircleAvatar(
+  //                             radius: 18,
+  //                             backgroundColor:
+  //                                 _getButtonColor(type).withOpacity(.5),
+  //                             child: IconButton(
+  //                               icon: const Icon(
+  //                                 Icons.edit_outlined,
+  //                                 size: 20,
+  //                                 color: AppColors.black,
+  //                               ),
+  //                               onPressed: onAddEntryPressed,
+  //                               color: _getButtonColor(type),
+  //                               iconSize: 20,
+  //                             ),
+  //                           ),
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   );
+  //                 },
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }

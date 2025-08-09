@@ -12,7 +12,7 @@ import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/features/auth/parent/presentation/pages/parent_login_screen.dart';
 import 'package:mydiaree/features/auth/staff/presentation/pages/staff_login_screen.dart';
 
-class UserTypeScreen extends StatelessWidget {
+class UserTypeScreen extends StatelessWidget{
   const UserTypeScreen({super.key});
   @override
   Widget build(BuildContext context) {

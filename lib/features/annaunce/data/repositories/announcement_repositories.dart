@@ -10,7 +10,7 @@ class AnnoucementRepository {
     required String centerId,
     String? searchQuery,
   }) async {
-    String url = '${AppUrls.baseApiUrl}/api/announcements/list?centerid=$centerId';
+    String url = '${AppUrls.baseUrl}/api/announcements/list?centerid=$centerId';
     if (searchQuery != null && searchQuery.isNotEmpty) {
       url += '&search=$searchQuery';
     }
@@ -25,7 +25,7 @@ class AnnoucementRepository {
   Future<ApiResponse<AnnouncemenCreateModel?>> getCreateAnnouncementData({
     required String centerId,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/announcements/create?centerid=$centerId';
+    final url = '${AppUrls.baseUrl}/api/announcements/create?centerid=$centerId';
     
     return await getAndParseData(
       url,
@@ -43,7 +43,7 @@ class AnnoucementRepository {
     required String userId,
     required String centerId,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/announcements/store';
+    final url = '${AppUrls.baseUrl}/api/announcements/store';
     
     final Map<String, dynamic> data = {
       "title": title,
@@ -64,7 +64,7 @@ class AnnoucementRepository {
   Future<ApiResponse<AnnouncementViewModel?>> viewAnnouncement({
     required String announcementId,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/announcements/view?annid=$announcementId';
+    final url = '${AppUrls.baseUrl}/api/announcements/view?annid=$announcementId';
     
     return await getAndParseData(
       url,
@@ -77,7 +77,7 @@ class AnnoucementRepository {
     required String announcementId,
     required String userId,
   }) async {
-    final url = '${AppUrls.baseApiUrl}/api/announcements/delete?announcementid=$announcementId&userid=$userId';
+    final url = '${AppUrls.baseUrl}/api/announcements/delete?announcementid=$announcementId&userid=$userId';
     
     return await deleteDataApi(url);
   }

@@ -106,14 +106,14 @@ class _AddChildrenScreenState extends State<AddChildrenScreen> {
     String url;
     if (widget.childId != null && widget.childId!.isNotEmpty) {
       // Edit
-      url = '${AppUrls.baseApiUrl}/api/child/update';
+      url = '${AppUrls.baseUrl}/api/child/update';
       data['id'] = widget.childId;
       if (widget.child?.room != null) {
         data['roomid'] = widget.child!.room.toString();
       }
     } else {
       // Add
-      url = '${AppUrls.baseApiUrl}/api/add-children';
+      url = '${AppUrls.baseUrl}/api/add-children';
       if (widget.roomId != null && widget.roomId.isNotEmpty) {
         data['id'] = widget.roomId;
       }
@@ -319,7 +319,7 @@ class _AddChildrenScreenState extends State<AddChildrenScreen> {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: Image.network(
-                        AppUrls.baseApiUrl +
+                        AppUrls.baseUrl +
                             '/' +
                             (widget.child!.imageUrl ?? ''),
                         errorBuilder: (context, error, stackTrace) => SizedBox(

@@ -132,7 +132,6 @@ class ManagePermissionsRepository {
       {bool dummy = false}) async {
     return getAndParseData<PermissionListModel>(
       dummyData: _dummyPermissions,
-      dummy: true,
       AppUrls.getPermissions,
       fromJson: (json) =>
           PermissionListModel.fromJson(json as Map<String, dynamic>),

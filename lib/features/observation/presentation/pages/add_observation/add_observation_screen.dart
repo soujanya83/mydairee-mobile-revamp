@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/features/observation/presentation/pages/add_observation/add_observation_child_screens/add_observation_links.dart';
 import 'package:mydiaree/features/observation/presentation/pages/add_observation/add_observation_child_screens/add_observation_assessment_screen.dart';
@@ -11,16 +12,25 @@ import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/custom_multi_selected_dialog.dart';
+import 'package:mydiaree/features/observation/data/repositories/observation_repositories.dart';
+import 'package:mydiaree/features/observation/data/model/add_new_observation_response.dart'
+    hide Center;
+import 'package:mydiaree/core/services/apiresoponse.dart';
+import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:mydiaree/core/services/api_services.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
 
 class AddObservationScreen extends StatefulWidget {
   final String type;
   final String centerId;
+  final String? id;
 
   const AddObservationScreen({
-    Key? key,
+    super.key,
     required this.type,
-    required this.centerId,
-  }) : super(key: key);
+    required this.centerId,  this.id,
+  });
 
   @override
   AddObservationScreenState createState() => AddObservationScreenState();
@@ -30,16 +40,19 @@ class AddObservationScreenState extends State<AddObservationScreen>
     with TickerProviderStateMixin {
   TabController? _controller;
   double mediaHeight = 0;
+  bool _addCompleted = false;
 
-  // Static dummy data
+  late ObservationRepository _observationRepository;
+  bool isLoading = true;
+  AddNewObservationData? observationData;
+  String currentTab = "observation";
+  String currentSubTab = "MONTESSORI";
+
   static List<ChildModel> selectedChildren = [];
   static List<RoomsModel> selectedRooms = [];
   static List<File> files = [];
   static List<TextEditingController> captions = [];
-  static List<List<ChildModel>> _editChildren = [];
-  static List<List<EducatorModel>> _editEducators = [];
 
-  // Text controllers
   static TextEditingController titleController = TextEditingController();
   static TextEditingController observationController = TextEditingController();
   static TextEditingController analysisController = TextEditingController();
@@ -47,42 +60,169 @@ class AddObservationScreenState extends State<AddObservationScreen>
   static TextEditingController childVoiceController = TextEditingController();
   static TextEditingController futurePlanController = TextEditingController();
 
-  // Dummy data for children, rooms, and educators
-  final List<ChildModel> _allChildren = [
-    ChildModel(
-        childId: '1',
-        name: 'John Doe',
-        imageUrl: 'https://example.com/john.jpg'),
-    ChildModel(
-        childId: '2',
-        name: 'Jane Smith',
-        imageUrl: 'https://example.com/jane.jpg'),
-    ChildModel(
-        childId: '3',
-        name: 'Alex Brown',
-        imageUrl: 'https://example.com/alex.jpg'),
-  ];
+  final List<ChildModel> _allChildren = [];
+  final List<RoomsModel> _rooms = [];
 
-  final List<RoomsModel> _rooms = [
-    RoomsModel(room: RoomsDescModel(id: 'r1', name: 'Room A'), child: []),
-    RoomsModel(room: RoomsDescModel(id: 'r2', name: 'Room B'), child: []),
-  ];
+  List<Media> selectedMedia = [];
+  bool isDeletingMedia = false;
+ 
 
-  final List<EducatorModel> _allEducators = [
-    EducatorModel(id: 'e1', name: 'Teacher Alice'),
-    EducatorModel(id: 'e2', name: 'Teacher Bob'),
-  ];
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
-    _controller = TabController(length: 3, vsync: this);
     super.initState();
+    _controller = TabController(length: 3, vsync: this);
+
+    _observationRepository = ObservationRepository();
+    _loadObservationData();
+
+    _controller!.addListener(() {
+      if (!_controller!.indexIsChanging) {
+        if (_addCompleted && _controller!.index == 0) {
+          _controller!.animateTo(1);
+          return;
+        }
+        _updateTabInfo();
+      }
+    });
   }
 
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
+  Future<void> _loadObservationData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await _observationRepository.getAddNewObservation(
+        observationId: widget.id,
+        tab: '1',
+        tab2: '1',
+        centerId: widget.centerId,
+      );
+      if (response.success && response.data != null) {
+        setState(() {
+          observationData = response.data!.data;
+          _populateFormFields();
+          initializeMediaFromObservation();
+        });
+      } else {
+        print('Error loading data: ${response.message}');
+      }
+    } catch (e) {
+      print('Exception when loading data: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void initializeMediaFromObservation() {
+    if (observationData != null && observationData!.observation.id > 0) {
+      if (observationData!.observation.media.isNotEmpty) {
+        setState(() {
+          selectedMedia = List.from(observationData!.observation.media);
+        });
+      }
+    }
+  }
+
+  void _updateTabInfo() {
+    String tab = "observation";
+    String subTab = "MONTESSORI";
+
+    switch (_controller!.index) {
+      case 0:
+        tab = "observation";
+        break;
+       case 1:
+        tab = "assessments";
+        if (currentSubTab == "MONTESSORI" ||
+            currentSubTab == "EYLF" ||
+            currentSubTab == "DEVELOPMENTAL MILESTONE") {
+          subTab = currentSubTab;
+        }
+        break;
+      case 2:
+        tab = "links";
+        break;
+    }
+
+    if (tab != currentTab || subTab != currentSubTab) {
+      setState(() {
+        currentTab = tab;
+        currentSubTab = subTab;
+      });
+      _loadObservationData();
+    }
+  }
+
+  String stripHtmlTags(String htmlString) {
+    return htmlString
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('\n', ' ')
+        .trim();
+  }
+
+  void _populateFormFields() {
+    if (observationData != null) {
+      _allChildren.clear();
+      for (var child in observationData!.children) {
+        _allChildren.add(ChildModel(
+          childId: child.id.toString(),
+          name: '${child.name} ${child.lastname}',
+          imageUrl: child.imageUrl,
+        ));
+      }
+
+      _rooms.clear();
+      for (var room in observationData!.rooms) {
+        _rooms.add(RoomsModel(
+          room: RoomsDescModel(
+            id: room.id.toString(),
+            name: room.name,
+          ),
+          child: [],
+        ));
+      }
+    }
+
+    if (observationData != null && observationData!.observation.id > 0) {
+      titleController.text = stripHtmlTags(observationData!.observation.title);
+      observationController.text =
+          stripHtmlTags(observationData!.observation.obestitle);
+      analysisController.text =
+          stripHtmlTags(observationData!.observation.notes);
+      reflectionController.text =
+          stripHtmlTags(observationData!.observation.reflection);
+      childVoiceController.text =
+          stripHtmlTags(observationData!.observation.childVoice);
+      futurePlanController.text =
+          stripHtmlTags(observationData!.observation.futurePlan);
+
+      selectedChildren.clear();
+      for (var childObs in observationData!.observation.child) {
+        selectedChildren.add(ChildModel(
+          childId: childObs.childId.toString(),
+          name: '${childObs.child.name} ${childObs.child.lastname}',
+          imageUrl: childObs.child.imageUrl,
+        ));
+      }
+
+      selectedRooms.clear();
+      if (observationData!.observation.room.isNotEmpty) {
+        final roomIds = observationData!.observation.room.split(',');
+        for (String roomId in roomIds) {
+          for (var room in _rooms) {
+            if (room.room.id == roomId.trim()) {
+              selectedRooms.add(room);
+              break;
+            }
+          }
+        }
+      }
+    }
   }
 
   void _showChildrenDialog() async {
@@ -127,9 +267,6 @@ class AddObservationScreenState extends State<AddObservationScreen>
 
   Widget rectBorderWidget(Size size, BuildContext context) {
     return DottedBorder(
-      // dashPattern: const [8, 4],
-      // strokeWidth: 2,
-      // color: AppColors.grey,
       child: Container(
         width: 100,
         height: 100,
@@ -142,6 +279,40 @@ class AddObservationScreenState extends State<AddObservationScreen>
         ),
       ),
     );
+  }
+
+  Future<void> deleteMedia(int mediaId) async {
+    setState(() {
+      isDeletingMedia = true;
+    });
+
+    try {
+      final response = await _observationRepository.deleteObservationMedia(
+        mediaId: mediaId,
+      );
+
+      if (response.success) {
+        setState(() {
+          selectedMedia.removeWhere((media) => media.id == mediaId);
+        });
+        UIHelpers.showToast(context, message: 'Media deleted successfully');
+      } else {
+        UIHelpers.showToast(context, message: 'Failed to delete media');
+        print('Failed to delete media: ${response.message}');
+      }
+    } catch (e) {
+      print('Error deleting media: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting media: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        isDeletingMedia = false;
+      });
+    }
   }
 
   @override
@@ -165,507 +336,443 @@ class AddObservationScreenState extends State<AddObservationScreen>
           ),
         ),
       ),
-      body: TabBarView(
-        controller: _controller,
-        children: <Widget>[
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Children',
-                      style: Theme.of(context).textTheme.bodyMedium),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: _showChildrenDialog,
-                    child: Container(
-                      width: 180,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Row(
-                        children: [
-                          SizedBox(width: 8),
-                          Icon(Icons.add_circle, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text('Select Children',
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (selectedChildren.isNotEmpty)
-                    Wrap(
-                      spacing: 8.0,
-                      runSpacing: 4.0,
-                      children: selectedChildren
-                          .map((child) => Chip(
-                                label: Text(child.name),
-                                onDeleted: () {
-                                  setState(() {
-                                    selectedChildren.remove(child);
-                                  });
-                                },
-                              ))
-                          .toList(),
-                    ),
-                  const SizedBox(height: 16),
-                  Text('Rooms', style: Theme.of(context).textTheme.bodyMedium),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: _showRoomDialog,
-                    child: Container(
-                      width: 180,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Row(
-                        children: [
-                          SizedBox(width: 8),
-                          Icon(Icons.add_circle, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text('Select Rooms',
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (selectedRooms.isNotEmpty)
-                    Wrap(
-                      spacing: 8.0,
-                      runSpacing: 4.0,
-                      children: selectedRooms
-                          .map((room) => Chip(
-                                label: Text(room.room.name),
-                                onDeleted: () {
-                                  setState(() {
-                                    selectedRooms.remove(room);
-                                  });
-                                },
-                              ))
-                          .toList(),
-                    ),
-                  const SizedBox(height: 16),
-                  CustomTextFormWidget(
-                    controller: titleController,
-                    hintText: 'Title',
-                    title: 'Title',
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Enter Title' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  CustomTextFormWidget(
-                    controller: observationController,
-                    hintText: 'Observation',
-                    title: 'Observation',
-                    minLines: 3,
-                    maxLines: 5,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Enter Observation' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  CustomTextFormWidget(
-                    controller: analysisController,
-                    hintText: 'Analysis/Evaluation',
-                    title: 'Analysis/Evaluation',
-                    minLines: 3,
-                    maxLines: 5,
-                    validator: (v) => v == null || v.isEmpty
-                        ? 'Enter Analysis/Evaluation'
-                        : null,
-                  ),
-                  const SizedBox(height: 12),
-                  CustomTextFormWidget(
-                    controller: reflectionController,
-                    hintText: 'Reflection',
-                    title: 'Reflection',
-                    minLines: 3,
-                    maxLines: 5,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Enter Reflection' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  CustomTextFormWidget(
-                    controller: childVoiceController,
-                    hintText: 'Child\'s Voice',
-                    title: 'Child\'s Voice',
-                    minLines: 3,
-                    maxLines: 5,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Enter Child\'s Voice' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  CustomTextFormWidget(
-                    controller: futurePlanController,
-                    hintText: 'Future Plan/Extension',
-                    title: 'Future Plan/Extension',
-                    minLines: 3,
-                    maxLines: 5,
-                    validator: (v) => v == null || v.isEmpty
-                        ? 'Enter Future Plan/Extension'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Media', style: Theme.of(context).textTheme.bodyMedium),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: () async {
-                      FilePickerResult? result = await FilePicker.platform
-                          .pickFiles(type: FileType.image);
-                      if (result != null) {
-                        setState(() {
-                          files.add(File(result.files.single.path!));
-                          captions.add(TextEditingController());
-                          _editChildren.add([]);
-                          _editEducators.add([]);
-                          mediaHeight += 100.0;
-                        });
-                      }
-                    },
-                    child: rectBorderWidget(size, context),
-                  ),
-                  const SizedBox(height: 10),
-                  if (files.isNotEmpty)
-                    ReorderableGridView.count(
-                      crossAxisCount: 3,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 8.0,
-                      crossAxisSpacing: 8.0,
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          File file1 = files[oldIndex];
-                          File file2 = files[newIndex];
-                          files[oldIndex] = file2;
-                          files[newIndex] = file1;
-
-                          TextEditingController caption1 = captions[oldIndex];
-                          TextEditingController caption2 = captions[newIndex];
-                          captions[oldIndex] = caption2;
-                          captions[newIndex] = caption1;
-
-                          List<ChildModel> child1 = _editChildren[oldIndex];
-                          List<ChildModel> child2 = _editChildren[newIndex];
-                          _editChildren[oldIndex] = child2;
-                          _editChildren[newIndex] = child1;
-
-                          List<EducatorModel> edu1 = _editEducators[oldIndex];
-                          List<EducatorModel> edu2 = _editEducators[newIndex];
-                          _editEducators[oldIndex] = edu2;
-                          _editEducators[newIndex] = edu1;
-                        });
-                      },
-                      children: List<Widget>.generate(files.length, (index) {
-                        return Stack(
-                          key: ValueKey(files[index].path),
-                          children: [
-                            Container(
-                              width: 100,
-                              height: 100,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : TabBarView(
+              controller: _controller,
+              children: <Widget>[
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text('Children',
+                              style: Theme.of(context).textTheme.bodyMedium),
+                          const SizedBox(height: 6),
+                          GestureDetector(
+                            onTap: _showChildrenDialog,
+                            child: Container(
+                              width: 180,
+                              height: 38,
                               decoration: BoxDecoration(
-                                shape: BoxShape.rectangle,
-                                image: DecorationImage(
-                                  image: FileImage(files[index]),
-                                  fit: BoxFit.cover,
-                                ),
+                                color: AppColors.primaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Row(
+                                children: [
+                                  SizedBox(width: 8),
+                                  Icon(Icons.add_circle, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text('Select Children',
+                                      style: TextStyle(color: Colors.white)),
+                                ],
                               ),
                             ),
-                            Positioned(
-                              right: 0,
-                              top: 0,
-                              child: GestureDetector(
-                                child: const Icon(Icons.close,
-                                    size: 20, color: AppColors.grey),
-                                onTap: () {
-                                  setState(() {
-                                    files.removeAt(index);
-                                    captions.removeAt(index);
-                                    _editChildren.removeAt(index);
-                                    _editEducators.removeAt(index);
-                                    mediaHeight -= 100.0;
-                                  });
-                                },
+                          ),
+                          const SizedBox(height: 10),
+                          if (selectedChildren.isNotEmpty)
+                            Wrap(
+                              spacing: 8.0,
+                              runSpacing: 4.0,
+                              children: selectedChildren
+                                  .map((child) => Chip(
+                                        label: Text(child.name),
+                                        onDeleted: () {
+                                          setState(() {
+                                            selectedChildren.remove(child);
+                                          });
+                                        },
+                                      ))
+                                  .toList(),
+                            ),
+                          const SizedBox(height: 16),
+                          Text('Rooms',
+                              style: Theme.of(context).textTheme.bodyMedium),
+                          const SizedBox(height: 6),
+                          GestureDetector(
+                            onTap: _showRoomDialog,
+                            child: Container(
+                              width: 180,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Row(
+                                children: [
+                                  SizedBox(width: 8),
+                                  Icon(Icons.add_circle, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text('Select Rooms',
+                                      style: TextStyle(color: Colors.white)),
+                                ],
                               ),
                             ),
-                            Positioned(
-                              right: 0,
-                              top: 22,
-                              child: GestureDetector(
-                                child: const Icon(Icons.edit,
-                                    size: 20, color: AppColors.grey),
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: const Text('Edit Image'),
-                                        content: SingleChildScrollView(
-                                          child: Container(
-                                            height: size.height * 0.6,
-                                            width: size.width * 0.7,
-                                            child: ListView(
-                                              children: [
-                                                Container(
-                                                  width: 100,
-                                                  height: 100,
-                                                  decoration: BoxDecoration(
-                                                    image: DecorationImage(
-                                                      image: FileImage(
-                                                          files[index]),
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text('Children',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium),
-                                                const SizedBox(height: 3),
-                                                GestureDetector(
-                                                  onTap: () async {
-                                                    await showDialog<
-                                                        List<
-                                                            Map<String,
-                                                                String>>>(
-                                                      context: context,
-                                                      builder: (context) =>
-                                                          CustomMultiSelectDialog(
-                                                        itemsId: _allChildren
-                                                            .map((child) =>
-                                                                child.childId!)
-                                                            .toList(),
-                                                        itemsName: _allChildren
-                                                            .map((child) =>
-                                                                child.name)
-                                                            .toList(),
-                                                        initiallySelectedIds:
-                                                            _editChildren[index]
-                                                                .map((child) =>
-                                                                    child
-                                                                        .childId!)
-                                                                .toList(),
-                                                        title:
-                                                            'Select Children',
-                                                        onItemTap:
-                                                            (selectedIds) {
-                                                          setState(() {
-                                                            _editChildren[index] = _allChildren
-                                                                .where((child) =>
-                                                                    selectedIds
-                                                                        .contains(
-                                                                            child.childId))
-                                                                .toList();
-                                                          });
-                                                        },
-                                                      ),
-                                                    );
-                                                  },
-                                                  child: Container(
-                                                    width: 180,
-                                                    height: 38,
-                                                    decoration: BoxDecoration(
-                                                      color: AppColors
-                                                          .primaryColor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8),
-                                                    ),
-                                                    child: const Row(
-                                                      children: [
-                                                        SizedBox(width: 8),
-                                                        Icon(Icons.add_circle,
-                                                            color:
-                                                                Colors.white),
-                                                        SizedBox(width: 8),
-                                                        Text('Select Children',
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .white)),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text('Educators',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium),
-                                                const SizedBox(height: 3),
-                                                GestureDetector(
-                                                  onTap: () async {
-                                                    await showDialog<
-                                                        List<
-                                                            Map<String,
-                                                                String>>>(
-                                                      context: context,
-                                                      builder: (context) =>
-                                                          CustomMultiSelectDialog(
-                                                        itemsId: _allEducators
-                                                            .map(
-                                                                (edu) => edu.id)
-                                                            .toList(),
-                                                        itemsName: _allEducators
-                                                            .map((edu) =>
-                                                                edu.name)
-                                                            .toList(),
-                                                        initiallySelectedIds:
-                                                            _editEducators[
-                                                                    index]
-                                                                .map((edu) =>
-                                                                    edu.id)
-                                                                .toList(),
-                                                        title:
-                                                            'Select Educators',
-                                                        onItemTap:
-                                                            (selectedIds) {
-                                                          setState(() {
-                                                            _editEducators[
-                                                                    index] =
-                                                                _allEducators
-                                                                    .where((edu) =>
-                                                                        selectedIds
-                                                                            .contains(edu.id))
-                                                                    .toList();
-                                                          });
-                                                        },
-                                                      ),
-                                                    );
-                                                  },
-                                                  child: Container(
-                                                    width: 180,
-                                                    height: 38,
-                                                    decoration: BoxDecoration(
-                                                      color: AppColors
-                                                          .primaryColor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8),
-                                                    ),
-                                                    child: const Row(
-                                                      children: [
-                                                        SizedBox(width: 8),
-                                                        Icon(Icons.add_circle,
-                                                            color:
-                                                                Colors.white),
-                                                        SizedBox(width: 8),
-                                                        Text('Select Educators',
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .white)),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text('Caption',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium),
-                                                const SizedBox(height: 3),
-                                                CustomTextFormWidget(
-                                                  controller: captions[index],
-                                                  hintText: 'Caption',
-                                                  title: 'Caption',
-                                                  maxLines: 1,
-                                                  validator: (v) =>
-                                                      v == null || v.isEmpty
-                                                          ? 'Enter Caption'
-                                                          : null,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                          ),
+                          const SizedBox(height: 10),
+                          if (selectedRooms.isNotEmpty)
+                            Wrap(
+                              spacing: 8.0,
+                              runSpacing: 4.0,
+                              children: selectedRooms
+                                  .map((room) => Chip(
+                                        label: Text(room.room.name),
+                                        onDeleted: () {
+                                          setState(() {
+                                            selectedRooms.remove(room);
+                                          });
+                                        },
+                                      ))
+                                  .toList(),
+                            ),
+                          const SizedBox(height: 16),
+                          CustomTextFormWidget(
+                            controller: titleController,
+                            hintText: 'Title',
+                            title: 'Title',
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'Enter Title' : null,
+                          ),
+                          const SizedBox(height: 12),
+                          CustomTextFormWidget(
+                            controller: observationController,
+                            hintText: 'Observation',
+                            title: 'Observation',
+                            minLines: 3,
+                            maxLines: 5,
+                            validator: (v) => v == null || v.isEmpty
+                                ? 'Enter Observation'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          CustomTextFormWidget(
+                            controller: analysisController,
+                            hintText: 'Analysis/Evaluation',
+                            title: 'Analysis/Evaluation',
+                            minLines: 3,
+                            maxLines: 5,
+                            validator: (v) => v == null || v.isEmpty
+                                ? 'Enter Analysis/Evaluation'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          CustomTextFormWidget(
+                            controller: reflectionController,
+                            hintText: 'Reflection',
+                            title: 'Reflection',
+                            minLines: 3,
+                            maxLines: 5,
+                            validator: (v) => v == null || v.isEmpty
+                                ? 'Enter Reflection'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          CustomTextFormWidget(
+                            controller: childVoiceController,
+                            hintText: 'Child\'s Voice',
+                            title: 'Child\'s Voice',
+                            minLines: 3,
+                            maxLines: 5,
+                            validator: (v) => v == null || v.isEmpty
+                                ? 'Enter Child\'s Voice'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          CustomTextFormWidget(
+                            controller: futurePlanController,
+                            hintText: 'Future Plan/Extension',
+                            title: 'Future Plan/Extension',
+                            minLines: 3,
+                            maxLines: 5,
+                            validator: (v) => v == null || v.isEmpty
+                                ? 'Enter Future Plan/Extension'
+                                : null,
+                          ),
+                          const SizedBox(height: 16),
+                          Text('Media',
+                              style: Theme.of(context).textTheme.bodyMedium),
+                          const SizedBox(height: 6),
+                          GestureDetector(
+                            onTap: () async {
+                              FilePickerResult? result = await FilePicker
+                                  .platform
+                                  .pickFiles(type: FileType.image);
+                              if (result != null) {
+                                setState(() {
+                                  files.add(File(result.files.single.path!));
+                                  mediaHeight += 100.0;
+                                });
+                              }
+                            },
+                            child: rectBorderWidget(size, context),
+                          ),
+                          const SizedBox(height: 10),
+                          if (files.isNotEmpty)
+                            ReorderableGridView.count(
+                              crossAxisCount: 3,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              mainAxisSpacing: 8.0,
+                              crossAxisSpacing: 8.0,
+                              onReorder: (oldIndex, newIndex) {
+                                setState(() {
+                                  File file1 = files[oldIndex];
+                                  File file2 = files[newIndex];
+                                  files[oldIndex] = file2;
+                                  files[newIndex] = file1;
+                                });
+                              },
+                              children:
+                                  List<Widget>.generate(files.length, (index) {
+                                return Stack(
+                                  key: ValueKey(files[index].path),
+                                  children: [
+                                    Container(
+                                      width: 100,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.rectangle,
+                                        image: DecorationImage(
+                                          image: FileImage(files[index]),
+                                          fit: BoxFit.cover,
                                         ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: const Text('OK'),
-                                          ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      right: 0,
+                                      top: 0,
+                                      child: GestureDetector(
+                                        child: const Icon(Icons.close,
+                                            size: 20, color: AppColors.grey),
+                                        onTap: () {
+                                          setState(() {
+                                            files.removeAt(index);
+                                            mediaHeight -= 100.0;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            ),
+                          const SizedBox(height: 30),
+                          if (selectedMedia.isNotEmpty)
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                              ),
+                              itemCount: selectedMedia.length,
+                              itemBuilder: (context, index) {
+                                final media = selectedMedia[index];
+                                return Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Container(
+                                      width: 100,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.rectangle,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: AppColors.primaryColor, width: 2),
+                                        boxShadow: const [
+                                        const BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
+                                        ),
                                         ],
-                                      );
-                                    },
+                                      ),
+                                      child: Image.network(
+                                        '${AppUrls.baseUrl}/${media.mediaUrl}',
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                        color: Colors.grey[300],
+                                        child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                                        ),
+                                      ),
+                                      ),
+                                    ) ,
+                                    Positioned(
+                                      right: 4,
+                                      top: 4,
+                                      child: GestureDetector(
+                                        onTap: () => deleteMedia(media.id),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black26,
+                                                blurRadius: 4,
+                                                offset: Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              OutlinedButton(
+                                onPressed: () {
+                                  print(observationData!
+                                      .observation.media.length);
+                                  print(selectedMedia.length);
+                                },
+                                child: const Text('CANCEL',
+                                    style: TextStyle(color: Colors.black)),
+                              ),
+                              const SizedBox(width: 10),
+                              CustomButton(
+                                height: 45,
+                                width: 150,
+                                text: 'SAVE & NEXT',
+                                ontap: () async {
+                                  if (!_formKey.currentState!.validate()) {
+                                    UIHelpers.showToast(context,
+                                        message:
+                                            'Please fill all required fields.');
+                                    return;
+                                  }
+                                  if (selectedChildren.isEmpty) {
+                                    UIHelpers.showToast(context,
+                                        message:
+                                            'Please select at least one child.');
+                                    return;
+                                  }
+                                  if (selectedRooms.isEmpty) {
+                                    UIHelpers.showToast(context,
+                                        message:
+                                            'Please select at least one room.');
+                                    return;
+                                  }
+
+                                  final fields = {
+                                    'obestitle': observationController.text,
+                                    'title': titleController.text,
+                                    'notes': analysisController.text,
+                                    'reflection': reflectionController.text,
+                                    'child_voice': childVoiceController.text,
+                                    'future_plan': futurePlanController.text,
+                                    'selected_rooms': selectedRooms
+                                      .map((r) => r.room.id)
+                                      .toList(),
+                                    'selected_children': selectedChildren
+                                        .map((c) => c.childId)
+                                        .join(','),
+                                   
+                                    'center_id': widget.centerId,
+                                  };
+                                  if(widget.type=='edit' || true){
+                                    fields.addAll({'id':'766'
+                                    //  observationData?.observation.id
+                                    //         .toString() ??
+                                    //     ''
+                                        });
+                                  }
+
+                                  final filePaths =
+                                      files.map((f) => f.path).toList();
+
+                                  final response = await _observationRepository
+                                      .saveObservation(
+                                    filePaths: filePaths,
+                                    fields: fields,
                                   );
+                                  if (response.success) {
+                                    UIHelpers.showToast(context,
+                                        message: 'Observation saved');
+                                    setState((){
+                                      _addCompleted = true;
+                                    });
+                                    _controller!.animateTo(1);
+                                  } else {
+                                    // ignore: use_build_context_synchronously
+                                    UIHelpers.showToast(context,
+                                        message: response.message);
+                                  }
                                 },
                               ),
-                            ),
-                          ],
-                        );
-                      }),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  const SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('CANCEL',
-                            style: TextStyle(color: Colors.black)),
-                      ),
-                      // const SizedBox(width: 16),
-                      CustomButton(
-                        height: 45,
-                        width: 100,
-                        text: 'DRAFT',
-                        ontap: () {
-                          print('Draft saved');
-                        },
-                      ),
-                      // const SizedBox(width: 16),
-                      CustomButton(
-                        height: 45,
-                        width: 120,
-                        text: 'SAVE & NEXT',
-                        ontap: () {
-                          print('Published');
-                        },
-                      ),
-                    ],
                   ),
-                ],
-              ),
+                ),
+                AssessmentsScreen(
+                  observationData: observationData,
+                  onTabChanged: (subTab) {
+                    setState(() {
+                      currentSubTab = subTab;
+                    });
+                    _loadObservationData();
+                  },
+                  onSaveDevelopmentMilestone: () {
+                    _controller!.animateTo(2);
+                  },
+                ),
+                ObservationLinkingScreen(
+                  observationData: observationData,
+                  observationId:
+                      observationData?.observation.id.toString() ?? '',
+                ),
+              ],
             ),
-          ),
-          AssessmentsScreen(),
-          ObservationLinkingScreen()
-        ],
-      ),
     );
   }
 }
 
-class ChildModel {
-  final String? childId;
-  final String name;
-  final String imageUrl;
-  ChildModel({this.childId, required this.name, required this.imageUrl});
-}
-
 class RoomsModel {
   final RoomsDescModel room;
-  final List<ChildModel> child;
+  final List<dynamic> child;
 
-  RoomsModel({required this.room, required this.child});
+  RoomsModel({
+    required this.room,
+    required this.child,
+  });
+
+  @override
+  String toString() {
+    return room.name;
+  }
 }
 
 class RoomsDescModel {
   final String id;
   final String name;
 
-  RoomsDescModel({required this.id, required this.name});
+  RoomsDescModel({
+    required this.id,
+    required this.name,
+  });
 }
 
-class EducatorModel {
-  final String id;
+class ChildModel {
+  final String? childId;
   final String name;
+  final String imageUrl;
 
-  EducatorModel({required this.id, required this.name});
+  ChildModel({
+    this.childId,
+    required this.name,
+    required this.imageUrl,
+  });
 }
