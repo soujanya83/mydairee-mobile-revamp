@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
@@ -24,6 +25,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/features/snapshot/presentation/bloc/snapshot_list/snapshot_bloc.dart';
+
+// helper to strip HTML tags
+String stripHtml(String html) => html.replaceAll(RegExp(r'<[^>]*>'), '');
 
 class ImageCarousel extends StatefulWidget {
   final List<String> images;
@@ -64,7 +68,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: CachedNetworkImage(
-                        imageUrl: imageUrl,
+                        imageUrl: AppUrls.baseUrl+'/' + imageUrl,
                         fit: BoxFit.cover,
                         imageBuilder: (context, imageProvider) => Container(
                               decoration: BoxDecoration(
@@ -178,7 +182,6 @@ class SnapshotCard extends StatelessWidget {
     required this.onEdit,
   });
 
-
   void deleteSnapshot(BuildContext context) {
     print('Initiating delete for snapshot ID: $id');
     showDialog(
@@ -251,40 +254,34 @@ class SnapshotCard extends StatelessWidget {
               ),
             ],
           ),
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title without <p> tags
+                Text(
+                  stripHtml(title),
+                  style: Theme.of(context).textTheme.titleLarge,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                const SizedBox(height: 4),
+
+                // Details without HTML
+                Text(
+                  stripHtml(details),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 10),
+
+                // Children row (avatarUrl is now full URL)
+                if (children.isNotEmpty) ...[
+                  Text('Children', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 4),
-                  Text(
-                    details,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 10),
-                  // Children Section
-                  if (children.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Children',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 2),
-                        SizedBox(
+                 SizedBox(
                           height: 50, // Constrain height
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
@@ -302,69 +299,53 @@ class SnapshotCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  // Rooms Section
-                  if (rooms.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Rooms',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 0),
-                        SizedBox(
-                          height: 50, // Constrain height
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                ...rooms.map((room) => Padding(
-                                      padding: const EdgeInsets.all(3),
-                                      child: PersonItem(
-                                        name: (room),
-                                      ),
-                                    )),
-                                const SizedBox(width: 80),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  const SizedBox(height: 16),
-                  // Action Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      if (permissionUpdate)
-                        CustomButton(
-                          text: 'Edit',
-                          width: 80,
-                          height: 35,
-                          ontap: (){
-                            onEdit();
-                          },
-                          borderRadius: 5,
-                        ),
-                      const SizedBox(width: 8),
-                      if (permissionDelete)
-                        CustomButton(
-                          text: 'Delete',
-                          width: 90,
-                          height: 35,
-                          color: AppColors.errorColor,
-                          ontap: () => deleteSnapshot(context),
-                          borderRadius: 5,
-                        ),
-                    ],
-                  ),
+                  const SizedBox(height: 10),
                 ],
-              ),
+
+                // Rooms as simple Chips
+                if (rooms.isNotEmpty) ...[
+                  Text('Rooms', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: rooms.map((r) {
+                      return Chip(
+                        label: Text(r),
+                        backgroundColor: AppColors.grey.withOpacity(.2),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Action Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (permissionUpdate)
+                      CustomButton(
+                        text: 'Edit',
+                        width: 80,
+                        height: 35,
+                        ontap: (){
+                          onEdit();
+                        },
+                        borderRadius: 5,
+                      ),
+                    const SizedBox(width: 8),
+                    if (permissionDelete)
+                      CustomButton(
+                        text: 'Delete',
+                        width: 90,
+                        height: 35,
+                        color: AppColors.errorColor,
+                        ontap: () => deleteSnapshot(context),
+                        borderRadius: 5,
+                      ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

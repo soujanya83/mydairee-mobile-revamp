@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
@@ -193,9 +194,14 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                       ],
                     ),
                     const SizedBox(height: 5),
+                  // InkWell(
+                  //   onTap: () {
+                  //     GlobalRepository().getCenters();
+                  //   },
+                  //   child: Text('data ${centerDataGloble}')),
                     StatefulBuilder(builder: (context, setState) {
                       return CenterDropdown(
-                        selectedCenterId: selectedCenterId,
+                        selectedCenterId: selectedCenterId, 
                         onChanged: (value) {
                           setState(() {
                             selectedCenterId = value.id;
@@ -206,6 +212,7 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                         },
                       );
                     }),
+
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0, bottom: 3),
                       child: CustomTextFormWidget(
@@ -221,11 +228,12 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    StatefulBuilder(builder: (context, setState) {
-                      return CustomDropdown(
-                        height: 35,
-                        width: 150,
-                        hint: 'Select Status',
+                    if (canModify)
+                      StatefulBuilder(builder: (context, setState) {
+                        return CustomDropdown(
+                          height: 35,
+                          width: 150,
+                          hint: 'Select Status',
                         onChanged: (value) {
                           selectedStatus = value;
                           setState(() {});

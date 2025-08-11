@@ -9,7 +9,8 @@ import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
-import 'package:mydiaree/features/observation/data/model/add_new_observation_response.dart' hide Center;
+import 'package:mydiaree/features/observation/data/model/add_new_observation_response.dart'
+    hide Center;
 import 'package:mydiaree/features/observation/data/model/child_response.dart';
 import 'package:mydiaree/features/observation/data/model/observation_api_response.dart';
 import 'package:mydiaree/features/observation/data/model/staff_response.dart';
@@ -460,7 +461,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                     children: [
                       InkWell(
                         onTap: () {
-                         GlobalRepository().getCenters();
+                          GlobalRepository().getCenters();
                         },
                         child: Text(
                           'Observations',
@@ -475,18 +476,18 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                         ),
                       ),
                       if (!UserTypeHelper.isParent)
-                      UIHelpers.addButton(
-                        context: context,
-                        ontap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AddObservationScreen(
-                                        type: 'add',
-                                        centerId: _selectedCenterId,
-                                      )));
-                        },
-                      ),
+                        UIHelpers.addButton(
+                          context: context,
+                          ontap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => AddObservationScreen(
+                                          type: 'add',
+                                          centerId: _selectedCenterId,
+                                        )));
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -536,6 +537,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                 ),
 
                 // Filter options
+                if(!UserTypeHelper.isParent)
                 Row(
                   children: [
                     Expanded(
@@ -553,21 +555,23 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                                 _applyAdvancedFilters([], [], '', '', []);
                               },
                             ),
-                            _buildFilterChip(
-                              'Draft',
-                              _statusFilter == 'draft',
-                              () => _handleStatusFilter('draft'),
-                            ),
+                            if (!UserTypeHelper.isParent)
+                              _buildFilterChip(
+                                'Draft',
+                                _statusFilter == 'draft',
+                                () => _handleStatusFilter('draft'),
+                              ),
                             _buildFilterChip(
                               'Published',
                               _statusFilter == 'published',
                               () => _handleStatusFilter('published'),
                             ),
-                            _buildFilterChip(
-                              'Pending',
-                              _statusFilter == 'pending',
-                              () => _handleStatusFilter('pending'),
-                            ),
+                            if (!UserTypeHelper.isParent)
+                              _buildFilterChip(
+                                'Pending',
+                                _statusFilter == 'pending',
+                                () => _handleStatusFilter('pending'),
+                              ),
                           ],
                         ),
                       ),
@@ -582,13 +586,13 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                 const SizedBox(height: 16),
 
                 // Observation count
-                Text(
-                  'Found ${observations.length} observations',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
-                const SizedBox(height: 16),
+                // Text(
+                //   'Found ${observations.length} observations',
+                //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                //         fontWeight: FontWeight.w500,
+                //       ),
+                // ),
+                // const SizedBox(height: 16),
 
                 // Observation list
                 if (observations.isEmpty)
@@ -614,6 +618,9 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                       if (observation.media.isNotEmpty) {
                         mediaUrl =
                             '${AppUrls.baseUrl}/${observation.media[0].mediaUrl}';
+                      }
+                      if(UserTypeHelper.isParent && observation.status.toLowerCase()=='draft' ){
+                        return SizedBox();
                       }
 
                       // Replace the existing ObservationCard creation in ListView.builder's itemBuilder

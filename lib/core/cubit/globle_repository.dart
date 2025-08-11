@@ -1,18 +1,27 @@
 import 'package:mydiaree/core/config/app_urls.dart';
-import 'package:mydiaree/core/cubit/globle_model/center_model.dart'; 
+import 'package:mydiaree/core/cubit/globle_model/center_model.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/features/program_plan/data/model/children_program_plan_model.dart';
 import 'package:mydiaree/features/program_plan/data/model/user_add_program_model.dart';
 import 'package:mydiaree/features/room/data/model/room_list_model.dart';
 
-ApiResponse<CenterModel?>? centerDataGloble; 
+/// holds the globally selected center ID
+String? globalSelectedCenterId;
+
+ApiResponse<CenterModel?>? centerDataGloble;
 
 class GlobalRepository {
   Future<ApiResponse<CenterModel?>?> getCenters() async {
-    return getAndParseData<CenterModel?>(
-      AppUrls.getCenters,  
+    final resp = await getAndParseData<CenterModel?>(
+      AppUrls.getCenters,
       fromJson: (json) => CenterModel.fromJson(json),
     );
+    if (resp.success && resp.data?.data != null && resp.data!.data!.isNotEmpty) {
+      // set the default center ID once
+      globalSelectedCenterId = resp.data!.data!.first.id.toString();
+      centerDataGloble = resp;
+    }
+    return resp;
   }
 
   Future<ApiResponse<ChildrenAddProgramPlanModel?>> getChildren(String roomId) async {

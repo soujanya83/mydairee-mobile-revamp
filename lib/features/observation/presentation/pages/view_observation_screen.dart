@@ -65,7 +65,7 @@ class _ViewObservationScreenState extends State<ViewObservationScreen>
                   ),
             ),
           ),
-          if (isParent)
+          if (!UserTypeHelper.isParent)
             CustomButton(
               text: 'Edit',
               height: 35,

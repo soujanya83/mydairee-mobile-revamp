@@ -150,6 +150,7 @@ class AppDrawer extends StatelessWidget {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (_) => MenuScreen()));
                     }),
+                    if(!isParent)
                 CustomDrawerTile(
                     title: 'Recipes',
                     onTap: () {
@@ -157,7 +158,7 @@ class AppDrawer extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (_) => const RecipeScreen()));
-                    }),
+                    }),if(!isParent)
                 CustomDrawerTile(
                     title: 'Ingredients',
                     onTap: () {

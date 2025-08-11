@@ -29,6 +29,7 @@ class ActivityModel extends Equatable {
   final String? wakeTime;
   final String? status;
   final String comments;
+  final String? signature;
 
   const ActivityModel({
     required this.type,
@@ -39,8 +40,9 @@ class ActivityModel extends Equatable {
     this.wakeTime,
     this.status,
     required this.comments,
+    this.signature,
   });
 
   @override
-  List<Object?> get props => [type, date, time, item, sleepTime, wakeTime, status, comments];
+  List<Object?> get props => [type, date, time, item, sleepTime, wakeTime, status, comments, signature];
 }

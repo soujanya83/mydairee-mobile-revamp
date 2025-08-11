@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           alignment: Alignment.center,
                           child: UIHelpers.logoHorizontal()),
                       UIHelpers.verticalSpace(20),
-                      Text('Login to your admin account',
+                      Text('Login to your account',
                           style: Theme.of(context).textTheme.bodySmall),
                       UIHelpers.verticalSpace(30),
                       CustomTextFormWidget(
@@ -163,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Navigator.push(context, MaterialPageRoute(builder: (context) {
                               return DashboardScreen();
                             }));
-                          } else {
+                          } else{
                             UIHelpers.showToast(
                               context,
                               message: "Authentication failed - Token missing",

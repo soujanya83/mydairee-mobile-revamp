@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
@@ -117,21 +118,24 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
                   ? const Center(child: SizedBox())
                   : rooms.isEmpty
                       ? const Text('')
-                      : CustomDropdown<Room>(
-                          value: rooms.isEmpty
-                              ? null
-                              : rooms.firstWhere(
-                                  (r) => r.id.toString() == selectedRoomId,
-                                  orElse: () => rooms.first,
-                                ),
-                          items: rooms,
-                          hint: 'Select Room',
-                          displayItem: (r) => r.name ?? '',
-                          onChanged: (r) {
-                            selectedRoomId = r?.id.toString();
-                            _loadData();
-                          },
-                        ),
+                      : Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CustomDropdown<Room>(
+                            value: rooms.isEmpty
+                                ? null
+                                : rooms.firstWhere(
+                                    (r) => r.id.toString() == selectedRoomId,
+                                    orElse: () => rooms.first,
+                                  ),
+                            items: rooms,
+                            hint: 'Select Room',
+                            displayItem: (r) => r.name ?? '',
+                            onChanged: (r) {
+                              selectedRoomId = r?.id.toString();
+                              _loadData();
+                            },
+                          ),
+                      ),
               const SizedBox(width: 12),
             ],
           ),
@@ -169,6 +173,7 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
                       ),
                       itemCount: children.length,
                       itemBuilder: (c, i) => ChildCard(
+                        isCanAdd: !UserTypeHelper.isParent,
                         child: children[i],
                         onAddEntriesPressed: () {},
                         imageUrl: children[i].child!.imageUrl ?? '',

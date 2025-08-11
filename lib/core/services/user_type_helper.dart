@@ -27,6 +27,11 @@ class UserTypeHelper {
   static bool get isParent =>
       _userType?.toLowerCase() == 'parent';
 
+  // static bool get isParent =>
+  //     _userType?.toLowerCase() == 'superadmin';
+
+  // static bool get isSuperAdmin =>
+  //     _userType?.toLowerCase() == 'parent';
   static bool get isUser =>
       _userType?.toLowerCase() == 'user';
 
