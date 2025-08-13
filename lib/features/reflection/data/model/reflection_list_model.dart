@@ -33,7 +33,7 @@ class ReflectionListModel {
 
 class Data {
   List<Center>? centers;
-  List<Reflection>? reflection;
+  ReflectionPagination? reflection;
 
   Data({
     this.centers,
@@ -45,13 +45,13 @@ class Data {
             ? []
             : List<Center>.from(json["centers"]!.map((x) => Center.fromJson(x))),
         reflection: json["reflection"] == null
-            ? []
-            : List<Reflection>.from(json["reflection"].map((x) => Reflection.fromJson(x))),
+            ? null
+            : ReflectionPagination.fromJson(json["reflection"]),
       );
 
   Map<String, dynamic> toJson() => {
         "centers": centers == null ? [] : List<dynamic>.from(centers!.map((x) => x.toJson())),
-        "reflection": reflection == null ? [] : List<dynamic>.from(reflection!.map((x) => x.toJson())),
+        "reflection": reflection?.toJson(),
       };
 }
 
@@ -584,6 +584,27 @@ final reflectionStatusValues = EnumValues({
   "DRAFT": ReflectionStatus.DRAFT,
   "PUBLISHED": ReflectionStatus.PUBLISHED,
 });
+
+class ReflectionPagination {
+  final int? currentPage;
+  final List<Reflection>? data;
+
+  ReflectionPagination({this.currentPage, this.data});
+
+  factory ReflectionPagination.fromJson(Map<String, dynamic> json) =>
+      ReflectionPagination(
+        currentPage: json["current_page"] as int?,
+        data: json["data"] == null
+            ? []
+            : List<Reflection>.from(
+                (json["data"] as List).map((x) => Reflection.fromJson(x))),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "current_page": currentPage,
+        "data": data?.map((e) => e.toJson()).toList(),
+      };
+}
 
 class EnumValues<T> {
   Map<String, T> map;

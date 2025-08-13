@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
+import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/features/learning_and_progress/presentation/bloc/list/learning_and_progress_bloc.dart';
@@ -13,6 +15,10 @@ import 'package:mydiaree/features/learning_and_progress/presentation/bloc/list/l
 import 'package:mydiaree/features/learning_and_progress/data/model/child_model.dart';
 import 'package:mydiaree/features/learning_and_progress/presentation/pages/view_progress_screen.dart';
 import 'package:mydiaree/features/room/presentation/widget/room_list_custom_widgets.dart';
+import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
+import 'package:mydiaree/core/widgets/dropdowns/room_dropdown.dart';
+import 'package:mydiaree/features/room/data/repositories/room_repositories.dart';
+import 'package:mydiaree/features/room/data/model/room_list_model.dart';
 import 'package:mydiaree/main.dart';
 
 class LearningAndProgressScreen extends StatefulWidget {
@@ -28,9 +34,15 @@ class _LearningAndProgressScreenState extends State<LearningAndProgressScreen> {
   String _searchQuery = '';
   List<String> _selectedChildIds = [];
 
+  List<Room> _rooms = [];
+  bool _loadingRooms = true;
+  String? _selectedCenterId;
+  String? _selectedRoomId;
+
   @override
   void initState() {
     super.initState();
+    _loadCenters();
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.toLowerCase();
@@ -38,26 +50,99 @@ class _LearningAndProgressScreenState extends State<LearningAndProgressScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  Future<void> _loadCenters() async {
+    _selectedCenterId = globalSelectedCenterId;
+    if (_selectedCenterId != null) {
+      await _loadRooms(_selectedCenterId!);
+    }
+    // initial fetch
+    _fetchChildren();
+  }
+
+  Future<void> _loadRooms(String centerId) async {
+    setState(() => _loadingRooms = true);
+    try {
+      final repo = RoomRepository();
+      final resp = await repo.getRooms(centerId: centerId);
+      if (resp.success && resp.data != null) {
+        _rooms = resp.data!.rooms ?? [];
+        _selectedRoomId = _rooms.isNotEmpty ? _rooms.first.id.toString() : null;
+      }
+    } catch (_) {
+      _rooms = [];
+      _selectedRoomId = null;
+    } finally {
+      setState(() => _loadingRooms = false);
+    }
+  }
+
+  void _fetchChildren() {
+    if (_selectedCenterId != null && _selectedRoomId != null) {
+      context.read<LearningAndProgressBloc>().add(
+        FetchChildrenEvent(
+          centerId: _selectedCenterId!,
+          roomId: _selectedRoomId!,
+        ),
+      );
+    } 
   }
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context
-          .read<LearningAndProgressBloc>()
-          .add(FetchChildrenEvent(centerId: '1'));
-    });
-
     return CustomScaffold(
-      appBar: const CustomAppBar(
-        title: "Learning & Progress",
-      ),
+      appBar: const CustomAppBar(title: "Learning & Progress"),
       body: Column(
         children: [
+          // Center & Room filters
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: [
+                CenterDropdown(
+                  selectedCenterId: _selectedCenterId,
+                  onChanged: (c) async {
+                    _selectedCenterId = c.id;
+                    await _loadRooms(c.id);
+                    _fetchChildren();
+                  },
+                ),
+                const SizedBox(height: 12),
+                _loadingRooms
+                    ? Center(
+                        child: SizedBox(
+                          height: 30,
+                          width: 30,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primaryColor),
+                          ),
+                        ),
+                      )
+                    : CustomDropdown<Room>(
+                        items: _rooms,
+                        // select the Room that matches _selectedRoomId, or fallback to first
+                        value: _selectedRoomId != null && _rooms.isNotEmpty
+                            ? _rooms.firstWhere(
+                                (room) => room.id.toString() == _selectedRoomId,
+                                orElse: () => _rooms.first,
+                              )
+                            : null,
+                        hint: _rooms.isEmpty ? 'No Rooms Available' : 'Select Room',
+                        displayItem: (room) => room.name ?? '',
+                        onChanged: (room) {
+                          if (room != null) {
+                            setState(() {
+                              _selectedRoomId = room.id.toString();
+                              _selectedChildIds.clear();
+                            });
+                            _fetchChildren();
+                          }
+                        },
+                      ),
+              ],
+            ),
+          ),
           // Search Bar
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -74,91 +159,102 @@ class _LearningAndProgressScreenState extends State<LearningAndProgressScreen> {
               },
             ),
           ),
-          // Children Grid
-          Expanded(
-            child: BlocConsumer<LearningAndProgressBloc, LearningAndProgressState>(
-              listener: (context, state) {
-                if (state is LearningAndProgressDeleted) {
-                  UIHelpers.showToast(
-                    context,
-                    message: state.message,
-                    backgroundColor: AppColors.successColor,
-                  );
-                  setState(() {
-                    _selectedChildIds.clear();
-                  });
-                } else if (state is LearningAndProgressError) {
-                  UIHelpers.showToast(
-                    context,
-                    message: state.message,
-                    backgroundColor: AppColors.errorColor,
-                  );
-                }
-              },
-              builder: (context, state) {
-                if (state is LearningAndProgressLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is LearningAndProgressError) {
-                  return Center(child: Text(state.message));
-                } else if (state is LearningAndProgressLoaded) {
-                  final children = state.children
-                      .where((child) =>
-                          child.name.toLowerCase().contains(_searchQuery))
-                      .toList();
-                  if (children.isEmpty && _searchQuery.isNotEmpty) {
-                    return _buildNoResults();
+          // Children Grid or “No rooms available”
+          if (!_loadingRooms && _rooms.isEmpty)
+            Expanded(
+              child: Center(
+                child: Text(
+                  'No rooms available for the selected center',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            )
+          else
+            Expanded(
+              child: BlocConsumer<LearningAndProgressBloc, LearningAndProgressState>(
+                listener: (context, state) {
+                  if (state is LearningAndProgressDeleted) {
+                    UIHelpers.showToast(
+                      context,
+                      message: state.message,
+                      backgroundColor: AppColors.successColor,
+                    );
+                    setState(() {
+                      _selectedChildIds.clear();
+                    });
+                  } else if (state is LearningAndProgressError) {
+                    UIHelpers.showToast(
+                      context,
+                      message: state.message,
+                      backgroundColor: AppColors.errorColor,
+                    );
                   }
-                  return GridView.builder(
-                    padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-                    shrinkWrap: true,
-                    physics: const ScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.6,
-                    ),
-                    itemCount: children.length,
-                    itemBuilder: (context, index) {
-                      final child = children[index];
-                      final isSelected = _selectedChildIds.contains(child.id);
-                      return ChildCard(
-                        isDelete: false,
-                        child: child,
-                        index: index,
-                        isSelected: isSelected,
-                        onSelect: (selected) {
-                          setState(() {
-                            if (selected) {
-                              _selectedChildIds.add(child.id);
-                            } else {
-                              _selectedChildIds.remove(child.id);
-                            }
-                          });
-                        },
-                        onViewProgress: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return ViewProgressScreen(childId: child.id,);
-                          }));
-                        },
-                        onDeletePressed: () {
-                          // showDeleteConfirmationDialog(context, () {
-                          //   context.read<LearningAndProgressBloc>().add(
-                          //         DeleteChildrenEvent([child.id], '1'),
-                          //       );
-                          //   Navigator.pop(context);
-                          // });
-                        },
-                      );
-                    },
-                  );
-                }
-                return const SizedBox();
-              },
+                },
+                builder: (context, state) {
+                  if (state is LearningAndProgressLoading) {
+                    return _rooms.isNotEmpty
+                        ? const Center(child: CircularProgressIndicator())
+                        : const SizedBox.shrink();
+                  } else if (state is LearningAndProgressError) {
+                    return Center(child: Text(state.message));
+                  } else if (state is LearningAndProgressLoaded) {
+                    final children = state.children
+                        .where((child) =>
+                            child.name.toLowerCase().contains(_searchQuery))
+                        .toList();
+                    if (children.isEmpty && _searchQuery.isNotEmpty) {
+                      return _buildNoResults();
+                    }
+                    return GridView.builder(
+                      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      shrinkWrap: true,
+                      physics: const ScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.6,
+                      ),
+                      itemCount: children.length,
+                      itemBuilder: (context, index){
+                        final child = children[index];
+                        final isSelected = _selectedChildIds.contains(child.id);
+                        return ChildCard(
+                          isDelete: false,
+                          child: child,
+                          index: index,
+                          isSelected: isSelected,
+                          onSelect: (selected) {
+                            // setState(() {
+                            //   if (selected) {
+                            //     _selectedChildIds.add(child.id);
+                            //   } else {
+                            //     _selectedChildIds.remove(child.id);
+                            //   }
+                            // });
+                          },
+                          onViewProgress: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return ViewProgressScreen(childId: child.id,);
+                            }));
+                          },
+                          onDeletePressed: () {
+                            // showDeleteConfirmationDialog(context, () {
+                            //   context.read<LearningAndProgressBloc>().add(
+                            //         DeleteChildrenEvent([child.id], '1'),
+                            //       );
+                            //   Navigator.pop(context);
+                            // });
+                          },
+                        );
+                      },
+                    );
+                  }
+                  return const SizedBox();
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -256,12 +352,7 @@ class ChildCard extends StatelessWidget {
                       width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
-                          Image.network(
-                        'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=300&h=300&fit=crop&crop=face',
-                        height: 120,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
+                          SizedBox(),
                     ),
                     Container(
                       height: 120,

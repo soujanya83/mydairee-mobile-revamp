@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
@@ -22,7 +23,7 @@ class SleepCheckListScreen extends StatefulWidget {
 }
 
 class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
-  String selectedCenterId = '1'; // Default center
+  String selectedCenterId = ''; // Default center
   String? selectedRoomId;
   DateTime selectedDate = DateTime.now();
   bool isLoading = true;
@@ -52,6 +53,7 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
   @override
   void initState() {
     super.initState();
+    selectedCenterId = globalSelectedCenterId??'';
     print('Initializing SleepCheckListScreen with center ID: $selectedCenterId');
     _fetchRooms();
   }
@@ -64,8 +66,7 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
     });
 
     try {
-      print('Fetching rooms for center ID: $selectedCenterId');
-      // The issue might be here - check parameter format
+      print('Fetching rooms for center ID: $selectedCenterId'); 
       final roomsResponse = await _roomRepository.getRooms(centerId: selectedCenterId);
       
       if (roomsResponse.success && roomsResponse.data != null) {

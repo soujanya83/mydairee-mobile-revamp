@@ -31,11 +31,8 @@ class _ViewProgressScreenState extends State<ViewProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
     return CustomScaffold(
-      appBar: const CustomAppBar(
-        title: "View Progress",
-      ),
+      appBar: const CustomAppBar(title: "View Progress"),
       body: BlocConsumer<ViewProgressBloc, ViewProgressState>(
         listener: (context, state) {
           if (state is ViewProgressStatusUpdated) {
@@ -60,31 +57,21 @@ class _ViewProgressScreenState extends State<ViewProgressScreen> {
           } else if (state is ViewProgressLoaded) {
             final assessments = state.assessments;
             return ListView.builder(
-              shrinkWrap: true,
-              physics: const ScrollPhysics(),
               padding: const EdgeInsets.all(16),
               itemCount: assessments.length,
-              itemBuilder: (context, index) {
-                final assessment = assessments[index];
+              itemBuilder: (context, i) {
+                final a = assessments[i];
                 return AssessmentItemCard(
-                  assessment: assessment,
+                  assessment: a,
                   onStatusTap: () {
-                    // final nextStatus = _getNextStatus(assessment.status);
-                    // showConfirmationDialog(
-                    //   context,
-                    //   title: 'Update Status',
-                    //   message: 'Change status to ${nextStatus.name.replaceFirst(nextStatus.name[0], nextStatus.name[0].toUpperCase())}?',
-                    //   onConfirm: () {
-                    //     context.read<ViewProgressBloc>().add(
-                    //           UpdateAssessmentStatusEvent(
-                    //             assessmentId: assessment.id,
-                    //             childId: widget.childId,
-                    //             newStatus: nextStatus,
-                    //           ),
-                    //         );
-                    //     Navigator.pop(context);
-                    //   },
-                    // );
+                    final next = _getNextStatus(a.status);
+                    context.read<ViewProgressBloc>().add(
+                      UpdateAssessmentStatusEvent(
+                        assessmentId: a.id,
+                        childId: widget.childId,
+                        newStatus: next,
+                      ),
+                    );
                   },
                 );
               },
@@ -97,21 +84,21 @@ class _ViewProgressScreenState extends State<ViewProgressScreen> {
   }
 
   AssessmentStatus _getNextStatus(AssessmentStatus current) {
-    const statuses = [
+    const order = [
       AssessmentStatus.notStarted,
       AssessmentStatus.introduced,
       AssessmentStatus.practicing,
       AssessmentStatus.completed,
     ];
-    final currentIndex = statuses.indexOf(current);
-    return statuses[(currentIndex + 1) % statuses.length];
+    final idx = order.indexOf(current);
+    return order[(idx + 1) % order.length];
   }
 }
+
 
 class AssessmentItemCard extends StatelessWidget {
   final AssessmentModel assessment;
   final VoidCallback onStatusTap;
-
   const AssessmentItemCard({
     required this.assessment,
     required this.onStatusTap,
@@ -120,6 +107,8 @@ class AssessmentItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isClickable = assessment.status != AssessmentStatus.completed;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -128,66 +117,69 @@ class AssessmentItemCard extends StatelessWidget {
         border: Border.all(color: Colors.grey[200]!, width: 1),
       ),
       child: InkWell(
+        // only hook up onTap when status != Completed
+        onTap: isClickable ? onStatusTap : null,
         borderRadius: BorderRadius.circular(8),
-        onTap: onStatusTap,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8),
           child: Row(
             children: [
-              // Triangle Indicator
-              GestureDetector(
-                onTap: onStatusTap,
-                child: SizedBox(
-                  width: 30,
-                  height: 30,
-                  child: CustomPaint(
-                    painter: TrianglePainter(status: assessment.status),
-                  ),
+              // Triangle indicator
+              SizedBox(
+                width: 30,
+                height: 30,
+                child: CustomPaint(
+                  painter: TrianglePainter(status: assessment.status),
                 ),
               ),
               const SizedBox(width: 12),
-              // Content
+              // Titles
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       assessment.activityTitle,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       assessment.subActivityTitle,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(fontSize: 12),
+                      style: Theme.of(context).textTheme.bodySmall,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              // Status Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 4
+                    ),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(assessment.status).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
+
+                  border: Border.all(
+                    width: 2,
+                  color: _statusColor(assessment.status).withOpacity(.2)),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   assessment.status == AssessmentStatus.notStarted
                       ? ''
-                      : assessment.status.name.replaceFirst(
-                          assessment.status.name[0],
-                          assessment.status.name[0].toUpperCase()),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 12,
+                      : assessment.status
+                          .name
+                          .replaceFirst(
+                              assessment.status.name[0],
+                              assessment.status.name[0].toUpperCase()),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                        color: _statusColor(assessment.status),
                         fontWeight: FontWeight.w600,
-                        color: _getStatusColor(assessment.status),
                       ),
                 ),
               ),
@@ -198,99 +190,103 @@ class AssessmentItemCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(AssessmentStatus status) {
-    switch (status) {
-      case AssessmentStatus.notStarted:
-        return Colors.grey;
+  Color _statusColor(AssessmentStatus s) {
+    switch (s) {
       case AssessmentStatus.introduced:
         return Colors.blue;
       case AssessmentStatus.practicing:
-        return Colors.yellow[700]!;
+      case AssessmentStatus.working:  // mapped same as practicing
+        return Colors.orange;
       case AssessmentStatus.completed:
         return Colors.green;
+      default:
+        return Colors.grey;
     }
   }
 }
 
+
+// Draws 0–3 colored sides based on status
 class TrianglePainter extends CustomPainter {
   final AssessmentStatus status;
-
   TrianglePainter({required this.status});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.fill
-      ..strokeWidth = 1;
+    final paintBg = Paint()..style = PaintingStyle.fill;
+    final stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
 
+    // build triangle path
     final path = Path();
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-
-    // Draw equilateral triangle
-    for (int i = 0; i < 3; i++) {
-      final angle = (i * 120 - 90) * (3.14159 / 180);
-      final x = center.dx + radius * cos(angle);
-      final y = center.dy + radius * sin(angle);
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
+    final cx = size.width / 2, cy = size.height / 2, r = size.width / 2;
+    for (var i = 0; i < 3; i++) {
+      final angle = (i * 120 - 90) * pi / 180;
+      final x = cx + r * cos(angle), y = cy + r * sin(angle);
+      if (i == 0) path.moveTo(x, y);
+      else path.lineTo(x, y);
     }
     path.close();
 
-    // Background triangle
-    paint.color = Colors.grey[200]!;
-    canvas.drawPath(path, paint);
+    // fill background
+    paintBg.color = Colors.white.withOpacity(1);
+    canvas.drawPath(path, paintBg);
 
-    // Draw sides based on status
-    final sidePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4;
+    // how many sides to color?
+    final colored = _sidesToColor(status);
+    // Draw colored borders: bottom (0), left (1), right (2)
+    // Triangle points: 0-bottom, 1-left, 2-right (clockwise)
+    final points = List.generate(3, (i) {
+      final angle = ((i + 1) * 120 - 90) * pi / 180;
+      return Offset(cx + r * cos(angle), cy + r * sin(angle));
+    });
 
-    final sidesToColor = _getSidesToColor();
-    for (int i = 0; i < 3; i++) {
-      final startAngle = (i * 120 - 90) * (3.14159 / 180);
-      final endAngle = ((i + 1) * 120 - 90) * (3.14159 / 180);
-      final startX = center.dx + radius * cos(startAngle);
-      final startY = center.dy + radius * sin(startAngle);
-      final endX = center.dx + radius * cos(endAngle);
-      final endY = center.dy + radius * sin(endAngle);
+    // Sides: [bottom, left, right]
+    final sideOrder = [
+      [points[0], points[1]], // bottom
+      [points[1], points[2]], // left
+      [points[2], points[0]], // right
+    ];
 
-      sidePaint.color =
-          i < sidesToColor ? _getStatusColor(status) : Colors.grey;
-      canvas.drawLine(Offset(startX, startY), Offset(endX, endY), sidePaint);
+    for (var i = 0; i < 3; i++) {
+      stroke.color = (i < colored)
+        ? _statusColor(status)
+        : Colors.grey.withOpacity(.3)!;
+      final p1 = sideOrder[i][0], p2 = sideOrder[i][1];
+      canvas.drawLine(p1, p2, stroke);
     }
   }
 
-  int _getSidesToColor() {
-    switch (status) {
-      case AssessmentStatus.notStarted:
-        return 0;
+  int _sidesToColor(AssessmentStatus s) {
+    switch (s) {
       case AssessmentStatus.introduced:
         return 1;
       case AssessmentStatus.practicing:
+      case AssessmentStatus.working:  // same as practicing
         return 2;
       case AssessmentStatus.completed:
         return 3;
+      default:
+        return 0;
     }
   }
 
-  Color _getStatusColor(AssessmentStatus status) {
-    switch (status) {
-      case AssessmentStatus.notStarted:
-        return Colors.grey;
+  Color _statusColor(AssessmentStatus s) {
+    switch (s) {
       case AssessmentStatus.introduced:
         return Colors.blue;
       case AssessmentStatus.practicing:
-        return Colors.yellow[700]!;
+      case AssessmentStatus.working:
+        return Colors.orange;
       case AssessmentStatus.completed:
         return Colors.green;
+      default:
+        return Colors.grey;
     }
   }
 
   @override
-  bool shouldRepaint(covariant TrianglePainter oldDelegate) =>
-      oldDelegate.status != status;
+  bool shouldRepaint(covariant TrianglePainter old) =>
+      old.status != status;
 }

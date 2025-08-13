@@ -6,22 +6,56 @@ class ObservationListResponse {
   final List<Center> centers;
 
   ObservationListResponse({
-    required this.success,
-    required this.observations,
-    required this.centers,
-  });
+    this.success = false,
+    List<ObservationListItem>? observations,
+    List<Center>? centers,
+  })  : observations = observations ?? [],
+        centers = centers ?? [];
 
-  factory ObservationListResponse.fromJson(Map<String, dynamic> json) {
-    return ObservationListResponse(
-      success: json['success'] ?? false,
-      observations: (json['observations'] as List?)
-          ?.map((e) => ObservationListItem.fromJson(e))
-          .where((obs) => obs.id > 0) // Filter out incomplete items
-          .toList() ?? [],
-      centers: (json['centers'] as List?)
-          ?.map((e) => Center.fromJson(e))
-          .toList() ?? [],
-    );
+  factory ObservationListResponse.fromJson(Map<String, dynamic>? json) {
+    try {
+      // parse success (bool, int or String)
+      final rawSuccess = json?['success'];
+      bool success = false;
+      if (rawSuccess is bool) {
+        success = rawSuccess;
+      } else if (rawSuccess is num) {
+        success = rawSuccess.toInt() == 1;
+      } else if (rawSuccess is String) {
+        success = rawSuccess.toLowerCase() == 'true' || rawSuccess == '1';
+      }
+
+      // parse observations list (nested under observations.data)
+      final obsList = <ObservationListItem>[];
+      final rawObs = json?['observations'];
+      final dataJson = rawObs is Map<String, dynamic> ? rawObs['data'] : rawObs;
+      if (dataJson is List) {
+        for (var item in dataJson) {
+          if (item is Map<String, dynamic>) {
+            obsList.add(ObservationListItem.fromJson(item));
+          }
+        }
+      }
+
+      // parse centers list
+      final centerList = <Center>[];
+      final centerJson = json?['centers'];
+      if (centerJson is List) {
+        for (var item in centerJson) {
+          if (item is Map<String, dynamic>) {
+            centerList.add(Center.fromJson(item));
+          }
+        }
+      }
+
+      return ObservationListResponse(
+        success: success,
+        observations: obsList,
+        centers: centerList,
+      );
+    } catch (_) {
+      return ObservationListResponse();
+    }
   }
 }
 
@@ -47,92 +81,109 @@ class ObservationListItem {
   final List<Media> media;
 
   ObservationListItem({
-    required this.id,
-    required this.userId,
-    required this.obestitle,
-    required this.title,
-    required this.notes,
-    required this.room,
-    required this.reflection,
-    required this.futurePlan,
-    required this.childVoice,
-    required this.status,
+    this.id = 0,
+    this.userId = 0,
+    this.obestitle = '',
+    this.title = '',
+    this.notes = '',
+    this.room,
+    this.reflection = '',
+    this.futurePlan,
+    this.childVoice,
+    this.status = '',
     this.approver,
-    required this.centerId,
-    required this.dateAdded,
+    this.centerId = 0,
+    this.dateAdded = '',
     this.dateModified,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.user,
-    required this.children,
-    required this.media,
-  });
+    this.createdAt = '',
+    this.updatedAt = '',
+    User? user,
+    List<ChildObservation>? children,
+    List<Media>? media,
+  })  : user = user ?? User(),
+        children = children ?? [],
+        media = media ?? [];
 
-  factory ObservationListItem.fromJson(Map<String, dynamic> json) {
-    if (json['seen'] != null && json['id'] == null) {
-      // This is an incomplete item, return with default id 0
+  factory ObservationListItem.fromJson(Map<String, dynamic>? json) {
+    try {
+      if (json == null) return ObservationListItem();
+
+      final id = int.tryParse(json['id']?.toString() ?? '') ?? 0;
+      final userId = int.tryParse(json['userId']?.toString() ?? '') ?? 0;
+      final obestitle = json['obestitle']?.toString() ?? '';
+      final title = json['title']?.toString() ?? '';
+      final notes = json['notes']?.toString() ?? '';
+      final room = json['room']?.toString();
+      final reflection = json['reflection']?.toString() ?? '';
+      final futurePlan = json['future_plan']?.toString();
+      final childVoice = json['child_voice']?.toString();
+      final status = json['status']?.toString() ?? '';
+      final approver = int.tryParse(json['approver']?.toString() ?? '');
+      final centerId = int.tryParse(json['centerid']?.toString() ?? '') ?? 0;
+      final dateAdded = json['date_added']?.toString() ?? '';
+      final dateModified = json['date_modified']?.toString();
+      final createdAt = json['created_at']?.toString() ?? '';
+      final updatedAt = json['updated_at']?.toString() ?? '';
+
+      // parse nested user object
+      final userJson = json['user'];
+      final user = userJson is Map<String, dynamic>
+          ? User.fromJson(userJson)
+          : User();
+
+      // parse child list
+      final childList = <ChildObservation>[];
+      final childJson = json['child'];
+      if (childJson is List) {
+        for (var c in childJson) {
+          if (c is Map<String, dynamic>) {
+            childList.add(ChildObservation.fromJson(c));
+          }
+        }
+      }
+
+      // parse media list
+      final mediaList = <Media>[];
+      final mediaJson = json['media'];
+      if (mediaJson is List) {
+        for (var m in mediaJson) {
+          if (m is Map<String, dynamic>) {
+            mediaList.add(Media.fromJson(m));
+          }
+        }
+      }
+
       return ObservationListItem(
-        id: 0,
-        userId: 0,
-        obestitle: '',
-        title: '',
-        notes: '',
-        room: null,
-        reflection: '',
-        futurePlan: null,
-        childVoice: null,
-        status: '',
-        approver: null,
-        centerId: 0,
-        dateAdded: '',
-        dateModified: null,
-        createdAt: '',
-        updatedAt: '',
-        user: User.fromJson({}),
-        children: [],
-        media: [],
+        id: id,
+        userId: userId,
+        obestitle: obestitle,
+        title: title,
+        notes: notes,
+        room: room,
+        reflection: reflection,
+        futurePlan: futurePlan,
+        childVoice: childVoice,
+        status: status,
+        approver: approver,
+        centerId: centerId,
+        dateAdded: dateAdded,
+        dateModified: dateModified,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        user: user,
+        children: childList,
+        media: mediaList,
       );
+    } catch (_) {
+      return ObservationListItem();
     }
-    
-    return ObservationListItem(
-      id: json['id'] ?? 0,
-      userId: json['userId'] ?? 0,
-      obestitle: json['obestitle'] ?? '',
-      title: json['title'] ?? '',
-      notes: json['notes'] ?? '',
-      room: json['room'],
-      reflection: json['reflection'] ?? '',
-      futurePlan: json['future_plan'],
-      childVoice: json['child_voice'],
-      status: json['status'] ?? '',
-      approver: json['approver'],
-      centerId: json['centerid'] ?? 0,
-      dateAdded: json['date_added'] ?? '',
-      dateModified: json['date_modified'],
-      createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
-      user: User.fromJson(json['user'] ?? {}),
-      children: (json['child'] as List?)
-          ?.map((e) => ChildObservation.fromJson(e))
-          .toList() ?? [],
-      media: (json['media'] as List?)
-          ?.map((e) => Media.fromJson(e))
-          .toList() ?? [],
-    );
   }
 
-  // Helper method to get clean title
-  String get cleanTitle {
-    return stripHtmlTags(title);
-  }
+  /// Helper to strip HTML tags/entities for display
+  String get cleanTitle => stripHtmlTags(title);
 
-  // Helper method to get preview image
-  String get previewImage {
-    if (media.isNotEmpty) {
-      return media.first.mediaUrl;
-    }
-    return '';
-  }
+  /// Preview image URL from first media item
+  String get previewImage => media.isNotEmpty ? media.first.mediaUrl : '';
 }
 
 class User {
@@ -141,17 +192,20 @@ class User {
   final String imageUrl;
 
   User({
-    required this.id,
-    required this.name,
-    required this.imageUrl,
+    this.id = 0,
+    this.name = '',
+    this.imageUrl = '',
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
-    );
+  factory User.fromJson(Map<String, dynamic>? json) {
+    try {
+      final id = int.tryParse(json?['id']?.toString() ?? '') ?? 0;
+      final name = json?['name']?.toString() ?? '';
+      final imageUrl = json?['imageUrl']?.toString() ?? '';
+      return User(id: id, name: name, imageUrl: imageUrl);
+    } catch (_) {
+      return User();
+    }
   }
 }
 
@@ -161,17 +215,26 @@ class ChildObservation {
   final int childId;
 
   ChildObservation({
-    required this.id,
-    required this.observationId,
-    required this.childId,
+    this.id = 0,
+    this.observationId = 0,
+    this.childId = 0,
   });
 
-  factory ChildObservation.fromJson(Map<String, dynamic> json) {
-    return ChildObservation(
-      id: json['id'] ?? 0,
-      observationId: json['observationId'] ?? 0,
-      childId: json['childId'] ?? 0,
-    );
+  factory ChildObservation.fromJson(Map<String, dynamic>? json) {
+    try {
+      final id = int.tryParse(json?['id']?.toString() ?? '') ?? 0;
+      final observationId =
+          int.tryParse(json?['observationId']?.toString() ?? '') ?? 0;
+      final childId =
+          int.tryParse(json?['childId']?.toString() ?? '') ?? 0;
+      return ChildObservation(
+        id: id,
+        observationId: observationId,
+        childId: childId,
+      );
+    } catch (_) {
+      return ChildObservation();
+    }
   }
 }
 
@@ -184,36 +247,52 @@ class Media {
   final dynamic priority;
 
   Media({
-    required this.id,
-    required this.observationId,
-    required this.mediaUrl,
-    required this.mediaType,
+    this.id = 0,
+    this.observationId = 0,
+    this.mediaUrl = '',
+    this.mediaType = '',
     this.caption,
     this.priority,
   });
 
-  factory Media.fromJson(Map<String, dynamic> json) {
-    return Media(
-      id: json['id'] ?? 0,
-      observationId: json['observationId'] ?? 0,
-      mediaUrl: json['mediaUrl'] ?? '',
-      mediaType: json['mediaType'] ?? '',
-      caption: json['caption'],
-      priority: json['priority'],
-    );
+  factory Media.fromJson(Map<String, dynamic>? json) {
+    try {
+      final id = int.tryParse(json?['id']?.toString() ?? '') ?? 0;
+      final observationId =
+          int.tryParse(json?['observationId']?.toString() ?? '') ?? 0;
+      final mediaUrl = json?['mediaUrl']?.toString() ?? '';
+      final mediaType = json?['mediaType']?.toString() ?? '';
+      final caption = json?['caption']?.toString();
+      final rawPriority = json?['priority'];
+      dynamic priority;
+      if (rawPriority is num) {
+        priority = rawPriority;
+      } else if (rawPriority is String) {
+        priority = int.tryParse(rawPriority) ?? rawPriority;
+      } else {
+        priority = rawPriority;
+      }
+      return Media(
+        id: id,
+        observationId: observationId,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
+        caption: caption,
+        priority: priority,
+      );
+    } catch (_) {
+      return Media();
+    }
   }
 }
 
-// Helper function to strip HTML tags
 String stripHtmlTags(String htmlString) {
   if (htmlString.isEmpty) return '';
-  
-  // Remove HTML tags and clean up the string
   return htmlString
-      .replaceAll(RegExp(r'<[^>]*>'), '') // Remove all HTML tags
-      .replaceAll('&lt;', '<')  // Replace HTML entities
+      .replaceAll(RegExp(r'<[^>]*>'), '')
+      .replaceAll('&lt;', '<')
       .replaceAll('&gt;', '>')
       .replaceAll('&amp;', '&')
-      .replaceAll('\n', ' ')  // Replace newlines with spaces
-      .trim();  // Remove extra whitespace
+      .replaceAll('\n', ' ')
+      .trim();
 }

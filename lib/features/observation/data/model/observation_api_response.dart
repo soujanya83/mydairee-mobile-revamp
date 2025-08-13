@@ -1,4 +1,3 @@
-
 class ObservationApiResponse {
   final bool success;
   final List<ObservationItem> observations;
@@ -13,9 +12,11 @@ class ObservationApiResponse {
   factory ObservationApiResponse.fromJson(Map<String, dynamic> json) {
     return ObservationApiResponse(
       success: json['success'] ?? false,
-      observations: (json['observations'] as List?)
-          ?.map((obsJson) => ObservationItem.fromJson(obsJson))
-          .toList() ?? [],
+      // now `observations` is paginated: extract the `data` array
+      observations: ((json['observations'] as Map<String, dynamic>?)?['data']
+                 as List<dynamic>?)
+               ?.map((e) => ObservationItem.fromJson(e as Map<String, dynamic>))
+               .toList() ?? [],
       centers: (json['centers'] as List?)
           ?.map((centerJson) => CenterModel.fromJson(centerJson))
           .toList() ?? [],

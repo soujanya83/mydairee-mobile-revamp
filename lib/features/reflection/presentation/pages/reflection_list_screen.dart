@@ -11,6 +11,7 @@ import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
+import 'package:mydiaree/features/observation/data/model/observation_list_response.dart';
 import 'package:mydiaree/features/reflection/data/repositories/reflection_repository.dart';
 import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflection_list_bloc.dart';
 import 'package:mydiaree/features/reflection/presentation/bloc/list_room/reflection_list_event.dart';
@@ -19,6 +20,7 @@ import 'package:mydiaree/features/reflection/presentation/pages/add_reflection_s
 import 'package:mydiaree/features/reflection/presentation/widget/reflection_list_custom_widgets.dart';
 import 'package:mydiaree/features/room/presentation/widget/room_list_custom_widgets.dart';
 import 'package:mydiaree/core/services/user_type_helper.dart';
+import 'package:mydiaree/main.dart';
 
 // ignore: must_be_immutable
 class ReflectionListScreen extends StatefulWidget {
@@ -29,8 +31,6 @@ class ReflectionListScreen extends StatefulWidget {
 }
 
 class _ReflectionListScreenState extends State<ReflectionListScreen> {
-  String searchString = '';
-
   String? selectedStatus;
 
   String selectedCenterId = '1';
@@ -93,7 +93,7 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
         listener: (context, state) {
           if (state is ReflectionDeletedState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Reflections deleted successfully")),
+              const SnackBar(content: Text("Reflection deleted successfully")),
             );
           } else if (state is ReflectionListError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -102,176 +102,75 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
           }
         },
         builder: (context, state) {
-          if (state is ReflectionListLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is ReflectionListError) {
-            return Center(child: Text(state.message));
-          } else if (state is ReflectionListLoaded) {
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Reflection',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const Spacer(),
-                        // OutlinedButton(
-                        //   onPressed: () {
-                        //     showMaterialModalBottomSheet(
-                        //       context: context,
-                        //       builder: (context) => FiltersModal(
-                        //         centerId: selectedCenterId,
-                        //         children: [
-                        //           FilterChildModel(
-                        //               name: 'Vicky',
-                        //               imageUrl: 'https://example.com/vicky.jpg',
-                        //               id: '1'),
-                        //           FilterChildModel(
-                        //               name: 'John',
-                        //               imageUrl: 'https://example.com/john.jpg',
-                        //               id: '2'),
-                        //           FilterChildModel(
-                        //               name: 'Jane',
-                        //               imageUrl: 'https://example.com/jane.jpg',
-                        //               id: '3'),
-                        //           FilterChildModel(
-                        //               name: 'Doe',
-                        //               imageUrl: 'https://example.com/doe.jpg',
-                        //               id: '4'),
-                        //         ],
-                        //         staff: [
-                        //           FilterEucatorModel(
-                        //             name: 'John Doe',
-                        //             imageUrl: 'https://example.com/john.jpg',
-                        //             id: '1',
-                        //           ),
-                        //           FilterEucatorModel(
-                        //             name: 'Jane Smith',
-                        //             imageUrl: 'https://example.com/jane.jpg',
-                        //             id: '2',
-                        //           ),
-                        //           FilterEucatorModel(
-                        //             name: 'Doe John',
-                        //             imageUrl: 'https://example.com/doe.jpg',
-                        //             id: '3',
-                        //           ),
-                        //           FilterEucatorModel(
-                        //             name: 'Vicky',
-                        //             imageUrl: 'https://example.com/vicky.jpg',
-                        //             id: '4',
-                        //           ),
-                        //         ],
-                        //       ),
-                        //     );
-                        //   },
-                        //   child: const Text('FILTERS'),
-                        //   style: OutlinedButton.styleFrom(
-                        //     side:
-                        //         const BorderSide(color: AppColors.primaryColor),
-                        //   ),
-                        // ),
-                        const SizedBox(width: 8),
-                        if (canModify)
-                          UIHelpers.addButton(
-                            context: context,
-                            ontap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AddReflectionScreen(
-                                    centerId: selectedCenterId ?? '1',
-                                    screenType: 'add',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                  // InkWell(
-                  //   onTap: () {
-                  //     GlobalRepository().getCenters();
-                  //   },
-                  //   child: Text('data ${centerDataGloble}')),
-                    StatefulBuilder(builder: (context, setState) {
-                      return CenterDropdown(
-                        selectedCenterId: selectedCenterId, 
-                        onChanged: (value) {
-                          setState(() {
-                            selectedCenterId = value.id;
-                            context.read<ReflectionListBloc>().add(
-                                FetchReflectionsEvent(
-                                    centerId: selectedCenterId ?? '1'));
-                          });
-                        },
-                      );
-                    }),
-
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0, bottom: 3),
-                      child: CustomTextFormWidget(
-                        contentpadding: const EdgeInsets.only(top: 4),
-                        prefixWidget: const Icon(Icons.search),
-                        height: 40,
-                        hintText: 'Search reflections...',
-                        controller: searchController,
-                        onChanged: (value) {},
-                        onFieldSubmitted: (p0) {
-                          setState(() {});
-                        },
+          // always show header & dropdown
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Reflection',
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    if (canModify)
-                      StatefulBuilder(builder: (context, setState) {
-                        return CustomDropdown(
-                          height: 35,
-                          width: 150,
-                          hint: 'Select Status',
-                        onChanged: (value) {
-                          selectedStatus = value;
-                          setState(() {});
-                          context.read<ReflectionListBloc>().add(
-                              FetchReflectionsEvent(
-                                  centerId: selectedCenterId ?? '1',
-                                  status: value));
-                        },
-                        value: selectedStatus,
-                        items: const ['All', 'Draft', 'Published'],
-                      );
-                    }),
-                    const SizedBox(height: 10),
-                    StatefulBuilder(builder: (context, setState) {
-                      // Filter reflections by searchController.text (case-insensitive)
-                      final searchText =
-                          searchController.text.trim().toLowerCase();
-                      final filteredReflections =
-                          (state.reflections.data?.reflection ?? [])
-                              .where((reflection) {
-                        final title = reflection.title?.toLowerCase() ?? '';
-                        return searchText.isEmpty || title.contains(searchText);
-                      }).toList();
-
-                      return ListView.builder(
+                      const Spacer(),
+                      if (canModify)
+                        UIHelpers.addButton(
+                          context: context,
+                          ontap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AddReflectionScreen(
+                                  centerId: selectedCenterId,
+                                  screenType: 'add',
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  CenterDropdown(
+                    selectedCenterId: selectedCenterId,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCenterId = value.id;
+                      });
+                      context.read<ReflectionListBloc>().add(
+                            FetchReflectionsEvent(centerId: selectedCenterId),
+                          );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  if (state is ReflectionListLoading)
+                    SizedBox(
+                      height: screenHeight * .7,
+                      child: const Center(child: CircularProgressIndicator()))
+                  else if (state is ReflectionListError)
+                    Center(child: Text(state.message))
+                  else if (state is ReflectionListLoaded) ...[
+                    if ((state.reflections.data?.reflection?.data ?? []).isEmpty)
+                      const Center(child: Text('No reflections found'))
+                    else
+                      ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
-                        itemCount: filteredReflections.length,
+                        itemCount:
+                            state.reflections.data?.reflection?.data?.length ?? 0,
                         itemBuilder: (context, index) {
-                          final reflection = filteredReflections[index];
+                          final reflection =
+                              state.reflections.data!.reflection!.data![index];
                           return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 8.0),
                             child: ReflectionCard(
                               images: reflection.media
-                                      ?.map((m) => m.mediaUrl ?? '')
-                                      .toList() ??
-                                  [],
-                              title: reflection.title ?? '',
+                                      ?.map((m) => m.mediaUrl ?? '').toList() ??[],
+                              title: stripHtmlTags(reflection.title ?? ''),
                               date: (() {
                                 if (reflection.createdAt == null) return '';
                                 try {
@@ -323,14 +222,12 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                             ),
                           );
                         },
-                      );
-                    }),
+                      ),
                   ],
-                ),
+                ],
               ),
-            );
-          }
-          return Container();
+            ),
+          );
         },
       ),
     );

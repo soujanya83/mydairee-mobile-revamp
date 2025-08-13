@@ -15,7 +15,7 @@ class ViewProgressBloc extends Bloc<ViewProgressEvent, ViewProgressState> {
     emit(ViewProgressLoading());
     try {
       final assessments = await _repository.fetchAssessments(event.childId);
-      emit(ViewProgressLoaded(assessments));
+      emit(ViewProgressLoaded(assessments.data ?? []));
     } catch (e) {
       emit(ViewProgressError('Failed to fetch assessments: $e'));
     }

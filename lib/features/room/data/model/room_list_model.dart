@@ -25,14 +25,42 @@ class RoomListModel {
         this.roomStaffs,
     });
 
-    factory RoomListModel.fromJson(Map<String, dynamic> json) => RoomListModel(
-        status: json["status"],
-        message: json["message"],
-        rooms: json["rooms"] == null ? [] : List<Room>.from(json["rooms"]!.map((x) => Room.fromJson(x))),
-        centers: json["centers"] == null ? [] : List<CenterData>.from(json["centers"]!.map((x) => CenterData.fromJson(x))),
-        centerid: json["centerid"],
-        roomStaffs: json["roomStaffs"] == null ? [] : List<RoomStaff>.from(json["roomStaffs"]!.map((x) => RoomStaff.fromJson(x))),
-    );
+    factory RoomListModel.fromJson(Map<String, dynamic>? json) {
+      try {
+        final rawStatus = json?['status'];
+        bool status = false;
+        if (rawStatus is bool) status = rawStatus;
+        else if (rawStatus is num) status = rawStatus.toInt() == 1;
+        else if (rawStatus is String) status = rawStatus.toLowerCase() == 'true' || rawStatus == '1';
+        final message = json?['message']?.toString() ?? '';
+        final roomsJson = json?['rooms'] as List? ?? [];
+    final rooms = roomsJson.map((e) => Room.fromJson(e is Map<String, dynamic> ? e : <String, dynamic>{})).toList();
+        final centersJson = json?['centers'] as List? ?? [];
+    final centers = centersJson.map((e) => CenterData.fromJson(e is Map<String, dynamic> ? e : <String, dynamic>{})).toList();
+        final centerid = json?['centerid']?.toString() ?? '';
+        final staffsJson = json?['roomStaffs'] as List? ?? [];
+    final roomStaffs = staffsJson.map((e) => RoomStaff.fromJson(e is Map<String, dynamic> ? e : <String, dynamic>{})).toList();
+        return RoomListModel(
+          status: status,
+          message: message,
+          rooms: rooms,
+          centers: centers,
+          centerid: centerid,
+          roomStaffs: roomStaffs,
+        );
+      } catch (e,s) {
+        print('Error occurred while parsing RoomListModel: $e');
+        print('Stack trace: $s');
+        return RoomListModel(
+          status: false,
+          message: '',
+          rooms: [],
+          centers: [],
+          centerid: '',
+          roomStaffs: [],
+        );
+      }
+    }
 
     Map<String, dynamic> toJson() => {
         "status": status,
@@ -191,7 +219,7 @@ class Child {
     DateTime? createdAt;
     int? centerid;
     DateTime? childCreatedAt;
-    dynamic updatedAt;
+    DateTime? updatedAt;
 
     Child({
         this.id,
@@ -219,14 +247,14 @@ class Child {
         startDate: json["startDate"],
         room: json["room"],
         imageUrl: json["imageUrl"],
-        gender: childGenderValues.map[json["gender"]]!,
-        status: statusValues.map[json["status"]]!,
+        gender: childGenderValues.map[json["gender"]]??ChildGender.MALE,
+        status: statusValues.map[json["status"]]??Status.ACTIVE,
         daysAttending: json["daysAttending"],
         createdBy: json["createdBy"],
         createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
         centerid: json["centerid"],
-        childCreatedAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-        updatedAt: json["updated_at"],
+    childCreatedAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     );
 
     Map<String, dynamic> toJson() => {

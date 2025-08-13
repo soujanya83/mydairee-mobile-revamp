@@ -14,7 +14,7 @@ final LearningAndProgressRepository _repository = LearningAndProgressRepository(
   Future<void> _onFetchChildren(FetchChildrenEvent event, Emitter<LearningAndProgressState> emit) async {
     emit(LearningAndProgressLoading());
     try {
-      final children = await _repository.fetchChildrenData(event.centerId);
+      final children = await _repository.fetchChildrenData(event.centerId, event.roomId);
       emit(LearningAndProgressLoaded(children));
     } catch (e) {
       emit(LearningAndProgressError('Failed to fetch children: $e'));
@@ -25,7 +25,7 @@ final LearningAndProgressRepository _repository = LearningAndProgressRepository(
     try {
       await _repository.deleteChildren(event.childIds, event.centerId);
       emit(LearningAndProgressDeleted('Children deleted successfully'));
-      add(FetchChildrenEvent(centerId: event.centerId));
+      add(FetchChildrenEvent(centerId: event.centerId, roomId: event.roomId));
     } catch (e) {
       emit(LearningAndProgressError('Failed to delete children: $e'));
     }

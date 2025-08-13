@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
 import 'package:mydiaree/core/services/user_type_helper.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
@@ -27,7 +28,7 @@ class AccidentListScreen extends StatefulWidget {
 }
 
 class _AccidentListScreenState extends State<AccidentListScreen> {
-  String? selectedCenterId = '1'; // Default center
+  String? selectedCenterId = ''; // Default center
   String? selectedRoomId;
   List<Room> rooms = [];
   bool isLoadingRooms = true;
@@ -35,6 +36,7 @@ class _AccidentListScreenState extends State<AccidentListScreen> {
   @override
   void initState() {
     super.initState();
+    selectedCenterId = globalSelectedCenterId ?? '';
     _fetchRooms();
   }
 
@@ -69,7 +71,7 @@ class _AccidentListScreenState extends State<AccidentListScreen> {
       create: (context) => AccidentListBloc()
         ..add(
           FetchAccidentsEvent(
-            centerId: selectedCenterId ?? '1',
+            centerId: selectedCenterId ?? '',
             roomId: selectedRoomId,
           ),
         ),
@@ -99,7 +101,7 @@ class _AccidentListScreenState extends State<AccidentListScreen> {
                       ).then((_) {
                         context.read<AccidentListBloc>().add(
                               FetchAccidentsEvent(
-                                centerId: selectedCenterId ?? '1',
+                                centerId: selectedCenterId ?? '',
                                 roomId: selectedRoomId,
                               ),
                             );
@@ -287,7 +289,7 @@ class _AccidentListScreenState extends State<AccidentListScreen> {
                                                   FetchAccidentsEvent(
                                                     centerId:
                                                         selectedCenterId ??
-                                                            '1',
+                                                            '',
                                                     roomId: selectedRoomId,
                                                   ),
                                                 );

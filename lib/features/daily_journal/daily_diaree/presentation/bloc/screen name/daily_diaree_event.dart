@@ -8,9 +8,9 @@ abstract class DailyTrackingEvent extends Equatable {
 
 class LoadDailyTrackingEvent extends DailyTrackingEvent {
     final String centerId;
-     final String? roomId;
-    final DateTime? date;
-    LoadDailyTrackingEvent({required this.centerId, this.roomId, this.date,} );
+     final String roomId;
+    final DateTime date;
+    LoadDailyTrackingEvent({required this.centerId, required this.roomId, required this.date});
 }
 
 class SaveActivityEvent extends DailyTrackingEvent {

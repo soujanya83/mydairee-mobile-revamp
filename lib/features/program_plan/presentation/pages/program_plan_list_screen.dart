@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
@@ -17,10 +18,16 @@ import 'package:intl/intl.dart';
 import 'package:mydiaree/core/services/user_type_helper.dart';
 
 // ignore: must_be_immutable
-class ProgramPlansListScreen extends StatelessWidget {
-  ProgramPlansListScreen({super.key});
+class ProgramPlansListScreen extends StatefulWidget {
+  const ProgramPlansListScreen({super.key});
 
+  @override
+  State<ProgramPlansListScreen> createState() => _ProgramPlansListScreenState();
+}
+
+class _ProgramPlansListScreenState extends State<ProgramPlansListScreen> {
   String selectedCenterId = '';
+
   List<String> selectedProgramIds = [];
 
   @override
@@ -30,8 +37,9 @@ class ProgramPlansListScreen extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final bloc = context.read<ProgramPlanBloc>();
       final state = bloc.state;
-      if (state is! ProgramPlanLoaded || state.prgramPlanListData == null) {
-        bloc.add(const FetchProgramPlansEvent(centerId: '1'));
+      // if (state is! ProgramPlanLoaded || state.prgramPlanListData == null) 
+      {
+        bloc.add(  FetchProgramPlansEvent(centerId: globalSelectedCenterId??''));
       }
     });
     return CustomScaffold(
@@ -61,77 +69,76 @@ class ProgramPlansListScreen extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state is ProgramPlanLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is ProgramPlanError) {
-            return Center(child: Text(state.message));
-          } else if (state is ProgramPlanLoaded) {
-            if (state.prgramPlanListData?.data?.programPlans?.isEmpty ?? true) {
-              return const Center(child: Text(' No plans found.'));
-            }
-            final plans = state.prgramPlanListData!.data!.programPlans!;
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // — Header + Add Button + Center Dropdown (always shown)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Program Plans',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
-                                  ?.copyWith(fontSize: 20),
-                            ),
-                            const Spacer(),
-                            // Add button – only for non-parents
-                            if (!isParent)
-                              UIHelpers.addButton(
-                                context: context,
-                                ontap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AddProgramPlanScreen(
-                                        centerId: selectedCenterId.isEmpty
-                                            ? '1'
-                                            : selectedCenterId,
-                                        screenType: 'add',
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                          ],
+                        Text(
+                          'Program Plans',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(fontSize: 20),
                         ),
-                        const SizedBox(height: 12),
-                        StatefulBuilder(builder: (context, setState) {
-                          return CenterDropdown(
-                            selectedCenterId: selectedCenterId,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedCenterId = value.id;
-                                context.read<ProgramPlanBloc>().add(
-                                    FetchProgramPlansEvent(centerId: value.id));
-                              });
+                        const Spacer(),
+                        // Add button – only for non-parents
+                        if (!isParent)
+                          UIHelpers.addButton(
+                            context: context,
+                            ontap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddProgramPlanScreen(
+                                    centerId: selectedCenterId.isEmpty
+                                        ? '1'
+                                        : selectedCenterId,
+                                    screenType: 'add',
+                                  ),
+                                ),
+                              );
                             },
-                          );
-                        }),
-                        const SizedBox(height: 12),
+                          ),
                       ],
                     ),
-                  ),
-                  // Program Plan Cards
-                  StatefulBuilder(builder: (context, setState) {
+                    const SizedBox(height: 12),
+                    CenterDropdown(
+                      selectedCenterId: selectedCenterId,
+                      onChanged: (value) {
+                        selectedCenterId = value.id;
+                        context
+                            .read<ProgramPlanBloc>()
+                            .add(FetchProgramPlansEvent(centerId: value.id));
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+
+              // — Content area
+              Expanded(
+                child: () {
+                  if (state is ProgramPlanLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is ProgramPlanError) {
+                    return Center(child: Text(state.message));
+                  }
+                  if (state is ProgramPlanLoaded) {
+                    final plans = state.prgramPlanListData!.data!.programPlans!;
+                    if (plans.isEmpty) {
+                      return const Center(child: Text('No plans found.'));
+                    }
                     return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(12),
                       itemCount: plans.length,
                       itemBuilder: (context, index) {
                         final plan = plans[index];
@@ -139,15 +146,16 @@ class ProgramPlansListScreen extends StatelessWidget {
                         // disable edit/delete for parents
                         return ProgramPlanCard(
                           index: index,
+                          isEditDelete: !isParent,
                           isSelected: isSelected,
                           onSelect: (selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedProgramIds.add(plan.id.toString());
-                              } else {
-                                selectedProgramIds.remove(plan.id.toString());
-                              }
-                            });
+                            // setState(() {
+                            //   if (selected) {
+                            //     selectedProgramIds.add(plan.id.toString());
+                            //   } else {
+                            //     selectedProgramIds.remove(plan.id.toString());
+                            //   }
+                            // });
                           },
                           onEditPressed: isParent
                               ? () {}
@@ -165,7 +173,7 @@ class ProgramPlansListScreen extends StatelessWidget {
                                     ),
                                   ),
                           onDeletePressed: isParent
-                              ? () {}
+                              ? (){}
                               : () {
                                   showDeleteConfirmationDialog(context, () {
                                     context.read<ProgramPlanBloc>().add(
@@ -184,53 +192,20 @@ class ProgramPlansListScreen extends StatelessWidget {
                             );
                           },
                           id: plan.id?.toString() ?? '',
-                          name: plan.room?.name?.name ?? '',
-                          createdBy: plan.creator?.name?.name ?? '',
+                          name: plan.room?.name ?? '',
+                          createdBy: 
+                          plan.creator?.name ?? '',
                           createdAt: plan.createdAt?.toString() ?? '',
                           endDate: plan.updatedAt?.toString() ?? '',
                         );
                       },
                     );
-                  }),
-                  // Delete Button
-                  if (!isParent && selectedProgramIds.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.errorColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          minimumSize: const Size(double.infinity, 44),
-                        ),
-                        onPressed: () {
-                          // showDeleteConfirmationDialog(context, () {
-                          //   context.read<ProgramPlanBloc>().add(
-                          //         DeleteProgramPlansEvent(
-                          //           selectedProgramIds,
-                          //           selectedCenterId.isEmpty
-                          //               ? '1'
-                          //               : selectedCenterId,
-                          //         ),
-                          //       );
-                          //   Navigator.pop(context);
-                          // });
-                        },
-                        child: const Text(
-                          'Delete Selected',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 14),
-                        ),
-                      ),
-                    ),
-                ],
+                  }
+                  return const SizedBox();
+                }(),
               ),
-            );
-          }
-          return const SizedBox();
+            ],
+          );
         },
       ),
     );
@@ -372,6 +347,7 @@ class ProgramPlansListScreen extends StatelessWidget {
 }
 
 class ProgramPlanCard extends StatelessWidget {
+  final bool? isEditDelete;
   final int index;
   final String id;
   final String name;
@@ -385,6 +361,7 @@ class ProgramPlanCard extends StatelessWidget {
   final VoidCallback onPrintPressed;
 
   const ProgramPlanCard({
+     this.isEditDelete = true,
     required this.index,
     required this.id,
     required this.name,
@@ -514,7 +491,7 @@ class ProgramPlanCard extends StatelessWidget {
                     // ),
                     const SizedBox(width: 8),
                     // hide edit/delete icons for parents
-                    if (!UserTypeHelper.isParent) ...[
+                    if (isEditDelete??true) ...[
                       CustomActionButton(
                         icon: Icons.edit,
                         color: AppColors.primaryColor,

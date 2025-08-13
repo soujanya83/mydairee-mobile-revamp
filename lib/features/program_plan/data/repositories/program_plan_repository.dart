@@ -18,8 +18,7 @@ class ProgramPlanRepository {
     String? statusFilter,
   }) async {
     return await getAndParseData<ProgramPlanListModel?>(
-      AppUrls.programPlan,
-      queryParameters: {'centerid': centerId},
+      '${AppUrls.baseUrl}/api/programPlanList?centerid=$centerId',
       fromJson: (json) {
         if (kDebugMode) {
           print('Program Plan List Data: ${jsonEncode(json)}');
@@ -46,9 +45,9 @@ class ProgramPlanRepository {
   }
 
   Future<UserAddProgramPlanModel?> getRoomUsers(String roomId) async {
-    if (kDebugMode) {
-      print('calling getRoomUsers with roomId: $roomId');
-    }
+    // if (kDebugMode) {
+    //   print('calling getRoomUsers with roomId: $roomId');
+    // }
     final response = await postAndParse(
       AppUrls.getRoomUsers,
       {'room_id': roomId},

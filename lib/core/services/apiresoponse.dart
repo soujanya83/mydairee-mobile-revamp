@@ -40,7 +40,7 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
     if (response.success) {
       return ApiResponse(
           success: true,
-          data: fromJson != null ? fromJson(response.data ?? {}) : null,
+          data: fromJson != null ? fromJson(response.data ?? {}) : response.data,
           message: response.message);
     } else {
       return ApiResponse(success: false, message: response.message);

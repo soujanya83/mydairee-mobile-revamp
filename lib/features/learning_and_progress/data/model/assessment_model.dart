@@ -1,4 +1,4 @@
-enum AssessmentStatus { notStarted, introduced, practicing, completed }
+enum AssessmentStatus { notStarted, introduced, practicing, completed , working}
 
 class AssessmentModel {
   final String id;
@@ -15,26 +15,25 @@ class AssessmentModel {
     required this.status,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'subject': subject,
-      'activityTitle': activityTitle,
-      'subActivityTitle': subActivityTitle,
-      'status': status.toString().split('.').last,
-    };
-  }
+  factory AssessmentModel.fromJson(Map<String, dynamic> json) {
+    final sub = (json['sub_activity'] ?? {}) as Map<String, dynamic>;
+    final activity = (sub['activity'] ?? {}) as Map<String, dynamic>;
+    final subject = (activity['subject'] ?? {}) as Map<String, dynamic>;
 
-  factory AssessmentModel.fromMap(Map<String, dynamic> map) {
+    // treat "working" same as "practicing"
+    var statusStr = (json['status'] as String? ?? '').toLowerCase();
+    if (statusStr == 'working') statusStr = 'practicing';
+    final statusEnum = AssessmentStatus.values.firstWhere(
+      (e) => e.toString().split('.').last.toLowerCase() == statusStr,
+      orElse: () => AssessmentStatus.notStarted,
+    );
+
     return AssessmentModel(
-      id: map['id'] as String,
-      subject: map['subject'] as String,
-      activityTitle: map['activityTitle'] as String,
-      subActivityTitle: map['subActivityTitle'] as String,
-      status: AssessmentStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == map['status'],
-        orElse: () => AssessmentStatus.notStarted,
-      ),
+      id: json['id'].toString(),
+      subject: subject['name'] as String? ?? '',
+      activityTitle: activity['title'] as String? ?? '',
+      subActivityTitle: sub['title'] as String? ?? '',
+      status: statusEnum,
     );
   }
 
@@ -46,5 +45,15 @@ class AssessmentModel {
       subActivityTitle: subActivityTitle,
       status: status ?? this.status,
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'subject': subject,
+      'activityTitle': activityTitle,
+      'subActivityTitle': subActivityTitle,
+      'status': status.toString().split('.').last,
+    };
   }
 }

@@ -12,6 +12,7 @@ class ObservationRepository {
     required String centerId,
     String? searchQuery,
     String? statusFilter,
+    int? page,
   }) async {
     // return ApiResponse(success: true, message: 'Observations fetched successfully', data: ObservationApiResponse.fromJson(dummyObservations));
     String url = '${AppUrls.baseUrl}/api/observation/index?center_id=$centerId';
@@ -22,6 +23,10 @@ class ObservationRepository {
 
     if (statusFilter != null && statusFilter != 'All') {
       url += '&status=$statusFilter';
+    }
+
+    if (page != null) {
+      url += '&page=$page';
     }
 
     return await getAndParseData(
@@ -38,8 +43,7 @@ class ObservationRepository {
   Future<ApiResponse<ObservationItem?>> viewObservation({
     required String observationId,
   }) async {
-    final url =
-        '${AppUrls.baseUrl}/api/observation/view?observation_id=$observationId';
+    final url = '${AppUrls.baseUrl}/api/observation/view?observation_id=$observationId';
 
     return await getAndParseData(
       url,

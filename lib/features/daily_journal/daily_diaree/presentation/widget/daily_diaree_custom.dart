@@ -3,12 +3,15 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
+import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_network_image.dart';
 import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/child_model.dart';
-import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/daily_diaree_model.dart';
+import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/daily_diaree_model.dart' hide Center;
 import 'package:flutter/services.dart';
+import 'package:mydiaree/main.dart';
+import 'package:mydiaree/features/daily_journal/daily_diaree/data/repositories/daily_diaree_reposiory.dart';
 
 class ChildCard extends StatelessWidget {
   final ChildElement? child;
@@ -17,7 +20,8 @@ class ChildCard extends StatelessWidget {
   final int activitiesCount;
   final int meals;
   final int naps;
-  final bool isCanAdd;
+  final bool isCanAddEdit;
+  final String date;
 
   const ChildCard({
     super.key,
@@ -27,25 +31,139 @@ class ChildCard extends StatelessWidget {
     required this.activitiesCount,
     required this.meals,
     required this.naps,
-    required this.isCanAdd,
+    required this.isCanAddEdit,
+    required this.date, 
   });
+  Future<void> _addActivity(BuildContext context, ActivityModel activity) async {
+    print('[_addActivity] Called with activity: ${activity.type}, data: $activity');
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
 
-  // Initialize state with the provided child model
-  void _addActivity(ActivityModel activity) {
-    // setState((){
-    //   _child = ChildElement(
-    //     id: _child.id,
-    //     name: _child.name,
-    //     age: _child.age,
-    //     avatarPath: _child.avatarPath,
-    //     activities: List.from(_child.activities)..add(activity),
-    //   );
-    // });
-    // UIHelpers.showToast(
-    //   context,
-    //   message: 'Activity added successfully',
-    //   backgroundColor: AppColors.successColor,
-    // );
+    final repo = DailyTrackingRepository();
+    ApiResponse<dynamic> resp;
+    final cid = '${child?.child?.id}';
+
+    print('[_addActivity] child id: $cid, date: $date');
+
+    switch (activity.type) {
+      case 'breakfast':
+        print('[_addActivity] Posting breakfast...');
+        resp = await repo.postBreakfast(
+          date: date,
+          childIds: [cid],
+          time: activity.time!,
+          item: activity.item ?? '',
+          comments: activity.comments,
+        );
+        break;
+      case 'morning-tea':
+        print('[_addActivity] Posting morning-tea...');
+        resp = await repo.postMorningTea(
+          date: date,
+          childIds: [cid],
+          time: activity.time!,
+          comments: activity.comments,
+        );
+        break;
+      case 'lunch':
+        print('[_addActivity] Posting lunch...');
+        resp = await repo.postBreakfast( // same signature as breakfast
+          date: date,
+          childIds: [cid],
+          time: activity.time!,
+          item: activity.item ?? '',
+          comments: activity.comments,
+        );
+        break;
+      case 'afternoon-tea':
+        print('[_addActivity] Posting afternoon-tea...');
+        resp = await repo.postAfternoonTea(
+          date: date,
+          childIds: [cid],
+          time: activity.time!,
+          comments: activity.comments,
+        );
+        break;
+      case 'snacks':
+      case 'late-snack':
+        print('[_addActivity] Posting snacks/late-snack...');
+        resp = await repo.postLateSnack(
+          date: date,
+          childIds: [cid],
+          time: activity.time!,
+          item: activity.item ?? '',
+          comments: activity.comments,
+        );
+        break;
+      case 'sleep':
+        print('[_addActivity] Posting sleep...');
+        resp = await repo.storeSleep(
+          date: date,
+          childIds: [cid],
+          sleepTime: activity.sleepTime!,
+          wakeTime: activity.wakeTime!,
+          comments: activity.comments,
+          id: null,
+        );
+        break;
+      case 'sunscreen':
+        print('[_addActivity] Posting sunscreen...');
+        resp = await repo.storeSunscreen(
+          date: date,
+          childIds: [cid],
+          time: activity.time!,
+          comments: activity.comments,
+          signature: activity.signature,
+        );
+        break;
+      case 'toileting':
+        print('[_addActivity] Posting toileting...');
+        resp = await repo.storeToileting(
+          date: date,
+          childIds: [cid],
+          time: activity.time!,
+          status: activity.status!,
+          comments: activity.comments,
+          signature: activity.signature,
+        );
+        break;
+      case 'bottle':
+        print('[_addActivity] Posting bottle...');
+        resp = await repo.storeBottle(
+          date: date,
+          childIds: [cid],
+          time: activity.time!,
+          comments: activity.comments,
+        );
+        break;
+      default:
+        print('[_addActivity] Unknown type: ${activity.type}');
+        resp = ApiResponse(success: false, message: 'Unknown type');
+    }
+
+    // hide loader
+    Navigator.of(context).pop();
+
+    print('[_addActivity] Response: success=${resp.success}, message=${resp.message}');
+
+    if (resp.success) {
+      UIHelpers.showToast(
+        context,
+        message: resp.message,
+        backgroundColor: AppColors.successColor,
+      );
+      print('[_addActivity] Calling onAddEntriesPressed()');
+      onAddEntriesPressed(); // reload parent
+    } else {
+      UIHelpers.showToast(
+        context, 
+        message: resp.message,
+        backgroundColor: AppColors.errorColor,
+      );
+    }
   }
 
   /// Generic dialog for both add & edit
@@ -55,10 +173,11 @@ class ChildCard extends StatelessWidget {
     ActivityModel? existing,
     required void Function(ActivityModel result) onSave,
   }) {
-    final timeCtrl      = TextEditingController(text: existing?.time);
-    final itemCtrl      = TextEditingController(text: existing?.item);
-    final commentsCtrl  = TextEditingController(text: existing?.comments);
-    final wakeCtrl      = TextEditingController(text: existing?.wakeTime);
+    final timeCtrl = TextEditingController(text: existing?.time);
+    final itemCtrl = TextEditingController(text: existing?.item);
+    final commentsCtrl = TextEditingController(text: existing?.comments);
+    final sleepTimeCtrl = TextEditingController(text: existing?.sleepTime);
+    final wakeCtrl = TextEditingController(text: existing?.wakeTime);
     final signatureCtrl = TextEditingController(text: existing?.signature);
 
     showDialog(
@@ -78,8 +197,15 @@ class ChildCard extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // time field
-                if (<String>['breakfast','morning-tea','lunch','afternoon-tea','snacks','sunscreen','toileting']
-                        .contains(type)) ...[
+                if (<String>[
+                  'breakfast',
+                  'morning-tea',
+                  'lunch',
+                  'afternoon-tea',
+                  'snacks',
+                  'sunscreen',
+                  'toileting'
+                ].contains(type)) ...[
                   TextFormField(
                     controller: timeCtrl,
                     readOnly: true,
@@ -99,7 +225,8 @@ class ChildCard extends StatelessWidget {
                 ],
 
                 // item field
-                if (<String>['breakfast','lunch','snacks'].contains(type)) ...[
+                if (<String>['breakfast', 'lunch', 'snacks']
+                    .contains(type)) ...[
                   TextFormField(
                     controller: itemCtrl,
                     decoration: const InputDecoration(labelText: 'Item'),
@@ -110,7 +237,7 @@ class ChildCard extends StatelessWidget {
                 // wake time (sleep only)
                 if (type == 'sleep') ...[
                   TextFormField(
-                    controller: timeCtrl,
+                    controller: sleepTimeCtrl,
                     readOnly: true,
                     decoration: const InputDecoration(
                       labelText: 'Sleep Time',
@@ -154,8 +281,14 @@ class ChildCard extends StatelessWidget {
 
                 // comments (all types except toileting uses this same field)
                 if (<String>[
-                  'breakfast','morning-tea','lunch','afternoon-tea',
-                  'snacks','sunscreen','sleep','toileting'
+                  'breakfast',
+                  'morning-tea',
+                  'lunch',
+                  'afternoon-tea',
+                  'snacks',
+                  'sunscreen',
+                  'sleep',
+                  'toileting'
                 ].contains(type)) ...[
                   TextFormField(
                     controller: commentsCtrl,
@@ -175,23 +308,25 @@ class ChildCard extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () {
                         // simple validation
-                        if ((type=='sleep' && (timeCtrl.text.isEmpty || wakeCtrl.text.isEmpty))
-                         || (type!='sleep' && timeCtrl.text.isEmpty)) {
+                        if ((type == 'sleep' &&
+                                (timeCtrl.text.isEmpty ||
+                                    wakeCtrl.text.isEmpty)) ||
+                            (type != 'sleep' && timeCtrl.text.isEmpty)) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Please fill time fields'))
-                          );
+                              const SnackBar(
+                                  content: Text('Please fill time fields')));
                           return;
                         }
                         final result = ActivityModel(
                           type: type,
-                          time:      timeCtrl.text,
-                          item:      itemCtrl.text,
-                          comments:  commentsCtrl.text,
-                          sleepTime: type=='sleep' ? timeCtrl.text : null,
-                          wakeTime:  type=='sleep' ? wakeCtrl.text : null,
+                          time: timeCtrl.text,
+                          item: itemCtrl.text,
+                          comments: commentsCtrl.text,
+                          sleepTime: type == 'sleep' ? timeCtrl.text : null,
+                          wakeTime: type == 'sleep' ? wakeCtrl.text : null,
                           signature: signatureCtrl.text,
                         );
-                        onSave(result);
+                        _addActivity(context, result);
                         Navigator.pop(context);
                       },
                       child: Text(existing == null ? 'Add' : 'Save'),
@@ -235,21 +370,23 @@ class ChildCard extends StatelessWidget {
                     _buildActivitySection(
                       context,
                       'breakfast',
-                      time:      child?.breakfast?.startTime,
-                      item:      child?.breakfast?.item,
-                      comments:  child?.breakfast?.comments,
+                      status: '',
+                      time: child?.breakfast?.startTime ?? 'Not-Updated',
+                      item: child?.breakfast?.item ?? 'Not-Updated',
+                      comments: child?.breakfast?.comments ?? 'Not-Updated',
                       onAddEntryPressed: () {
+                        if (!isCanAddEdit) return;
                         _openEntryDialog(
                           context,
                           'breakfast',
-                          onSave: (act) => _addActivity(act),
+                          onSave: (act) => _addActivity(context, act),
                         );
                       },
                     ),
                     _buildActivitySection(
                       context,
                       'morning-tea',
-                      time: child?.morningTea?.startTime,
+                      time: child?.morningTea?.startTime ?? 'Not-Updated',
                       onAddEntryPressed: () {
                         // _showItemBasedDialog(context, 'morning-tea');
                       },
@@ -258,122 +395,114 @@ class ChildCard extends StatelessWidget {
                     _buildActivitySection(
                       context,
                       'lunch',
-                      time: child?.lunch?.startTime,
+                      time: child?.lunch?.startTime ?? 'Not-Updated',
                       onAddEntryPressed: () {
                         // _showItemBasedDialog(context, 'lunch');
                       },
                       item: child?.lunch?.item ?? 'Not-Updated',
                       comments: child?.lunch?.comments ?? 'Not-Updated',
                     ),
-                     _buildActivitySectionMultiple( 
+                    _buildActivitySectionMultiple(
                       context,
                       'sleep',
+                      items: child?.sleep
+                              ?.map((s) => ActivityModel(
+                                    type: 'sleep',
+                                    sleepTime: s.startTime,
+                                    wakeTime: s.endTime,
+                                    comments: s.comments,
+                                  ))
+                              .toList() ??
+                          [],
                       isEntriesShow: true,
-                      items: List.generate(1, (index) {
-                        return ActivityModel(
-                          type: 'sleep',
-                          sleepTime: 'Not-Updated',
-                          wakeTime: 'time', 
-                        );
-                      }),
-                      onAddEntryPressed: () {
-                        _openEntryDialog(
-                          context,
-                          'sleep',
-                          onSave: (act) => _addActivity(act),
-                        );
-                      },
-                      onEditEntry: (act) {
-                        _openEntryDialog(
-                          context,
-                          'sleep',
-                          existing: act,
-                          onSave:   (edited) => _addActivity(edited),
-                        );
-                      },
+                      onAddEntryPressed: () => _openEntryDialog(
+                          context, 'sleep',
+                          onSave: (act) => _addActivity(context, act)),
+                      onEditEntry: (act) => _openEntryDialog(context, 'sleep',
+                          existing: act, onSave: (ed) => _addActivity(context, ed)),
                     ),
+
                     _buildActivitySection(
                       context,
                       'afternoon-tea',
-                      time: child?.afternoonTea?.startTime,
+                      time: child?.afternoonTea?.startTime ?? 'Not-Updated',
                       onAddEntryPressed: () {
                         // _showItemBasedDialog(context, 'afternoon-tea');
                       },
-                      item: child?.afternoonTea?.item,
-                      comments: child?.afternoonTea?.comments,
+                      comments: child?.afternoonTea?.comments ?? 'Not-Updated',
                     ),
                     // Snacks section
                     _buildActivitySection(
                       context,
                       'snacks',
-                      time: child?.snacks?.startTime,
+                      time: child?.snacks?.startTime ?? 'Not-Updated',
                       onAddEntryPressed: () {
                         // _showItemBasedDialog(context, 'snacks');
                       },
-                      item: child?.snacks?.item,
-                      comments: child?.snacks?.comments,
-                    ), 
+                      item: child?.snacks?.item ?? 'Not-Updated',
+                      comments: child?.snacks?.comments ?? 'Not-Updated',
+                    ),
                     // Sleep section (multiple entries)
-                   
 
-                    _buildActivitySectionMultiple( 
+                    _buildActivitySectionMultiple(
                       context,
                       'sunscreen',
-                      isEntriesShow: false,
-                      items: List.generate(1, (index) {
-                        return ActivityModel(
-                          type: 'sunscreen', comments: 'Not-Updated',
-                          time: 'time',
-                          signature: 'signature');
-                      }),
-                      onAddEntryPressed: () => _showSleepDialog(context),
-                      onEditEntry: (act) {
-                        // open edit dialog with `act`
-                        _showSleepDialog(context,);
-                      },
+                      items: child?.sunscreen
+                              ?.map((s) => ActivityModel(
+                                    type: 'sunscreen',
+                                    time: s.startTime,
+                                    comments: s.comments,
+                                    signature: s.signature,
+                                  ))
+                              .toList() ??
+                          [],
+                      onAddEntryPressed: () => _openEntryDialog(
+                          context, 'sunscreen',
+                          onSave: (act) => _addActivity(context, act)),
+                      onEditEntry: (act) => _openEntryDialog(
+                          context, 'sunscreen',
+                          existing: act, onSave: (ed) => _addActivity(context, ed)),
                     ),
 
                     // multiple‐entry section for toileting
+
                     _buildActivitySectionMultiple(
                       context,
                       'toileting',
-                      items: List.generate(1, (index) {
-                        return ActivityModel(
-                          type: 'toileting',
-                          time: '3:14 AM',
-                          comments: 'Not-Updated',
-                          signature: 'Signature',
-                          status: 'Clean',
-                        );
-                      }),
-                      onAddEntryPressed: () => _showToiletingDialog(context, onSave: (ActivityModel act) {
-                        // Handle the saved activity model
-                      }),
-                      onEditEntry: (act) {
-                        _showToiletingDialog(context,
-                        existing: act, 
-                        onSave: (ActivityModel edited) {
-                          print('-----------------');
-                          print(edited.time);
-                          // Handle the edited activity model
-                        });
-                      },
+                      items: child?.toileting
+                              ?.map((t) => ActivityModel(
+                                    type: 'toileting',
+                                    time: t.startTime,
+                                    comments: t.comments,
+                                    signature: t.signature,
+                                    status: t.status,
+                                  ))
+                              .toList() ??
+                          [],
+                      onAddEntryPressed: () => _showToiletingDialog(context,
+                          onSave: (act) => _addActivity(context, act)),
+                      onEditEntry: (act) => _showToiletingDialog(context,
+                          existing: act, onSave: (ed) => _addActivity(context, ed)),
                     ),
+
                     _buildActivitySectionMultiple(
                       context,
                       'bottle',
-                      items: List.generate(1, (index) {
-                        return   ActivityModel(
-                          type: 'bottle',
-                          comments: 'Not-Updated',
-                          time: 'time',
-                        );
-                      }),
-                      onAddEntryPressed: (){},
-                      onEditEntry: (act) {
-                        // _showBottleDialog(context);
-                      },
-                    ), 
+                      items: child?.bottle
+                              ?.map((b) => ActivityModel(
+                                    type: 'bottle',
+                                    time: b.startTime,
+                                    comments: b.comments,
+                                  ))
+                              .toList() ??
+                          [],
+                      onAddEntryPressed: () => _openEntryDialog(
+                          context, 'bottle',
+                          onSave: (act) => _addActivity(context, act)),
+                      onEditEntry: (act) => _openEntryDialog(context, 'bottle',
+                          existing: act, onSave: (ed) => _addActivity(context, ed)),
+                    ),
+
                     // Theme(
                     //   data: Theme.of(context)
                     //       .copyWith(dividerColor: AppColors.primaryColor),
@@ -641,96 +770,73 @@ class ChildCard extends StatelessWidget {
     String? item,
     String? comments,
     String? status,
-    String? sleepTime,
-    String? wakeTime,
     required VoidCallback onAddEntryPressed,
   }) {
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: AppColors.primaryColor),
-      child: ExpansionTile(
-        leading: FaIcon(
-          _getActivityIcon(type),
-          size: 20,
-          color: Theme.of(context).primaryColor,
-        ),
-        title: Row(
-          children: [
-            SizedBox(
-              width: 90,
-              child: Text(
-                type.replaceAll('-', ' ').capitalize(),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            const SizedBox(width: 8),
-            // _buildStatusBadge(context, type, status ?? 'Not Update'),
-          ],
-        ),
+    return ExpansionTile(
+      leading: FaIcon(
+        _getActivityIcon(type),
+        size: 20,
+        color: Theme.of(context).primaryColor,
+      ),
+      title: Row(
         children: [
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const SizedBox(height: 8),
-                Stack(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        gradient: LinearGradient(
-                          colors: [
-                            _getStatusColor(status ?? 'Not Update'),
-                            AppColors.white,
-                          ],
-                          stops: const [0.02, 0.02],
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (type == 'sleep') ...[
-                              _buildActivityItem(context, 'Sleep Time',
-                                  sleepTime ?? 'Not-Update'),
-                              _buildActivityItem(context, 'Wake Time',
-                                  wakeTime ?? 'Not-Update'),
-                            ] else
-                              _buildActivityItem(
-                                  context, 'Time', time ?? 'Not-Update'),
-                            if (item != null)
-                              _buildActivityItem(context, 'Item', item),
-                            if (status != null && type == 'toileting')
-                              _buildActivityItem(context, 'Status', status,
-                                  isBadge: true),
-                            if (comments != null)
-                              _buildActivityItem(context, 'Comments', comments),
-                          ],
-                        ),
-                      ),
-                    ),
-                    if (isCanAdd)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: IconButton(
-                          icon: const Icon(Icons.add_circle_outline),
-                          onPressed: onAddEntryPressed,
-                          color: _getButtonColor(type),
-                          iconSize: 30,
-                        ),
-                      ),
-                  ],
-                ),
-              ],
+          SizedBox(
+            width: 90,
+            child: Text(
+              type.replaceAll('-', ' ').capitalize(),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
+          const SizedBox(width: 8),
+          // _buildStatusBadge(context, type, status ?? 'Not Update'),
         ],
       ),
+      children: [
+        Stack(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [
+                    _getStatusColor(status ?? 'Not Update'),
+                    AppColors.white,
+                  ],
+                  stops: const [0.02, 0.02],
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (time != null) _buildActivityItem(context, 'Time', time),
+                    if (item != null) _buildActivityItem(context, 'Item', item),
+                    if (status != null && type == 'toileting')
+                      _buildActivityItem(context, 'Status', status,
+                          isBadge: true),
+                    if (comments != null)
+                      _buildActivityItem(context, 'Comments', comments),
+                  ],
+                ),
+              ),
+            ),
+            if (isCanAddEdit) // ← only show add when permitted
+              Positioned(
+                right: 0,
+                top: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: onAddEntryPressed,
+                  color: _getButtonColor(type),
+                  iconSize: 30,
+                ),
+              ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -738,197 +844,170 @@ class ChildCard extends StatelessWidget {
     BuildContext context,
     String type, {
     required List<ActivityModel> items,
+    String? status,
     required VoidCallback onAddEntryPressed,
     required Function(ActivityModel) onEditEntry,
-    bool isEntriesShow = false
+    bool isEntriesShow = false,
   }) {
     final label = type.replaceAll('-', ' ').capitalize();
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: AppColors.primaryColor),
-      child: ExpansionTile(
-        leading: FaIcon(
-          _getActivityIcon(type),
-          size: 20,
-          color: Theme.of(context).primaryColor,
-        ),
-        title: Row(
-          children: [
-            Text(label, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(width: 8),
-            if (items.isNotEmpty && isEntriesShow)
-              Container(
+    return ExpansionTile(
+      leading: FaIcon(
+        _getActivityIcon(type),
+        size: 20,
+        color: Theme.of(context).primaryColor,
+      ),
+      title: Row(
+        children: [
+          Text(label, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(width: 8),
+          if (items.isNotEmpty && isEntriesShow)
+            Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: AppColors.white.withOpacity(.2),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Theme.of(context).primaryColor, width: 1),
+                border:
+                    Border.all(color: Theme.of(context).primaryColor, width: 1),
               ),
               child: Text(
                 '${items.length} entries',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              ),
-            const Spacer(),
-           
-          ],
-        ),
-        children:[
-            Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12, top: 8,bottom: 8),
-                child: InkWell(
-                  onTap: onAddEntryPressed,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.white.withOpacity(.2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Theme.of(context).primaryColor, width: 1),
-                    ),
-                    child: Text(
-                      '+ Add',
-                      style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).primaryColor),
-                    ),
-                    ),
-                ),
-              ),
             ),
-          Column(
-            children: items.map((activity) {
-          return Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: Theme.of(context).primaryColor,
-                    width: 3,
-                  ),
-                ),
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [const BoxShadow(color: Colors.black12, blurRadius: 4)],
-              ),
-              child: Stack(
-                children: [
-                  ListTile(
-                    title: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (type == 'sleep') ...[
-                          Text('Sleep Time: ${activity.sleepTime}'),
-                          const SizedBox(width: 16),
-                          Text('Wake Time: ${activity.wakeTime}'),
-                        ],
-                        if (type == 'sunscreen') ...[
-                          _buildActivityItem(context,'Time:', activity.time ?? 'Not-Updated' ),
-                  
-                          _buildActivityItem(context,'Signature:', activity.signature ?? 'Not-Updated' ),
-                        ],
-                      if (type == 'toileting') ...[
-                         Row(
-                           children: [
-                             Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                               children: [
-                                 _buildActivityItem(context,'Time:', activity.time ?? 'Not-Updated' ),
-                                if (activity.status != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: .0),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          'Status: ',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(fontWeight: FontWeight.bold),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                          decoration: BoxDecoration( // badge-warning color
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(
-                                              color: Colors.orange,
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            activity.status??'clean',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(color: Colors.orange),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                               ],
-                             ),
-                  
-                           ],
-                         ),
-                          _buildActivityItem(context,'Signature:', activity.signature ?? 'Not-Updated' ),
-                          const SizedBox(width: 16),
-                        ]
-                        else ...[
-                          _buildActivityItem(context,'Time:', activity.time ?? 'Not-Updated' ),
-                        ],
-                      ],
-                    ),
-                    subtitle: _buildActivityItem(context, 'Comments: ', ('${activity.comments}')),
-                    // trailing: Container(
-                    //   height: 30,width: 30,
-                    //   margin: const EdgeInsets.all(2),
-                    //   decoration: BoxDecoration(
-                    //     shape: BoxShape.circle,
-                    //     border: Border.all(
-                    //     color: Theme.of(context).primaryColor,
-                    //     width: 1,
-                    //     ),
-                    //   ),
-                    //   child: IconButton(
-                    //     padding: const EdgeInsets.all(0),
-                    //     iconSize: 20,
-                    //     icon: const Icon(Icons.edit, color: AppColors.primaryColor),
-                    //     onPressed: () => onEditEntry(activity),
-                    //   ),
-                    // ),
-                  ),
-                  Positioned(
-                    right: 10,
-                    top: 10,
-                    child: Container(
-                  height: 30,width: 30,
-                  margin: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                    color: Theme.of(context).primaryColor,
-                    width: 1,
-                    ),
-                  ),
-                  child: IconButton(
-                    padding: const EdgeInsets.all(0),
-                    iconSize: 20,
-                    icon: const Icon(Icons.edit, color: AppColors.primaryColor),
-                    onPressed: () => onEditEntry(activity),
-                  ),
-                ))
-                ],
-              ),
+          const Spacer(),
+          if (isCanAddEdit)
+            InkWell(
+              onTap: onAddEntryPressed,
+              child: Text('+ Add',
+                  style: TextStyle(color: Theme.of(context).primaryColor)),
             ),
-          );
-        }).toList(),
-          ),
-          SizedBox(height: 16),
         ],
       ),
+      children: items.map((activity) {
+        return Stack(
+          children: <Widget>[
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [
+                    _getStatusColor(status ?? ''),
+                    AppColors.white,
+                  ],
+                  stops: const [0.02, 0.02],
+                ),
+              ),
+              child: ListTile(
+                title: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (type == 'sleep') ...[
+                      Text('Sleep Time: ${activity.sleepTime}'),
+                      const SizedBox(width: 16),
+                      Text('Wake Time: ${activity.wakeTime}'),
+                    ],
+                    if (type == 'sunscreen') ...[
+                      _buildActivityItem(
+                          context, 'Time:', activity.time ?? 'Not-Updated'),
+                      _buildActivityItem(context, 'Signature:',
+                          activity.signature ?? 'Not-Updated'),
+                    ],
+                    if (type == 'bottle') ...[
+                      _buildActivityItem(
+                          context, 'Time:', activity.time ?? 'Not-Updated'),
+                    ],
+                    if (type == 'toileting') ...[
+                      Row(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildActivityItem(context, 'Time:',
+                                  activity.time ?? 'Not-Updated'),
+                              if (activity.status != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: .0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Status: ',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          // badge-warning color
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: Colors.orange,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          activity.status ?? 'clean',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(color: Colors.orange),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      _buildActivityItem(context, 'Signature:',
+                          activity.signature ?? 'Not-Updated'),
+                      const SizedBox(width: 16),
+                    ] else
+                      ...[],
+                  ],
+                ),
+                subtitle: _buildActivityItem(
+                    context, 'Comments: ', activity.comments ?? 'Not-Updated'),
+                // trailing: Container(
+                //   height: 30,width: 30,
+                //   margin: const EdgeInsets.all(2),
+                //   decoration: BoxDecoration(
+                //     shape: BoxShape.circle,
+                //     border: Border.all(
+                //     color: Theme.of(context).primaryColor,
+                //     width: 1,
+                //     ),
+                //   ),
+                //   child: IconButton(
+                //     padding: const EdgeInsets.all(0),
+                //     iconSize: 20,
+                //     icon: const Icon(Icons.edit, color: AppColors.primaryColor),
+                //     onPressed: () => onEditEntry(activity),
+                //   ),
+                // ),
+              ),
+            ),
+            if (isCanAddEdit) // ← only show edit icon
+              Positioned(
+                right: 10,
+                top: 10,
+                child: IconButton(
+                  icon: const Icon(Icons.edit, color: AppColors.primaryColor),
+                  onPressed: () => onEditEntry(activity),
+                ),
+              )
+          ],
+        );
+      }).toList(),
     );
   }
 
@@ -1015,7 +1094,7 @@ class ChildCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (isCanAdd)
+                    if (isCanAddEdit)
                       Positioned(
                         right: 0,
                         top: 0,
@@ -1134,7 +1213,8 @@ class ChildCard extends StatelessWidget {
                       isBadge: true),
                 if (activity.comments != 'Not-Update' &&
                     !activity.comments!.contains('No '))
-                  _buildActivityItem(context, 'Comments', activity.comments??''),
+                  _buildActivityItem(
+                      context, 'Comments', activity.comments ?? ''),
               ],
             ),
           ),
@@ -1148,32 +1228,42 @@ class ChildCard extends StatelessWidget {
       {bool isBadge = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Text(
-            '$label:',
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(width: 8),
-          isBadge
-              ? Chip(
-                  label: Text(
-                    value,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: Colors.white),
+      child: SizedBox(
+        width: screenWidth * 0.75,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$label:',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(width: 8),
+            isBadge
+                ? Chip(
+                    label: Text(
+                      value,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: Colors.white),
+                    ),
+                    backgroundColor: _getStatusColor(value),
+                  )
+                : SizedBox(
+                    width: screenWidth * 0.5,
+                    child: Text(
+                      value,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
                   ),
-                  backgroundColor: _getStatusColor(value),
-                )
-              : Text(
-                  value,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1188,7 +1278,7 @@ class ChildCard extends StatelessWidget {
     } else if (type == 'sleep') {
       _showSleepDialog(context);
     } else if (type == 'toileting') {
-      _showToiletingDialog(context, onSave: (ActivityModel act ) {  });
+      _showToiletingDialog(context, onSave: (ActivityModel act) {});
     } else {
       _showTimeAndCommentDialog(context, type);
     }
@@ -1200,109 +1290,111 @@ class ChildCard extends StatelessWidget {
     final itemController = TextEditingController();
     final commentsController = TextEditingController();
     showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
-            maxHeight: MediaQuery.of(context).size.height * 0.5,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Add ${type.replaceAll('-', ' ').capitalize()}',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: timeController,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Time',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  suffixIcon: const Icon(Icons.access_time),
+        context: context,
+        builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  maxHeight: MediaQuery.of(context).size.height * 0.5,
                 ),
-                onTap: () async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-                  if (time != null) {
-                    timeController.text = time.format(context);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: itemController,
-                decoration: InputDecoration(
-                  labelText: 'Item',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: commentsController,
-                decoration: InputDecoration(
-                  labelText: 'Comments',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (timeController.text.isEmpty) {
-                        UIHelpers.showToast(
-                          context,
-                          message: 'Please select a time',
-                          backgroundColor: AppColors.errorColor,
-                        );
-                        return;
-                      }
-                      _addActivity(
-                        ActivityModel(
-                          type: type,
-                          time: timeController.text,
-                          item: itemController.text.isEmpty
-                              ? 'Not-Update'
-                              : itemController.text,
-                          comments: commentsController.text.isEmpty
-                              ? 'Not-Update'
-                              : commentsController.text,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _getButtonColor(type),
-                      foregroundColor: Colors.white,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Add ${type.replaceAll('-', ' ').capitalize()}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    child: const Text('Add'),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: timeController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Time',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        suffixIcon: const Icon(Icons.access_time),
+                      ),
+                      onTap: () async {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (time != null) {
+                          timeController.text = time.format(context);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: itemController,
+                      decoration: InputDecoration(
+                        labelText: 'Item',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: commentsController,
+                      decoration: InputDecoration(
+                        labelText: 'Comments',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (timeController.text.isEmpty) {
+                              UIHelpers.showToast(
+                                context,
+                                message: 'Please select a time',
+                                backgroundColor: AppColors.errorColor,
+                              );
+                              return;
+                            }
+                            _addActivity(
+                              context,
+                              ActivityModel(
+                                type: type,
+                                time: timeController.text,
+                                item: itemController.text.isEmpty
+                                    ? 'Not-Update'
+                                    : itemController.text,
+                                comments: commentsController.text.isEmpty
+                                    ? 'Not-Update'
+                                    : commentsController.text,
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _getButtonColor(type),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Add'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-    ));
+            ));
   }
 
   // Dialog for sleep with Sleep Time, Wake Time, and Comments
@@ -1311,119 +1403,122 @@ class ChildCard extends StatelessWidget {
     final wakeTimeController = TextEditingController();
     final commentsController = TextEditingController();
     showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
-            maxHeight: MediaQuery.of(context).size.height * 0.5,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Add Sleep',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: sleepTimeController,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Sleep Time',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  suffixIcon: const Icon(Icons.access_time),
+        context: context,
+        builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  maxHeight: MediaQuery.of(context).size.height * 0.5,
                 ),
-                onTap: () async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-                  if (time != null) {
-                    sleepTimeController.text = time.format(context);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: wakeTimeController,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Wake Time',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  suffixIcon: const Icon(Icons.access_time),
-                ),
-                onTap: () async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-                  if (time != null) {
-                    wakeTimeController.text = time.format(context);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: commentsController,
-                decoration: InputDecoration(
-                  labelText: 'Comments',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (sleepTimeController.text.isEmpty ||
-                          wakeTimeController.text.isEmpty) {
-                        UIHelpers.showToast(
-                          context,
-                          message: 'Please select both sleep and wake times',
-                          backgroundColor: AppColors.errorColor,
-                        );
-                        return;
-                      }
-                      _addActivity(
-                        ActivityModel(
-                          type: 'sleep',
-                          sleepTime: sleepTimeController.text,
-                          wakeTime: wakeTimeController.text,
-                          comments: commentsController.text.isEmpty
-                              ? 'Not-Update'
-                              : commentsController.text,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _getButtonColor('sleep'),
-                      foregroundColor: Colors.white,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Add Sleep',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    child: const Text('Add'),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: sleepTimeController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Sleep Time',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        suffixIcon: const Icon(Icons.access_time),
+                      ),
+                      onTap: () async {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (time != null) {
+                          sleepTimeController.text = time.format(context);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: wakeTimeController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Wake Time',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        suffixIcon: const Icon(Icons.access_time),
+                      ),
+                      onTap: () async {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (time != null) {
+                          wakeTimeController.text = time.format(context);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: commentsController,
+                      decoration: InputDecoration(
+                        labelText: 'Comments',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (sleepTimeController.text.isEmpty ||
+                                wakeTimeController.text.isEmpty) {
+                              UIHelpers.showToast(
+                                context,
+                                message:
+                                    'Please select both sleep and wake times',
+                                backgroundColor: AppColors.errorColor,
+                              );
+                              return;
+                            }
+                            _addActivity(
+                              context,
+                              ActivityModel(
+                                type: 'sleep',
+                                sleepTime: sleepTimeController.text,
+                                wakeTime: wakeTimeController.text,
+                                comments: commentsController.text.isEmpty
+                                    ? 'Not-Update'
+                                    : commentsController.text,
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _getButtonColor('sleep'),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Add'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-    ));
+            ));
   }
 
   // void _showToiletingDialog(BuildContext context) {
@@ -1547,97 +1642,99 @@ class ChildCard extends StatelessWidget {
     final timeController = TextEditingController();
     final commentsController = TextEditingController();
     showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
-            maxHeight: MediaQuery.of(context).size.height * 0.5,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Add ${type.replaceAll('-', ' ').capitalize()}',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: timeController,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Time',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  suffixIcon: const Icon(Icons.access_time),
+        context: context,
+        builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  maxHeight: MediaQuery.of(context).size.height * 0.5,
                 ),
-                onTap: () async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-                  if (time != null) {
-                    timeController.text = time.format(context);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: commentsController,
-                decoration: InputDecoration(
-                  labelText: 'Comments',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (timeController.text.isEmpty) {
-                        UIHelpers.showToast(
-                          context,
-                          message: 'Please select a time',
-                          backgroundColor: AppColors.errorColor,
-                        );
-                        return;
-                      }
-                      _addActivity(
-                        ActivityModel(
-                          type: type,
-                          time: timeController.text,
-                          comments: commentsController.text.isEmpty
-                              ? 'Not-Update'
-                              : commentsController.text,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _getButtonColor(type),
-                      foregroundColor: Colors.white,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Add ${type.replaceAll('-', ' ').capitalize()}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    child: const Text('Add'),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: timeController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Time',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        suffixIcon: const Icon(Icons.access_time),
+                      ),
+                      onTap: () async {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (time != null) {
+                          timeController.text = time.format(context);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: commentsController,
+                      decoration: InputDecoration(
+                        labelText: 'Comments',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (timeController.text.isEmpty) {
+                              UIHelpers.showToast(
+                                context,
+                                message: 'Please select a time',
+                                backgroundColor: AppColors.errorColor,
+                              );
+                              return;
+                            }
+                            _addActivity(
+                              context,
+                              ActivityModel(
+                                type: type,
+                                time: timeController.text,
+                                comments: commentsController.text.isEmpty
+                                    ? 'Not-Update'
+                                    : commentsController.text,
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _getButtonColor(type),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Add'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ));
+            ));
   }
 
   // Get activity icon
@@ -1677,9 +1774,9 @@ class ChildCard extends StatelessWidget {
       case '0 Applications':
         return Colors.red;
       case 'Pending':
-        return Colors.grey;
+        return AppColors.primaryColor;
       default:
-        return Colors.grey;
+        return AppColors.primaryColor;
     }
   }
 
@@ -1742,15 +1839,14 @@ class ChildCard extends StatelessWidget {
     required void Function(ActivityModel) onSave,
   }) {
     // initialize controllers with existing values (if any)
-    final timeCtrl     = TextEditingController(text: existing?.time);
-    final statusCtrl   = TextEditingController(text: existing?.status);
+    final timeCtrl = TextEditingController(text: existing?.time);
+    final statusCtrl = TextEditingController(text: existing?.status);
     final commentsCtrl = TextEditingController(text: existing?.comments);
 
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: SingleChildScrollView(
           child: Container(
             padding: EdgeInsets.only(
@@ -1809,12 +1905,12 @@ class ChildCard extends StatelessWidget {
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8)),
                   ),
-                  items: [
-                    'Clean', 'Wet', 'Soiled', 'Successful(Toilet)'
-                  ].map((st) => DropdownMenuItem(
-                        value: st,
-                        child: Text(st),
-                      )).toList(),
+                  items: ['Clean', 'Wet', 'Soiled', 'Successful(Toilet)']
+                      .map((st) => DropdownMenuItem(
+                            value: st,
+                            child: Text(st),
+                          ))
+                      .toList(),
                   onChanged: (v) => statusCtrl.text = v ?? '',
                 ),
                 const SizedBox(height: 12),
@@ -1841,36 +1937,32 @@ class ChildCard extends StatelessWidget {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        if (timeCtrl.text.isEmpty ||
-                            statusCtrl.text.isEmpty) {
+                        if (timeCtrl.text.isEmpty || statusCtrl.text.isEmpty) {
                           UIHelpers.showToast(
                             context,
-                            message:
-                              'Please select a time and status',
-                            backgroundColor:
-                              AppColors.errorColor,
+                            message: 'Please select a time and status',
+                            backgroundColor: AppColors.errorColor,
                           );
                           return;
                         }
                         // build a new ActivityModel with updated values
                         final updated = ActivityModel(
                           type: 'toileting',
-                          time:     timeCtrl.text,
-                          status:   statusCtrl.text,
+                          time: timeCtrl.text,
+                          status: statusCtrl.text,
                           comments: commentsCtrl.text.isEmpty
-                            ? 'Not-Update'
-                            : commentsCtrl.text,
+                              ? 'Not-Update'
+                              : commentsCtrl.text,
                         );
                         print(timeCtrl.text);
-                        onSave(updated);        // pass back to caller
+                        onSave(updated); // pass back to caller
                         // Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _getButtonColor('toileting'),
                         foregroundColor: Colors.white,
                       ),
-                      child:
-                        Text(existing == null ? 'Add' : 'Save'),
+                      child: Text(existing == null ? 'Add' : 'Save'),
                     ),
                   ],
                 ),
@@ -1894,7 +1986,6 @@ extension StringExtension on String {
   }
 }
 
-
 // ensure ActivityModel has nullable fields used above:
 class ActivityModel {
   final String type;
@@ -1905,7 +1996,7 @@ class ActivityModel {
   final String? wakeTime;
   final String? signature;
   final String? status;
-  ActivityModel( {
+  ActivityModel({
     required this.type,
     this.status,
     this.time,

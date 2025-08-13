@@ -40,6 +40,9 @@ import 'package:mydiaree/features/snapshot/presentation/bloc/add_snapshot/add_sn
 import 'package:mydiaree/features/snapshot/presentation/bloc/snapshot_list/snapshot_bloc.dart';
 import 'package:mydiaree/features/splash/splash_screen.dart';
 
+// add this at top‐level:
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await UserTypeHelper.init();
@@ -114,7 +117,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<ViewRoomBloc>(create: (context) => ViewRoomBloc()),
       ],
       child: MaterialApp(
+        
           debugShowCheckedModeBanner: false,
+          navigatorKey: navigatorKey,
           theme: RAppTheme.lightTheme,
           darkTheme: RAppTheme.lightTheme,
           themeMode: ThemeMode.system,

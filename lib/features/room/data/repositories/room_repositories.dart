@@ -61,14 +61,16 @@ class RoomRepository {
     String? searchQuery,
     String? statusFilter,
   }) async {
-    return await postAndParse(
-      AppUrls.getRooms,
-      // dummy: true,
-      // dummyData: dummyRoomListData,
-      {
-        'user_center_id': centerId,
+    String url = '${AppUrls.baseUrl}/api/rooms?user_center_id=$centerId';
+    print('=============== Room Fetch URL ===============');
+    print(url);
+    return await getAndParseData(
+      url,
+      fromJson:(json){
+        print('=========+++++++++++++++++==========');
+        print(json);
+        return RoomListModel.fromJson(json);
       },
-      fromJson: (json) => RoomListModel.fromJson(json),
     );
   }
 

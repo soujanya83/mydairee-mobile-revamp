@@ -61,6 +61,7 @@ class AppDrawer extends StatelessWidget {
                       MaterialPageRoute(
                           builder: (_) => const DailyTrackingScreen())),
                 ),
+                if(!isParent)
                 CustomDrawerTile(
                   showDivider: false,
                   title: 'Head Checks',
@@ -133,7 +134,7 @@ class AppDrawer extends StatelessWidget {
             divier,
             CustomDrawerTile(
               icon: Icons.production_quantity_limits,
-              title: 'L & P',
+              title: 'Lession Plan',
               onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(

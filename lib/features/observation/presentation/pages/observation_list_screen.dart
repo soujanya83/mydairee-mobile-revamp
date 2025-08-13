@@ -20,6 +20,7 @@ import 'package:mydiaree/features/observation/presentation/pages/view_observatio
 import 'package:mydiaree/features/observation/presentation/widget/observation_filter_dialog.dart';
 import 'package:mydiaree/features/observation/presentation/widget/observation_list_custom_widgets.dart';
 import 'package:mydiaree/core/services/user_type_helper.dart';
+import 'package:mydiaree/main.dart';
 
 class ObservationListScreen extends StatefulWidget {
   const ObservationListScreen({Key? key}) : super(key: key);
@@ -36,6 +37,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
   bool _isLoading = true;
   bool _isSearching = false;
   bool _isFiltering = false;
+  bool _isLoadingMore = false; // for infinite scroll loader
   String _errorMessage = '';
   String _selectedCenterId = '102'; // Default center ID
 
@@ -55,6 +57,10 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
   String _toDate = '';
   List<String> _statuses = [];
 
+  // pagination variables
+  int _currentPage = 1;
+  bool _hasMore = true;
+
   @override
   void initState() {
     super.initState();
@@ -62,32 +68,42 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
   }
 
   initDataGet() async {
-    await _fetchObservations();
+    _currentPage = 1;
+    _hasMore = true;
+    await _fetchObservations(page: 1);
     await _fetchFilterData();
   }
 
   // Fetch initial observations
   Future<void> _fetchObservations({
+    int page = 1,
     String searchQuery = '',
     String statusFilter = '',
   }) async {
-    if (this.mounted) {
+    if (mounted) {
       setState(() {
-        _isLoading = true;
+        if (page == 1) _isLoading = true;
         _errorMessage = '';
       });
     }
 
     try {
       final response = await _repository.getObservations(
-        centerId: _selectedCenterId, // Use selected center
+        centerId: _selectedCenterId,
+        page: page,
         searchQuery: searchQuery,
         statusFilter: statusFilter,
       );
 
       if (response.success && response.data != null) {
         setState(() {
-          _observationsData = response.data;
+          _currentPage = page;
+          _hasMore = (response.data != null);
+          if (page == 1) {
+            _observationsData = response.data;
+          } else {
+            _observationsData?.observations.addAll(response.data!.observations);
+          }
           _isLoading = false;
         });
       } else {
@@ -342,14 +358,11 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                   : '',
             })
         .toList();
-
     showDialog(
       context: context,
       builder: (context) => ObservationFilterDialog(
         children: childrenForFilter,
         authors: authorsForFilter,
-
-        // Pass the currently selected filter values
         initialAuthorIds: _authorIds,
         initialChildIds: _childIds,
         initialFromDate: _fromDate,
@@ -423,233 +436,250 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
   }
 
   Widget _buildBody() {
-    if (_isLoading || _observationsData == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_errorMessage.isNotEmpty && _observationsData == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(_errorMessage),
-            const SizedBox(height: 16),
-            CustomButton(
-              text: 'Retry',
-              ontap: () => _fetchObservations(),
-            ),
-          ],
-        ),
-      );
-    }
-
     final observations = _observationsData?.observations ?? [];
 
-    return Stack(
-      children: [
-        SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                // Title row with Add button
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          GlobalRepository().getCenters();
-                        },
-                        child: Text(
-                          'Observations',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w300,
-                                fontSize: 18,
-                                color: AppColors.primaryColor,
-                              ),
-                        ),
-                      ),
-                      if (!UserTypeHelper.isParent)
-                        UIHelpers.addButton(
-                          context: context,
-                          ontap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => AddObservationScreen(
-                                          type: 'add',
-                                          centerId: _selectedCenterId,
-                                        )));
-                          },
-                        ),
-                    ],
-                  ),
-                ),
-
-                // Center dropdown
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: CenterDropdown(
-                    selectedCenterId: _selectedCenterId,
-                    onChanged: _onCenterChanged,
-                  ),
-                ),
-
-                // Search field using custom text field
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: CustomTextFormWidget(
-                    controller: _searchController,
-                    hintText: 'Search observations...',
-                    prefixWidget: const Icon(Icons.search),
-                    suffixWidget: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              _searchObservations('');
-                            },
-                          )
-                        : null,
-                    onFieldSubmitted: (value) {
-                      _searchObservations(value);
-                    },
-                    onChanged: (value) {
-                      // if (value?.isEmpty ?? true) {
-                      //   _searchObservations('');
-                      // }
-                    },
-                    borderSide: const BorderSide(
-                      color: Colors.grey,
-                      width: 1,
-                    ),
-                    contentpadding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
-                    ),
-                  ),
-                ),
-
-                // Filter options
-                if(!UserTypeHelper.isParent)
-                Row(
+    return NotificationListener<ScrollNotification>(
+      onNotification: (scrollInfo) {
+        if (_hasMore &&
+            scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent &&
+            !_isLoadingMore &&
+            !_isLoading) {
+          setState(() => _isLoadingMore = true);
+          _fetchObservations(
+            page: _currentPage + 1,
+            searchQuery: _searchQuery,
+            statusFilter: _statusFilter,
+          ).whenComplete(() {
+            if (mounted) setState(() => _isLoadingMore = false);
+          });
+        }
+        return true;
+      },
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _buildFilterChip(
-                              'All',
-                              _statusFilter.isEmpty,
-                              () {
-                                setState(() {
-                                  _statusFilter = '';
-                                });
-                                _applyAdvancedFilters([], [], '', '', []);
-                              },
+                    InkWell(
+                      onTap: () {
+                        GlobalRepository().getCenters();
+                      },
+                      child: Text(
+                        'Observations',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w300,
+                              fontSize: 18,
+                              color: AppColors.primaryColor,
                             ),
-                            if (!UserTypeHelper.isParent)
-                              _buildFilterChip(
-                                'Draft',
-                                _statusFilter == 'draft',
-                                () => _handleStatusFilter('draft'),
-                              ),
-                            _buildFilterChip(
-                              'Published',
-                              _statusFilter == 'published',
-                              () => _handleStatusFilter('published'),
-                            ),
-                            if (!UserTypeHelper.isParent)
-                              _buildFilterChip(
-                                'Pending',
-                                _statusFilter == 'pending',
-                                () => _handleStatusFilter('pending'),
-                              ),
-                          ],
-                        ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.filter_list),
-                      onPressed: _showAdvancedFilterDialog,
-                      color: AppColors.primaryColor,
-                    ),
+                    if (!UserTypeHelper.isParent)
+                      UIHelpers.addButton(
+                        context: context,
+                        ontap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => AddObservationScreen(
+                                        type: 'add',
+                                        centerId: _selectedCenterId,
+                                      )));
+                        },
+                      ),
                   ],
                 ),
-                const SizedBox(height: 16),
+              ),
 
-                // Observation count
-                // Text(
-                //   'Found ${observations.length} observations',
-                //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                //         fontWeight: FontWeight.w500,
-                //       ),
-                // ),
-                // const SizedBox(height: 16),
+              // center dropdown
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: CenterDropdown(
+                  selectedCenterId: _selectedCenterId,
+                  onChanged: _onCenterChanged,
+                ),
+              ),
 
-                // Observation list
-                if (observations.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text(
-                        'No observations found',
-                        style: Theme.of(context).textTheme.titleMedium,
+              // Search field using custom text field
+              // Padding(
+              //   padding: const EdgeInsets.only(bottom: 16.0),
+              //   child: CustomTextFormWidget(
+              //     controller: _searchController,
+              //     hintText: 'Search observations...',
+              //     prefixWidget: const Icon(Icons.search),
+              //     suffixWidget: _searchController.text.isNotEmpty
+              //         ? IconButton(
+              //             icon: const Icon(Icons.clear),
+              //             onPressed: () {
+              //               _searchController.clear();
+              //               _searchObservations('');
+              //             },
+              //           )
+              //         : null,
+              //     onFieldSubmitted: (value) {
+              //       _searchObservations(value);
+              //     },
+              //     onChanged: (value) {
+              //       // if (value?.isEmpty ?? true) {
+              //       //   _searchObservations('');
+              //       // }
+              //     },
+              //     borderSide: const BorderSide(
+              //       color: Colors.grey,
+              //       width: 1,
+              //     ),
+              //     contentpadding: const EdgeInsets.symmetric(
+              //       vertical: 12,
+              //       horizontal: 16,
+              //     ),
+              //   ),
+              // ),
+
+              // Filter options
+              if(!UserTypeHelper.isParent)
+              Row(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                           if(!UserTypeHelper.isParent)
+                          _buildFilterChip(
+                            'All',
+                            _statusFilter.isEmpty,
+                            () {
+                              setState(() {
+                                _statusFilter = '';
+                              });
+                              _applyAdvancedFilters([], [], '', '', []);
+                            },
+                          ),
+                          if (!UserTypeHelper.isParent)
+                            _buildFilterChip(
+                              'Draft',
+                              _statusFilter == 'draft',
+                              () => _handleStatusFilter('draft'),
+                            ),
+                           if(!UserTypeHelper.isParent)
+                          _buildFilterChip(
+                            'Published',
+                            _statusFilter == 'published',
+                            () => _handleStatusFilter('published'),
+                          ),
+                          if (!UserTypeHelper.isParent)
+                            _buildFilterChip(
+                              'Pending',
+                              _statusFilter == 'pending',
+                              () => _handleStatusFilter('pending'),
+                            ),
+                        ],
                       ),
                     ),
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: observations.length,
-                    itemBuilder: (context, index) {
-                      final observation = observations[index];
-
-                      // Prepare image URL if available
-                      String? mediaUrl;
-                      if (observation.media.isNotEmpty) {
-                        mediaUrl =
-                            '${AppUrls.baseUrl}/${observation.media[0].mediaUrl}';
-                      }
-                      if(UserTypeHelper.isParent && observation.status.toLowerCase()=='draft' ){
-                        return SizedBox();
-                      }
-
-                      // Replace the existing ObservationCard creation in ListView.builder's itemBuilder
-                      return ObservationCard(
-                        title: _cleanHtmlContent(observation.title),
-                        dateAdded: observation.date_added,
-                        status: observation.status,
-                        mediaUrl: mediaUrl,
-                        onTap: () => _viewObservation(observation.id),
-                        author: observation.user?.name ?? 'Unknown',
-                        approvedBy:
-                            observation.approver != null ? 'Admin' : 'Pending',
-                      );
-                    },
                   ),
-              ],
-            ),
+                  IconButton(
+                    icon: const Icon(Icons.filter_list),
+                    onPressed: _showAdvancedFilterDialog,
+                    color: AppColors.primaryColor,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Observation count
+              // Text(
+              //   'Found ${observations.length} observations',
+              //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              //         fontWeight: FontWeight.w500,
+              //       ),
+              // ),
+              // const SizedBox(height: 16),
+
+              // **List area**: only this part reacts to _isLoading / error
+              if (_isLoading)
+                Padding(
+                  padding: EdgeInsetsGeometry.only(top: screenHeight*.3),
+                  child: const Center(child: CircularProgressIndicator()))
+              else if (_errorMessage.isNotEmpty)
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(_errorMessage),
+                      const SizedBox(height: 16),
+                      CustomButton(
+                        text: 'Retry',
+                        ontap: () => _fetchObservations(),
+                      ),
+                    ],
+                  ),
+                )
+              else if (observations.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      'No observations found',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: observations.length,
+                  itemBuilder: (context, index) {
+                    final observation = observations[index];
+
+                    // Prepare image URL if available
+                    String? mediaUrl;
+                    if (observation.media.isNotEmpty) {
+                      mediaUrl =
+                          '${AppUrls.baseUrl}/${observation.media[0].mediaUrl}';
+                    }
+                    if(UserTypeHelper.isParent && observation.status.toLowerCase()=='draft' ){
+                      return SizedBox();
+                    }
+
+                    // Replace the existing ObservationCard creation in ListView.builder's itemBuilder
+                    return ObservationCard(
+                      title: _cleanHtmlContent(observation.title),
+                      dateAdded: observation.date_added,
+                      status: observation.status,
+                      mediaUrl: mediaUrl,
+                      onTap: () => _viewObservation(observation.id),
+                      author: observation.user?.name ?? 'Unknown',
+                      approvedBy:
+                          observation.approver != null ? 'Admin' : 'Pending',
+                    );
+                  },
+                ),
+            if (_isLoadingMore)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              // if still in search/filter mode, lightly dim & show spinner
+              if (_isSearching || _isFiltering)
+                Container(
+                  color: Colors.black.withOpacity(0.1),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+            ],
           ),
         ),
-
-        // Loading overlay
-        if (_isSearching || _isFiltering)
-          Container(
-            color: Colors.black.withOpacity(0.1),
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-      ],
+      ),
     );
   }
 

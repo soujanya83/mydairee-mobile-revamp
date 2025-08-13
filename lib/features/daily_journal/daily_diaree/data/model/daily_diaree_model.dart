@@ -114,15 +114,15 @@ class Center {
 
 class ChildElement {
     ChildChild? child;
-    AfternoonTea? bottle;
-    Toileting? toileting;
-    AfternoonTea? sunscreen;
-    AfternoonTea? snacks;
-    AfternoonTea? afternoonTea;
-    AfternoonTea? sleep;
-    AfternoonTea? lunch;
-    AfternoonTea? morningTea;
-    AfternoonTea? breakfast;
+    List<AfternoonTea>?    bottle;
+    List<Toileting>?      toileting;
+    List<AfternoonTea>?   sunscreen;
+    AfternoonTea?    snacks;
+    List<AfternoonTea>?     sleep;
+    AfternoonTea?    lunch;
+    AfternoonTea?    morningTea;
+    AfternoonTea?    breakfast;
+    AfternoonTea?    afternoonTea;
 
     ChildElement({
         this.child,
@@ -139,25 +139,25 @@ class ChildElement {
 
     factory ChildElement.fromJson(Map<String, dynamic> json) => ChildElement(
         child: json["child"] == null ? null : ChildChild.fromJson(json["child"]),
-        bottle: json["bottle"] == null ? null : AfternoonTea.fromJson(json["bottle"]),
-        toileting: json["toileting"] == null ? null : Toileting.fromJson(json["toileting"]),
-        sunscreen: json["sunscreen"] == null ? null : AfternoonTea.fromJson(json["sunscreen"]),
-        snacks: json["snacks"] == null ? null : AfternoonTea.fromJson(json["snacks"]),
+        bottle:     json["bottle"]     == null ? []   : List<AfternoonTea>.from(json["bottle"]!.map((x) => AfternoonTea.fromJson(x))),
+        toileting:  json["toileting"]  == null ? []   : List<Toileting>.from(json["toileting"]!.map((x) => Toileting.fromJson(x))),
+        sunscreen:  json["sunscreen"]  == null ? []   : List<AfternoonTea>.from(json["sunscreen"]!.map((x) => AfternoonTea.fromJson(x))),
+        snacks:     json["snacks"]     == null ? null : AfternoonTea.fromJson(json["snacks"]),
         afternoonTea: json["afternoon_tea"] == null ? null : AfternoonTea.fromJson(json["afternoon_tea"]),
-        sleep: json["sleep"] == null ? null : AfternoonTea.fromJson(json["sleep"]),
-        lunch: json["lunch"] == null ? null : AfternoonTea.fromJson(json["lunch"]),
-        morningTea: json["morning_tea"] == null ? null : AfternoonTea.fromJson(json["morning_tea"]),
-        breakfast: json["breakfast"] == null ? null : AfternoonTea.fromJson(json["breakfast"]),
+        sleep:      json["sleep"]      == null ? []   : List<AfternoonTea>.from(json["sleep"]!.map((x) => AfternoonTea.fromJson(x))),
+        lunch:      json["lunch"]      == null ? null : AfternoonTea.fromJson(json["lunch"]),
+        morningTea: json["morning_tea"]== null ? null : AfternoonTea.fromJson(json["morning_tea"]),
+        breakfast:  json["breakfast"]  == null ? null : AfternoonTea.fromJson(json["breakfast"]),
     );
 
     Map<String, dynamic> toJson() => {
         "child": child?.toJson(),
-        "bottle": bottle?.toJson(),
-        "toileting": toileting?.toJson(),
-        "sunscreen": sunscreen?.toJson(),
+        "bottle": bottle?.map((e) => e.toJson()).toList(),
+        "toileting": toileting?.map((e) => e.toJson()).toList(),
+        "sunscreen": sunscreen?.map((e) => e.toJson()).toList(),
         "snacks": snacks?.toJson(),
         "afternoon_tea": afternoonTea?.toJson(),
-        "sleep": sleep?.toJson(),
+        "sleep": sleep?.map((e) => e.toJson()).toList(),
         "lunch": lunch?.toJson(),
         "morning_tea": morningTea?.toJson(),
         "breakfast": breakfast?.toJson(),
