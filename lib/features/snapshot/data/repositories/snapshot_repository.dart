@@ -8,20 +8,27 @@ class SnapshotRepository {
     // call GET /snapshot/index?centerid=…
     final apiResp = await ApiServices.getData(
       AppUrls.baseUrl + '/api/snapshot/index?centerid=$centerId',
+      
     );
+    final SnapshotsResponse snapshotsResponse = SnapshotsResponse.fromJson(apiResp.data);
+    return snapshotsResponse.snapshots;
+    // print('data');
+    // print(apiResp.data);
 
-    if (!apiResp.success || apiResp.data == null) {
-      throw Exception(apiResp.message);
-    }
 
-    final json = apiResp.data as Map<String, dynamic>;
-    final paged = json['snapshots'] as Map<String, dynamic>;
-    final list = (paged['data'] as List<dynamic>?) ?? [];
+    try {
+      final json = apiResp.data as Map<String, dynamic>;
+      final paged = json['snapshots'] as Map<String, dynamic>;
+      final list = (paged['data'] as List<dynamic>?) ?? [];
 
-    return list
-        .map((e) =>
-            SnapshotModel.fromJson(e as Map<String, dynamic>))
+      return list
+        .map((e) => SnapshotModel.fromJson(e as Map<String, dynamic>))
         .toList();
+    } catch (e, stack) {
+      print('Error parsing snapshots: $e');
+      print(stack);
+      return [];
+    }
   }
 
   Future<ApiResponse> addOrEditSnapshot({

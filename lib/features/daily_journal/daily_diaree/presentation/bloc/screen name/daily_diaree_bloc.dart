@@ -15,6 +15,10 @@ class DailyTrackingBloc extends Bloc<DailyTrackingEvent, DailyTrackingState> {
     emit(DailyTrackingLoading());
     try {
       final data = await repository.getDailyDiaree(centerId: event.centerId, date: event.date,roomId: event.roomId);
+      if(data.success == false) {
+        emit(DailyTrackingError(message: 'Data Load Failed'));
+        return;
+      }
       emit(DailyTrackingLoaded(diareeData: data.data, isActivitySaved: false));
     } catch (e) {
       emit(DailyTrackingError(message: e.toString()));

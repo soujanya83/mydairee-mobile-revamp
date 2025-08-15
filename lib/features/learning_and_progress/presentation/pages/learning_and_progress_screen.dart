@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/cubit/globle_repository.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
@@ -90,7 +91,7 @@ class _LearningAndProgressScreenState extends State<LearningAndProgressScreen> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      appBar: const CustomAppBar(title: "Learning & Progress"),
+      appBar: const CustomAppBar(title: "Lesson Plan"),
       body: Column(
         children: [
           // Center & Room filters
@@ -144,21 +145,21 @@ class _LearningAndProgressScreenState extends State<LearningAndProgressScreen> {
             ),
           ),
           // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: CustomTextFormWidget(
-              prefixWidget: const Icon(Icons.search, size: 20),
-              height: 40,
-              contentpadding: const EdgeInsets.only(top: 2, left: 12),
-              hintText: 'Search children by name...',
-              controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value?.toLowerCase() ?? '';
-                });
-              },
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.all(16.0),
+          //   child: CustomTextFormWidget(
+          //     prefixWidget: const Icon(Icons.search, size: 20),
+          //     height: 40,
+          //     contentpadding: const EdgeInsets.only(top: 2, left: 12),
+          //     hintText: 'Search children by name...',
+          //     controller: _searchController,
+          //     onChanged: (value) {
+          //       setState(() {
+          //         _searchQuery = value?.toLowerCase() ?? '';
+          //       });
+          //     },
+          //   ),
+          // ),
           // Children Grid or “No rooms available”
           if (!_loadingRooms && _rooms.isEmpty)
             Expanded(
@@ -314,207 +315,203 @@ class ChildCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = [
-      Colors.cyan[50]!,
-      Colors.purple[50]!,
-      Colors.blue[50]!,
-      Colors.brown[50]!,
-      Colors.pink[50]!,
-    ];
-    final cardColor = colors[index % colors.length];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // calculate image height based on available card width
+        final cardWidth = constraints.maxWidth;
+        final imageHeight = cardWidth * 0.5;
 
-    return Card(
-      elevation: isSelected ? 4 : 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => onSelect(!isSelected),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.grey[100] : cardColor,
+        return Card(
+          elevation: isSelected ? 4 : 1,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: InkWell(
             borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? Border.all(color: AppColors.primaryColor, width: 1)
-                : null,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Stack(
-                  children: [
-                    Image.network(
-                      child.imageUrl,
-                      height: 120,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          SizedBox(),
-                    ),
-                    Container(
-                      height: 120,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withAlpha((0.3 * 255).toInt())
-                          ],
+            onTap: () => onSelect(!isSelected),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: Stack(
+                    children: [
+                      Image.network(
+                        AppUrls.baseUrl + '/' + child.imageUrl,
+                        height: imageHeight,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => SizedBox(
+                          height: imageHeight,
+                          width: double.infinity,
                         ),
                       ),
-                    ),
-                  ],
+                      Container(
+                        height: imageHeight,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.3),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              // Card Body
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Name
-                    Text(
-                      child.name,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    // DOB
-                    Row(
+
+                // Card Body
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.cake, size: 16, color: Colors.grey[600]),
-                        const SizedBox(width: 8),
-                        Text(
-                          'DOB: ${DateTime.tryParse(child.dob)?.let((date) => DateFormat('dd MMM yyyy').format(date)) ?? 'N/A'}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    // Age
-                    Row(
-                      children: [
-                        Icon(Icons.child_care,
-                            size: 16, color: Colors.grey[600]),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Age: ${child.getAge()} years',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(fontSize: 12),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withAlpha((0.2 * 255).toInt()),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                        // Name
+                        Flexible(
                           child: Text(
-                            '${child.getAge()}y',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                            child.name,
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // DOB
+                        Row(
+                          children: [
+                            Icon(Icons.cake, size: 16, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                child.dob != null
+                                    ? DateFormat('dd MMM yyyy').format(DateTime.parse(child.dob))
+                                    : 'N/A',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+
+                        // Age
+                        Row(
+                          children: [
+                            Icon(Icons.child_care, size: 16, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Age: ${child.getAge()} years',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '${child.getAge()}y',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.primaryColor,
                                     ),
-                          ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    // Gender
-                    Row(
-                      children: [
-                        Icon(Icons.person, size: 16, color: Colors.grey[600]),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Gender: ',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(fontSize: 12),
+                        const SizedBox(height: 4),
+
+                        // Gender
+                        Row(
+                          children: [
+                            Icon(Icons.person, size: 16, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Gender: ${child.gender}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: child.gender.toLowerCase() == 'male'
+                                    ? Colors.blue.withOpacity(0.2)
+                                    : Colors.pink.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                child.gender,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: child.gender.toLowerCase() == 'male'
+                                          ? Colors.blue
+                                          : Colors.pink,
+                                    ),
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: child.gender.toLowerCase() == 'male'
-                                ? Colors.blue.withAlpha((0.2 * 255).toInt())
-                                : Colors.pink.withAlpha((0.2 * 255).toInt()),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            child.gender,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: child.gender.toLowerCase() == 'male'
-                                      ? Colors.blue
-                                      : Colors.pink,
+                        const Spacer(),
+
+                        // Actions
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: onViewProgress,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primaryColor,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  textStyle: const TextStyle(fontSize: 12),
                                 ),
-                          ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.trending_up, size: 16),
+                                    SizedBox(width: 4),
+                                    Text('View Progress'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            if (isDelete)
+                              CustomActionButton(
+                                icon: Icons.delete,
+                                color: AppColors.errorColor,
+                                tooltip: 'Delete',
+                                onPressed: onDeletePressed,
+                              ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    // Actions
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: onViewProgress,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              textStyle: const TextStyle(fontSize: 12),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.trending_up, size: 16),
-                                SizedBox(width: 4),
-                                Text('View Progress'),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        if(isDelete)
-                        CustomActionButton(
-                          icon: Icons.delete,
-                          color: AppColors.errorColor,
-                          tooltip: 'Delete',
-                          onPressed: onDeletePressed,
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

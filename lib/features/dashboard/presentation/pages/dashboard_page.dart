@@ -20,6 +20,7 @@ import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/features/dashboard/presentation/widget/app_drawer.dart';
 import 'package:mydiaree/features/dashboard/presentation/widget/dashboard_custom_widget.dart';
 import 'package:mydiaree/main.dart';
+
 // ignore: must_be_immutable
 class DashboardScreen extends StatefulWidget {
   DashboardScreen({Key? key}) : super(key: key);
@@ -37,7 +38,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
     return CustomScaffold(
       appBar: const CustomAppBar(title: 'Dashboard'),
       drawer: const AppDrawer(),
@@ -52,8 +52,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 builder: (ctx, snap) {
                   if (snap.connectionState != ConnectionState.done) {
                     return Padding(
-                      padding:   EdgeInsets.only(top: screenHeight*.3),
-                      child: const Center(child: CircularProgressIndicator(color: AppColors.primaryColor,)),
+                      padding: EdgeInsets.only(top: screenHeight * .3),
+                      child: const Center(
+                          child: CircularProgressIndicator(
+                        color: AppColors.primaryColor,
+                      )),
                     );
                   }
                   if (snap.hasError ||
@@ -159,213 +162,290 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
 
             // // Calendar
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: FutureBuilder<List<ApiResponse<dynamic>>>(
-                future: Future.wait([
-                  repo.getEvents(),
-                  repo.getBirthdays(),
-                ]),
-                builder: (ctx, snap) {
-                  if (snap.connectionState != ConnectionState.done) {
-                    return const Center();
-                  }
-                  if (snap.hasError ||
-                      snap.data == null ||
-                      snap.data!.any((r) => r == null || !r.success)) {
-                    return const Center(
-                      child: Text(
-                        '',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    );
-                  }
-                  final eventsRes = snap.data![0] as ApiResponse<EventsResponse?>;
-                  final birthdaysRes =
-                      snap.data![1] as ApiResponse<BirthdaysResponse?>;
-                  final eventsList = eventsRes.data?.events ?? [];
-                  final birthdaysList = birthdaysRes.data?.data ?? [];
-
-                  // build map of DateTime → list of markers
-                  final Map<DateTime, List<String>> eventsMap = {};
-                  for (var ev in eventsList) {
-                    final dt = DateTime.parse(ev.eventDate);
-                    final key = DateTime(dt.year, dt.month, dt.day);
-                    eventsMap.putIfAbsent(key, () => []).add(ev.title);
-                  }
-                  for (var b in birthdaysList) {
-                    final parsed = DateTime.parse(b.dob);
-                    final key =
-                        DateTime(DateTime.now().year, parsed.month, parsed.day);
-                    eventsMap.putIfAbsent(key, () => []).add('🎂 ${b.name}');
-                  }
-
-                  return TableCalendar<String>(
-                    firstDay: DateTime.now().subtract(const Duration(days: 365)),
-                    lastDay: DateTime.now().add(const Duration(days: 365)),
-                    focusedDay: DateTime.now(),
-                    headerStyle: const HeaderStyle(
-                      titleCentered: true,
-                      formatButtonVisible: false,
-                    ),
-                    calendarStyle: const CalendarStyle(
-                      markerDecoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    eventLoader: (day) {
-                      final key = DateTime(day.year, day.month, day.day);
-                      return eventsMap[key] ?? [];
-                    },
-                    onDaySelected: (selectedDay, focusedDay) {
-                      final key = DateTime(
-                        selectedDay.year,
-                        selectedDay.month,
-                        selectedDay.day,
-                      );
-                      // find birthdays on tapped date
-                      final bdays = birthdaysList.where((b) {
-                        final dob = DateTime.parse(b.dob);
-                        return dob.month == selectedDay.month &&
-                               dob.day == selectedDay.day;
-                      }).toList();
-                      if (bdays.isNotEmpty) {
-                        showDialog(
-                          context: ctx,
-                          builder: (_) => AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          backgroundColor: Colors.white,
-                          title: Row(
-                            children: const [
-                            Icon(Icons.cake, color: AppColors.primaryColor),
-                            SizedBox(width: 8),
-                            Text('Birthday Details'),
-                            ],
-                          ),
-                          content: SingleChildScrollView(
-                            child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: bdays.map((b) => Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                              color: AppColors.primaryColor.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: AppColors.primaryColor.withOpacity(0.3),
-                              ),
-                              ),
-                              child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CircleAvatar(
-                                backgroundColor: AppColors.primaryColor,
-                                child: Text(
-                                  b.name.isNotEmpty ? b.name[0] : '',
-                                  style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                  Text.rich(
-                                    TextSpan(
-                                    children: [
-                                      const TextSpan(
-                                      text: 'Name: ',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      TextSpan(text: '${b.name} ${b.lastname}'),
-                                    ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text.rich(
-                                    TextSpan(
-                                    children: [
-                                      const TextSpan(
-                                      text: 'Gender: ',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      TextSpan(text: b.gender),
-                                    ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text.rich(
-                                    TextSpan(
-                                    children: [
-                                      const TextSpan(
-                                      text: 'DOB: ',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      TextSpan(text: b.dob),
-                                    ],
-                                    ),
-                                  ),
-                                  ],
-                                ),
-                                ),
-                              ],
-                              ),
-                            )).toList(),
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(),
-                            child: const Text('Close'),
-                            ),
-                          ],
-                          ),
-                        );
+            Builder(builder: (context) {
+              try {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: FutureBuilder<List<ApiResponse<dynamic>>>(
+                    future: Future.wait([
+                      repo.getEvents(),
+                      repo.getBirthdays(),
+                    ]),
+                    builder: (ctx, snap) {
+                      if (snap.connectionState != ConnectionState.done) {
+                        return const Center();
                       }
+                      // if (snap.hasError ||
+                      //     snap.data == null ||
+                      //     snap.data!.any((r) => r == null || !r.success)) {
+                      //   return const Center(
+                      //     child: Text(
+                      //       '',
+                      //       style: TextStyle(color: Colors.red),
+                      //     ),
+                      //   );
+                      // }
+                      List<Event> eventsList = [];
+                      List<dynamic> birthdaysList = [];
+                      final Map<DateTime, List<String>> eventsMap = {};
+
+                      try {
+                        final eventsRes =
+                            snap.data![0] as ApiResponse<EventsResponse?>;
+                        final birthdaysRes =
+                            snap.data![1] as ApiResponse<BirthdaysResponse?>;
+
+                        if (eventsRes != null &&
+                            eventsRes.data != null &&
+                            eventsRes.data?.events != null) {
+                          eventsList = eventsRes.data!.events!;
+                        }
+                        if (birthdaysRes != null &&
+                            birthdaysRes.data != null &&
+                            birthdaysRes.data?.data != null) {
+                          birthdaysList = birthdaysRes.data!.data!;
+                        }
+
+                        for (var ev in eventsList) {
+                          final dt = DateTime.parse(ev.eventDate);
+                          final key = DateTime(dt.year, dt.month, dt.day);
+                          eventsMap.putIfAbsent(key, () => []).add(ev.title);
+                        }
+                        for (var b in birthdaysList) {
+                          final parsed = DateTime.parse(b.dob);
+                          final key = DateTime(
+                              DateTime.now().year, parsed.month, parsed.day);
+                          eventsMap
+                              .putIfAbsent(key, () => [])
+                              .add('🎂 ${b.name}');
+                        }
+                      } catch (e) {
+                        // Optionally handle error, e.g. print(e);
+                      }
+
+                      return Builder(builder: (context) {
+                        try {
+                          return TableCalendar<String>(
+                            firstDay: DateTime.now()
+                                .subtract(const Duration(days: 365)),
+                            lastDay:
+                                DateTime.now().add(const Duration(days: 365)),
+                            focusedDay: DateTime.now(),
+                            headerStyle: const HeaderStyle(
+                              titleCentered: true,
+                              formatButtonVisible: false,
+                            ),
+                            calendarStyle: const CalendarStyle(
+                              markerDecoration: BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            eventLoader: (day) {
+                              final key =
+                                  DateTime(day.year, day.month, day.day);
+                              return eventsMap[key] ?? [];
+                            },
+                            onDaySelected: (selectedDay, focusedDay) {
+                              final key = DateTime(
+                                selectedDay.year,
+                                selectedDay.month,
+                                selectedDay.day,
+                              );
+                              // find birthdays on tapped date
+                              final bdays = birthdaysList.where((b) {
+                                final dob = DateTime.parse(b.dob);
+                                return dob.month == selectedDay.month &&
+                                    dob.day == selectedDay.day;
+                              }).toList();
+                              if (bdays.isNotEmpty) {
+                                showDialog(
+                                  context: ctx,
+                                  builder: (_) => AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    backgroundColor: Colors.white,
+                                    // ignore: prefer_const_constructors
+                                    title: Row(
+                                      children: const [
+                                        Icon(Icons.cake,
+                                            color: AppColors.primaryColor),
+                                        SizedBox(width: 8),
+                                        Text('Birthday Details'),
+                                      ],
+                                    ),
+                                    content: SingleChildScrollView(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: bdays
+                                            .map((b) => Container(
+                                                  margin: const EdgeInsets.only(
+                                                      bottom: 12),
+                                                  padding:
+                                                      const EdgeInsets.all(12),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors
+                                                        .primaryColor
+                                                        .withOpacity(0.08),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                    border: Border.all(
+                                                      color: AppColors
+                                                          .primaryColor
+                                                          .withOpacity(0.3),
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      CircleAvatar(
+                                                        backgroundColor:
+                                                            AppColors
+                                                                .primaryColor,
+                                                        child: Text(
+                                                          b.name.isNotEmpty
+                                                              ? b.name[0]
+                                                              : '',
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 12),
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text.rich(
+                                                              TextSpan(
+                                                                children: [
+                                                                  const TextSpan(
+                                                                    text:
+                                                                        'Name: ',
+                                                                    style: TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight.bold),
+                                                                  ),
+                                                                  TextSpan(
+                                                                      text:
+                                                                          '${b.name} ${b.lastname}'),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 4),
+                                                            Text.rich(
+                                                              TextSpan(
+                                                                children: [
+                                                                  const TextSpan(
+                                                                    text:
+                                                                        'Gender: ',
+                                                                    style: TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight.bold),
+                                                                  ),
+                                                                  TextSpan(
+                                                                      text: b
+                                                                          .gender),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 4),
+                                                            Text.rich(
+                                                              TextSpan(
+                                                                children: [
+                                                                  const TextSpan(
+                                                                    text:
+                                                                        'DOB: ',
+                                                                    style: TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight.bold),
+                                                                  ),
+                                                                  TextSpan(
+                                                                      text: b
+                                                                          .dob),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ))
+                                            .toList(),
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(ctx).pop(),
+                                        child: const Text('Close'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                            calendarBuilders: CalendarBuilders(
+                              markerBuilder: (ctx, date, events) {
+                                final key =
+                                    DateTime(date.year, date.month, date.day);
+                                // birthday icon marker
+                                final hasBirthday = birthdaysList.any((b) {
+                                  final dob = DateTime.parse(b.dob);
+                                  return dob.month == date.month &&
+                                      dob.day == date.day;
+                                });
+                                if (hasBirthday) {
+                                  return const Positioned(
+                                    bottom: 1,
+                                    child: Icon(
+                                      Icons.cake,
+                                      size: 16,
+                                      color: Colors.amber,
+                                    ),
+                                  );
+                                }
+                                // regular event dot
+                                if (events.isNotEmpty) {
+                                  return const Positioned(
+                                    bottom: 1,
+                                    child: Icon(
+                                      Icons.circle,
+                                      size: 6,
+                                      color: Colors.red,
+                                    ),
+                                  );
+                                }
+                                return null;
+                              },
+                            ),
+                          );
+                        } catch (e) {
+                          Text('');
+                        }
+                        return Container();
+                      });
                     },
-                    calendarBuilders: CalendarBuilders(
-                      markerBuilder: (ctx, date, events) {
-                        final key = DateTime(date.year, date.month, date.day);
-                        // birthday icon marker
-                        final hasBirthday = birthdaysList.any((b) {
-                          final dob = DateTime.parse(b.dob);
-                          return dob.month == date.month &&
-                                 dob.day == date.day;
-                        });
-                        if (hasBirthday) {
-                          return const Positioned(
-                            bottom: 1,
-                            child: Icon(
-                              Icons.cake,
-                              size: 16,
-                              color: Colors.amber,
-                            ),
-                          );
-                        }
-                        // regular event dot
-                        if (events.isNotEmpty) {
-                          return const Positioned(
-                            bottom: 1,
-                            child: Icon(
-                              Icons.circle,
-                              size: 6,
-                              color: Colors.red,
-                            ),
-                          );
-                        }
-                        return null;
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
+                  ),
+                );
+              } catch (e) {
+                return Text('');
+                print(e);
+              }
+            }),
 
             // // Weather and Department Charts
             // Padding(
@@ -626,7 +706,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // //                   .toList(),
             // //             ),
             // //           ),
-                    
+
             // //         ],
             // //       ),
             // //     ),
@@ -908,8 +988,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             //     ],
             //   ),
             // ),
-         
-         
           ],
         ),
       ),

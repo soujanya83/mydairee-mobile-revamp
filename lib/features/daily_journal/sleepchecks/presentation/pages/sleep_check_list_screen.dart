@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/cubit/globle_repository.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
@@ -157,8 +159,9 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
         roomId: selectedRoomId,
         date: DateFormat('yyyy-MM-dd').format(selectedDate),
       );
-      
+      print('Sleep check response: ${response.success}');
       if (response.success && response.data != null) {
+        print('Sleep check data: ${response.data?.children.length} children found');
         setState(() {
           children = response.data!.children;
           centers = response.data!.centers;
@@ -545,25 +548,35 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey, width: 1.0),
-                    ),
-                    child: CustomNetworkImage(
-                      imageUrl: child.imageUrl.isNotEmpty 
-                          ? 'https://mydiaree.com.au/public/${child.imageUrl}'
-                          : '',
-                      placeholder: Center(
-                        child: Text(
-                          child.name.isNotEmpty ? child.name[0] : '',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey, width: 1.0),
+                      ),
+                      child: Builder(
+                        builder: (context) {
+                          Future.delayed(const Duration(seconds: 2), () {
+                           print('${AppUrls.baseUrl}/${child.imageUrl}');
+                          });
+                          return CustomNetworkImage(
+                            fullUrl: child.imageUrl.isNotEmpty 
+                                ? '${AppUrls.baseUrl}/${child.imageUrl}'
+                                : '',
+                            placeholder: Center(
+                              child: Text(
+                                child.name.isNotEmpty ? child.name[0] : '',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
                       ),
                     ),
                   ),
@@ -614,6 +627,7 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
                                     ),
                                     const Spacer(),
                                     // Edit/Delete buttons
+                                     if(!UserTypeHelper.isParent)
                                     Column(
                                       children: [
                                         IconButton(
@@ -642,6 +656,7 @@ class _SleepCheckListScreenState extends State<SleepCheckListScreen> {
                 ),
             
             // Add sleep check button
+            if(!UserTypeHelper.isParent)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(

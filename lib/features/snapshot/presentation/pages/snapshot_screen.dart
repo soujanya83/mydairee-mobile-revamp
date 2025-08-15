@@ -104,46 +104,46 @@ class _SnapshotScreenState extends State<SnapshotScreen> {
                   return ListView.builder(
                     padding: const EdgeInsets.all(16.0),
                     itemCount: state.snapshots.length,
-                    itemBuilder: (context, index) { 
+                    itemBuilder: (context, index) {
                       final snapshot = state.snapshots[index];
-                      print(snapshot.images);
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
                         child: SnapshotCard(
                           id: snapshot.id,
                           title: snapshot.title,
                           status: snapshot.status,
-                          images: snapshot.images.isNotEmpty
-                              ? snapshot.images
-                              : ['https://mydiaree.com.au/.../placeholder.png'],
-                          details: snapshot.details,
-                          children: snapshot.children,
-                          // rooms: snapshot.rooms,
-                          rooms:
-                              snapshot.rooms.map((room) => room.name).toList(),
+                          images: snapshot.media.map((m) => m.mediaUrl).toList(),
+                          details: snapshot.about,
+                          children: snapshot.children
+                              .map((c) => PersonItemData(
+                                    name: c.child.name,
+                                    imageUrl: c.child.imageUrl,
+                                  ))
+                              .toList(),
+                          rooms: snapshot.rooms.map((room) => room.name).toList(),
                           permissionUpdate: !isParent,
                           permissionDelete: !isParent,
                           onEdit: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AddSnapshotScreen(
-                                  centerId: selectedCenterId ?? '',
-                                  snapshot: {
-                                    'id': snapshot.id.toString(),
-                                    'title': snapshot.title,
-                                    'about': snapshot.details,
-                                    // 'room_id': snapshot.rooms.first.id.toString(),
-                                    // 'children': snapshot.children
-                                    //     .map((c) => {'id': c.id.toString(), 'name': c.name})
-                                    //     .toList(),
-                                    'images': snapshot.images,
-                                  },
-                                  screenType: 'edit',
-                                  id: snapshot.id.toString(),
-                                ),
-                              ),
-                            );
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) => AddSnapshotScreen(
+                            //       centerId: selectedCenterId ?? '',
+                            //       snapshot: {
+                            //         'id': snapshot.id.toString(),
+                            //         'title': snapshot.title,
+                            //         'about': snapshot.details,
+                            //         // 'room_id': snapshot.rooms.first.id.toString(),
+                            //         // 'children': snapshot.children
+                            //         //     .map((c) => {'id': c.id.toString(), 'name': c.name})
+                            //         //     .toList(),
+                            //         'images': snapshot.images,
+                            //       },
+                            //       screenType: 'edit',
+                            //       id: snapshot.id.toString(),
+                            //     ),
+                            //   ),
+                            // );
                           },
                           onDelete: () {
                             showDialog(

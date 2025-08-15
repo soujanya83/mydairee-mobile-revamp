@@ -67,21 +67,30 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 builder: (BuildContext context) {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: CachedNetworkImage(
-                        imageUrl: AppUrls.baseUrl+'/' + imageUrl,
-                        fit: BoxFit.cover,
-                        imageBuilder: (context, imageProvider) => Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                image: DecorationImage(
-                                  image: imageProvider,
-                                  fit: BoxFit.cover,
+                    child:
+                        // true?
+                        // Text(imageUrl):
+
+                        InkWell(
+                      onTap: () {
+                        print(imageUrl);
+                      },
+                      child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          imageBuilder: (context, imageProvider) => Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  image: DecorationImage(
+                                    image: NetworkImage(imageUrl),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
-                            ),
-                        placeholder: (context, url) =>
-                            const Center(child: SizedBox()),
-                        errorWidget: (context, url, error) => SizedBox()),
+                          placeholder: (context, url) =>
+                              const Center(child: SizedBox()),
+                          errorWidget: (context, url, error) => SizedBox()),
+                    ),
                   );
                 },
               );
@@ -154,13 +163,19 @@ class PersonItem extends StatelessWidget {
   }
 }
 
+class PersonItemData {
+  final String name;
+  final String imageUrl;
+  PersonItemData({required this.name, required this.imageUrl});
+}
+
 class SnapshotCard extends StatelessWidget {
   final int id;
   final String title;
   final String status;
   final List<String> images;
   final String details;
-  final List<Child> children;
+  final List<PersonItemData> children;
   final List<String> rooms;
   final bool permissionUpdate;
   final bool permissionDelete;
@@ -243,7 +258,7 @@ class SnapshotCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: status == 'published' ? Colors.green : Colors.grey,
+                    color: status == 'published' ? Colors.green : Colors.orange,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -262,7 +277,7 @@ class SnapshotCard extends StatelessWidget {
                 // Title without <p> tags
                 Text(
                   stripHtml(title),
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleMedium,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
@@ -271,7 +286,7 @@ class SnapshotCard extends StatelessWidget {
                 // Details without HTML
                 Text(
                   stripHtml(details),
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: Theme.of(context).textTheme.labelSmall,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 3,
                 ),
@@ -279,26 +294,27 @@ class SnapshotCard extends StatelessWidget {
 
                 // Children row (avatarUrl is now full URL)
                 if (children.isNotEmpty) ...[
-                  Text('Children', style: Theme.of(context).textTheme.titleMedium),
+                  Text('Children',
+                      style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 4),
-                 SizedBox(
-                          height: 50, // Constrain height
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                ...children.map((child) => Padding(
-                                      padding: const EdgeInsets.all(3),
-                                      child: PersonItem(
-                                        name: child.name,
-                                        imageUrl: child.avatarUrl,
-                                      ),
-                                    )),
-                                const SizedBox(width: 80),
-                              ],
-                            ),
-                          ),
-                        ),
+                  SizedBox(
+                    height: 50,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          ...children.map((child) => Padding(
+                                padding: const EdgeInsets.all(3),
+                                child: PersonItem(
+                                  name: child.name,
+                                  imageUrl: child.imageUrl,
+                                ),
+                              )),
+                          const SizedBox(width: 80),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 10),
                 ],
 
@@ -306,16 +322,24 @@ class SnapshotCard extends StatelessWidget {
                 if (rooms.isNotEmpty) ...[
                   Text('Rooms', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 4),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: rooms.map((r) {
-                      return Chip(
-                        label: Text(r),
-                        backgroundColor: AppColors.grey.withOpacity(.2),
-                      );
-                    }).toList(),
-                  ),
+                    SizedBox(
+                    height: 40,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                      children: [
+                        ...rooms.map((room) => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: Chip(
+                            label: Text(room),
+                            backgroundColor: AppColors.white.withOpacity(.2),
+                          ),
+                          )),
+                        const SizedBox(width: 80),
+                      ],
+                      ),
+                    ),
+                    ),
                   const SizedBox(height: 16),
                 ],
 
@@ -328,7 +352,7 @@ class SnapshotCard extends StatelessWidget {
                         text: 'Edit',
                         width: 80,
                         height: 35,
-                        ontap: (){
+                        ontap: () {
                           onEdit();
                         },
                         borderRadius: 5,

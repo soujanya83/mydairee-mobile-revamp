@@ -247,10 +247,16 @@ class _AccidentListScreenState extends State<AccidentListScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      _formatDate(accident.incident_date),
+                                      'Incident Date: ${_formatDate(accident.incident_date)}',
                                       style: const TextStyle(
                                           fontSize: 12, color: Colors.grey),
                                     ),
+                                    const SizedBox(height: 2),
+                                    // Text(
+                                    //   'Created Date: ${_formatDate(accident.added_by)}',
+                                    //   style: const TextStyle(
+                                    //       fontSize: 12, color: Colors.grey),
+                                    // ),
                                   ],
                                 ),
                               ),
@@ -299,18 +305,19 @@ class _AccidentListScreenState extends State<AccidentListScreen> {
                                     ),
                               onTap: () {
                                 // view-only for parents, edit/view screen for others
-                                Navigator.push(
+                                if(!UserTypeHelper.isParent) {
+                                  Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => AddAccidentScreen(
                                       centerid: selectedCenterId ?? '',
                                       roomid: selectedRoomId ?? '',
                                       accidentId: accident.id.toString(),
-                                      isEditing:
-                                        !UserTypeHelper.isParent, // disable edit if parent
+                                      isEditing:!UserTypeHelper.isParent,
                                     ),
                                   ),
                                 );
+                                }
                               },
                             ),
                           ),

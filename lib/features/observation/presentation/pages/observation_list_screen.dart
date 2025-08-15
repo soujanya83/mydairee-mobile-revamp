@@ -39,7 +39,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
   bool _isFiltering = false;
   bool _isLoadingMore = false; // for infinite scroll loader
   String _errorMessage = '';
-  String _selectedCenterId = '102'; // Default center ID
+  String _selectedCenterId = ''; // Default center ID
 
   // Data variables
   ObservationApiResponse? _observationsData;
@@ -63,6 +63,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
 
   @override
   void initState() {
+    _selectedCenterId = globalSelectedCenterId??'';
     super.initState();
     initDataGet();
   }
@@ -98,7 +99,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
       if (response.success && response.data != null) {
         setState(() {
           _currentPage = page;
-          _hasMore = (response.data != null);
+          _hasMore = (response.data!.observations.isNotEmpty);
           if (page == 1) {
             _observationsData = response.data;
           } else {

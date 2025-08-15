@@ -37,7 +37,7 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
   @override
   void initState() {
     super.initState();
-    selectedCenterId = globalSelectedCenterId??'';
+    selectedCenterId = globalSelectedCenterId ?? '';
     _fetchRooms();
   }
 
@@ -46,8 +46,9 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
     try {
       final repo = RoomRepository();
       final resp = await repo.getRooms(centerId: selectedCenterId);
-      print('Rooms API response: success=${resp.success}, data=${resp.data?.rooms?.length}');
-      if (resp.success && resp.data != null){
+      print(
+          'Rooms API response: success=${resp.success}, data=${resp.data?.rooms?.length}');
+      if (resp.success && resp.data != null) {
         final fetched = resp.data!.rooms ?? [];
         if (kDebugMode) {
           print('Fetched rooms: ${fetched.map((r) => r.name).toList()}');
@@ -71,7 +72,7 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
   }
 
   void _loadData() {
-    if(selectedRoomId != null) {
+    if (selectedRoomId != null) {
       context.read<DailyTrackingBloc>().add(LoadDailyTrackingEvent(
             centerId: selectedCenterId,
             roomId: selectedRoomId!,
@@ -97,7 +98,8 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
                     final picked = await showDatePicker(
                       context: context,
                       initialDate: selectedDate,
-                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                      firstDate:
+                          DateTime.now().subtract(const Duration(days: 365)),
                       lastDate: DateTime.now().add(const Duration(days: 365)),
                     );
                     if (picked != null) {
@@ -106,7 +108,8 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
                     }
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       border: Border.all(color: AppColors.primaryColor),
                       borderRadius: BorderRadius.circular(8),
@@ -130,38 +133,48 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
               ),
               const SizedBox(height: 12),
               // only room‐loading spinner in the dropdown area
-                if (isLoadingRooms)
-                const Center(child: CircularProgressIndicator())
-                else if (rooms.isEmpty)
+              if (isLoadingRooms)
+                Center(
+                    child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ))
+              else if (rooms.isEmpty)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CustomDropdown<Room>(
-                  value: null,
-                  items: const [],
-                  hint: 'No rooms available here',
-                  displayItem: (_) => '',
-                  onChanged: null,
+                    value: null,
+                    items: const [],
+                    hint: 'No rooms available here',
+                    displayItem: (_) => '',
+                    onChanged: null,
                   ),
                 )
-                else
+              else
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CustomDropdown<Room>(
-                  value: selectedRoomId == null
-                    ? null
-                    : rooms.firstWhere(
-                      (r) => r.id.toString() == selectedRoomId,
-                      orElse: () => rooms.first,
-                      ),
-                  items: rooms,
-                  hint: 'Select Room',
-                  displayItem: (r) => r.name ?? '',
-                  onChanged: (r) {
-                    setState(() {
-                    selectedRoomId = r?.id.toString();
-                    });
-                    _loadData();
-                  },
+                    value: selectedRoomId == null
+                        ? null
+                        : rooms.firstWhere(
+                            (r) => r.id.toString() == selectedRoomId,
+                            orElse: () => rooms.first,
+                          ),
+                    items: rooms,
+                    hint: 'Select Room',
+                    displayItem: (r) => r.name ?? '',
+                    onChanged: (r) {
+                      setState(() {
+                        selectedRoomId = r?.id.toString();
+                      });
+                      _loadData();
+                    },
                   ),
                 ),
               const SizedBox(width: 12),
@@ -170,7 +183,8 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
 
           // Body: if no rooms show message, else let BlocBuilder handle its own loading
           Expanded(
-            child: rooms.isEmpty
+            child: rooms.isEmpty &&
+                    !(DailyTrackingBloc().state is DailyTrackingLoading)
                 ? const Center(
                     child: Text(
                       'No rooms available for this center',
@@ -178,55 +192,64 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
                     ),
                   )
                 : BlocListener<DailyTrackingBloc, DailyTrackingState>(
-               listener: (context, state) {
-                 if (state is DailyTrackingError) {
-                   UIHelpers.showToast(
-                     context,
-                     message: state.message,
-                     backgroundColor: AppColors.errorColor,
-                   );
-                 }
-               },
-               child: BlocBuilder<DailyTrackingBloc, DailyTrackingState>(
-                 builder: (context, state) {
-                   // daily‐diary loading spinner
-                   if (state is DailyTrackingLoading) {
-                     return const Center(child: CircularProgressIndicator());
-                   }
-                   if (state is DailyTrackingLoaded) {
-                     final children = state.diareeData?.data?.children ?? [];
-                     if (children.isEmpty) {
-                       return const Center(child: Text('No data available'));
-                     }
-                     return GridView.builder(
-                       padding: const EdgeInsets.all(16),
-                       gridDelegate:
-                           const SliverGridDelegateWithFixedCrossAxisCount(
-                             crossAxisCount: 1,
-                             childAspectRatio: 0.7,
-                             crossAxisSpacing: 16,
-                             mainAxisSpacing: 16,
-                           ),
-                       itemCount: children.length,
-                       itemBuilder: (c, i) {
-                         final ce = children[i];
-                         return ChildCard(
-                           isCanAddEdit: !UserTypeHelper.isParent,
-                           child: ce,
-                           imageUrl: ce.child?.imageUrl ?? '',
-                           date: DateFormat('yyyy-MM-dd').format(selectedDate),
-                           onAddEntriesPressed: () => _loadData(),
-                           activitiesCount: 0,
-                           meals: 0,
-                           naps: 0,
-                         );
-                       },
-                     );
-                   }
-                   return const SizedBox.shrink();
-                 },
-               ),
-            ),
+                    listener: (context, state) {
+                      if (state is DailyTrackingError) {
+                        //  UIHelpers.showToast(
+                        //    context,
+                        //    message: state.message,
+                        //    backgroundColor: AppColors.errorColor,
+                        //  );
+                      }
+                    },
+                    child: BlocBuilder<DailyTrackingBloc, DailyTrackingState>(
+                      builder: (context, state) {
+                        // daily‐diary loading spinner
+                        if (state is DailyTrackingLoading) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        if (state is DailyTrackingError) {
+                          return const Center(
+                              child: Text('Failed to load data'));
+                        }
+                        if (state is DailyTrackingLoaded) {
+                          final children =
+                              state.diareeData?.data?.children ?? [];
+                          if (children.isEmpty) {
+                            return const Center(
+                                child: Text('No data available'));
+                          }
+
+                          return GridView.builder(
+                            padding: const EdgeInsets.all(16),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 1,
+                              childAspectRatio: 0.7,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                            ),
+                            itemCount: children.length,
+                            itemBuilder: (c, i) {
+                              final ce = children[i];
+                              return ChildCard(
+                                isCanAddEdit: !UserTypeHelper.isParent,
+                                child: ce,
+                                imageUrl: ce.child?.imageUrl ?? '',
+                                date: DateFormat('yyyy-MM-dd')
+                                    .format(selectedDate),
+                                onAddEntriesPressed: () => _loadData(),
+                                activitiesCount: 0,
+                                meals: 0,
+                                naps: 0,
+                              );
+                            },
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
           ),
         ],
       ),

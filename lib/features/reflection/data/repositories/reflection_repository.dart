@@ -14,7 +14,7 @@ class ReflectionRepository {
     int? page,
   }) async {
     return await getAndParseData(
-      '${AppUrls.getReflections}?center_id=$centerId',
+      '${AppUrls.getReflections}?center_id=$centerId&page=${page ?? 1}',
       fromJson: (json) => ReflectionListModel.fromJson(json),
     );
   }

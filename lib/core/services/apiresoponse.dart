@@ -19,14 +19,14 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
     bool dummy = false,
     Map<String, dynamic>? dummyData}) async {
   try {
-    print('Posting data to $url with data: ${jsonEncode(data)}');
+    // print('Posting data to $url with data: ${jsonEncode(data)}');
     final response = await ApiServices.postData(url, data,
         filesPath: filesPath,
         fileField: fileField,
         dummy: dummy,
         dummyData: dummyData);
       if(dummyData != null) { 
-        print('Dummy Data: $dummyData');
+        // print('Dummy Data: $dummyData');
         await Future.delayed(const Duration(seconds: 2));
         return ApiResponse(
           success: true,
@@ -34,9 +34,9 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
           message: '',
         );
       }
-    print('Response: ${response.data}');
-    print('Success: ${response.success}');
-    print('Message: ${response.message}');
+    // print('Response: ${response.data}');
+    // print('Success: ${response.success}');
+    // print('Message: ${response.message}');
     if (response.success) {
       return ApiResponse(
           success: true,
@@ -65,9 +65,9 @@ Future<ApiResponse<T?>> getAndParseData<T>(
       queryParameters: queryParameters, 
       dummyData: dummyData,
     );
-    print('Response: ${response.data}');
-    print('Success: ${response.success}');
-    print('Message: ${response.message}');
+    // print('Response: ${response.data}');
+    // print('Success: ${response.success}');
+    // print('Message: ${response.message}');
     if (response.success) {
       try {
         if (fromJson != null) {

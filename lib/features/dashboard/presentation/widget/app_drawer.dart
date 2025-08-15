@@ -134,7 +134,7 @@ class AppDrawer extends StatelessWidget {
             divier,
             CustomDrawerTile(
               icon: Icons.production_quantity_limits,
-              title: 'Lession Plan',
+              title: 'Lesson Plan',
               onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(

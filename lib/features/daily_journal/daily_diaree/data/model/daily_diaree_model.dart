@@ -19,11 +19,27 @@ class DailyDiareeModel {
         this.data,
     });
 
-    factory DailyDiareeModel.fromJson(Map<String, dynamic> json) => DailyDiareeModel(
-        status: json["status"],
-        message: json["message"],
-        data: json["data"] == null ? null : Data.fromJson(json["data"]),
-    );
+    factory DailyDiareeModel.fromJson(Map<String, dynamic> json) {
+  // If "data" is missing but we see "centers", "rooms", etc at root, patch it
+  if (json["data"] == null &&
+      (json.containsKey("centers") || json.containsKey("rooms"))) {
+    json = {
+      ...json,
+      "data": {
+        "centers": json["centers"],
+        "rooms": json["rooms"],
+        "selectedRoom": json["selected_room"],
+        "selectedDate": json["selected_date"],
+        "children": json["children"],
+      }
+    };
+  }
+  return DailyDiareeModel(
+    status: json["status"],
+    message: json["message"],
+    data: json["data"] == null ? null : Data.fromJson(json["data"]),
+  );
+}
 
     Map<String, dynamic> toJson() => {
         "status": status,

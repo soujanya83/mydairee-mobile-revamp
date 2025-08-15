@@ -34,8 +34,8 @@ class ApiServices {
 
     try {
       if (dummyData != null) {
-        print('Dummy GET triggered');
-        print('Dummy Data: $dummyData');
+        // print('Dummy GET triggered');
+        // print('Dummy Data: $dummyData');
         await Future.delayed(const Duration(seconds: 2));
         return ApiResponse(
           data: dummyData,
@@ -54,19 +54,19 @@ class ApiServices {
       );
 
       // Debug authentication
-      final authToken = await getToken();
-      print('=================================');
-      print('authotoken $authToken');
+      // final authToken = await getToken();
+      // // print('=================================');
+      // // print('authotoken $authToken');
 
-      // Print Debug Info
-      print('Sending GET request');
-      print('URL: $url');
-      if (queryParameters != null) {
-        print('Query Parameters: $queryParameters');
-      }
-      if (headers != null) {
-        print('Headers: $headers');
-      }
+      // // // Print Debug Info
+      // // print('Sending GET request');
+      // // print('URL: $url');
+      // // if (queryParameters != null) {
+      // //   print('Query Parameters: $queryParameters');
+      // // }
+      // // if (headers != null) {
+      // //   print('Headers: $headers');
+      // // }
 
       // Perform request
       final response = await dio.get(
@@ -78,7 +78,8 @@ class ApiServices {
       // Debug response
       print('Response Received');
       print('Status Code: ${response.statusCode}');
-      print('Response Data: ${response.data}');
+      print('Response Data: ${response.data.toString()}');
+       
       if (validApiResponse(response)) {
         return ApiResponse(
           success: true,

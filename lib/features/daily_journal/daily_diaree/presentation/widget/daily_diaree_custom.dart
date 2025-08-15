@@ -8,7 +8,8 @@ import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_network_image.dart';
 import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/child_model.dart';
-import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/daily_diaree_model.dart' hide Center;
+import 'package:mydiaree/features/daily_journal/daily_diaree/data/model/daily_diaree_model.dart'
+    hide Center;
 import 'package:flutter/services.dart';
 import 'package:mydiaree/main.dart';
 import 'package:mydiaree/features/daily_journal/daily_diaree/data/repositories/daily_diaree_reposiory.dart';
@@ -32,10 +33,38 @@ class ChildCard extends StatelessWidget {
     required this.meals,
     required this.naps,
     required this.isCanAddEdit,
-    required this.date, 
+    required this.date,
   });
-  Future<void> _addActivity(BuildContext context, ActivityModel activity) async {
-    print('[_addActivity] Called with activity: ${activity.type}, data: $activity');
+  Future<void> _addActivity(
+      BuildContext context, ActivityModel activity) async {
+    print(
+        '[_addActivity] Called with activity: ${activity.type}, data: $activity');
+    activity = activity;
+
+    // Helper to convert time to HH:mm if needed
+    String? _toHHmm(String? time) {
+      if (time == null || time.isEmpty) return null;
+      // Remove AM/PM and extra spaces
+      time = time.replaceAll(RegExp(r'\s*(AM|PM|am|pm)\s*'), '').trim();
+      // If already in HH:mm, return as is
+      final regex = RegExp(r'^\d{1,2}:\d{2}$');
+      if (regex.hasMatch(time)) {
+        // Pad hour with zero if needed
+        final parts = time.split(':');
+        final hour = parts[0].padLeft(2, '0');
+        return '$hour:${parts[1]}';
+      }
+      // Try to parse as TimeOfDay format (e.g., 2:30 PM)
+      try {
+        final format = DateFormat.jm();
+        final dt = format.parse(time);
+        return DateFormat('HH:mm').format(dt);
+      } catch (_) {
+        // fallback: just return original
+        return time;
+      }
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -54,7 +83,7 @@ class ChildCard extends StatelessWidget {
         resp = await repo.postBreakfast(
           date: date,
           childIds: [cid],
-          time: activity.time!,
+          time: _toHHmm(activity.time)!,
           item: activity.item ?? '',
           comments: activity.comments,
         );
@@ -64,16 +93,16 @@ class ChildCard extends StatelessWidget {
         resp = await repo.postMorningTea(
           date: date,
           childIds: [cid],
-          time: activity.time!,
+          time: _toHHmm(activity.time)!,
           comments: activity.comments,
         );
         break;
       case 'lunch':
         print('[_addActivity] Posting lunch...');
-        resp = await repo.postBreakfast( // same signature as breakfast
+        resp = await repo.postLunch(
           date: date,
           childIds: [cid],
-          time: activity.time!,
+          time: _toHHmm(activity.time)!,
           item: activity.item ?? '',
           comments: activity.comments,
         );
@@ -83,7 +112,7 @@ class ChildCard extends StatelessWidget {
         resp = await repo.postAfternoonTea(
           date: date,
           childIds: [cid],
-          time: activity.time!,
+          time: _toHHmm(activity.time)!,
           comments: activity.comments,
         );
         break;
@@ -93,7 +122,7 @@ class ChildCard extends StatelessWidget {
         resp = await repo.postLateSnack(
           date: date,
           childIds: [cid],
-          time: activity.time!,
+          time: _toHHmm(activity.time)!,
           item: activity.item ?? '',
           comments: activity.comments,
         );
@@ -103,10 +132,10 @@ class ChildCard extends StatelessWidget {
         resp = await repo.storeSleep(
           date: date,
           childIds: [cid],
-          sleepTime: activity.sleepTime!,
-          wakeTime: activity.wakeTime!,
-          comments: activity.comments,
-          id: null,
+          sleepTime: _toHHmm(activity.sleepTime)!,
+          wakeTime: _toHHmm(activity.wakeTime)!,
+            comments: activity.comments,
+            id: activity.id,
         );
         break;
       case 'sunscreen':
@@ -114,9 +143,10 @@ class ChildCard extends StatelessWidget {
         resp = await repo.storeSunscreen(
           date: date,
           childIds: [cid],
-          time: activity.time!,
+          time: _toHHmm(activity.time)!,
           comments: activity.comments,
           signature: activity.signature,
+          id: activity.id,
         );
         break;
       case 'toileting':
@@ -124,10 +154,11 @@ class ChildCard extends StatelessWidget {
         resp = await repo.storeToileting(
           date: date,
           childIds: [cid],
-          time: activity.time!,
+          time: _toHHmm(activity.time)!,
           status: activity.status!,
           comments: activity.comments,
           signature: activity.signature,
+          id: activity.id,
         );
         break;
       case 'bottle':
@@ -135,8 +166,9 @@ class ChildCard extends StatelessWidget {
         resp = await repo.storeBottle(
           date: date,
           childIds: [cid],
-          time: activity.time!,
+          time: _toHHmm(activity.time)!,
           comments: activity.comments,
+          id: activity.id,
         );
         break;
       default:
@@ -147,7 +179,8 @@ class ChildCard extends StatelessWidget {
     // hide loader
     Navigator.of(context).pop();
 
-    print('[_addActivity] Response: success=${resp.success}, message=${resp.message}');
+    print(
+        '[_addActivity] Response: success=${resp.success}, message=${resp.message}');
 
     if (resp.success) {
       UIHelpers.showToast(
@@ -156,10 +189,10 @@ class ChildCard extends StatelessWidget {
         backgroundColor: AppColors.successColor,
       );
       print('[_addActivity] Calling onAddEntriesPressed()');
-      onAddEntriesPressed(); // reload parent
+      // onAddEntriesPressed(); // reload parent
     } else {
       UIHelpers.showToast(
-        context, 
+        context,
         message: resp.message,
         backgroundColor: AppColors.errorColor,
       );
@@ -243,12 +276,13 @@ class ChildCard extends StatelessWidget {
                       labelText: 'Sleep Time',
                       suffixIcon: Icon(Icons.access_time),
                     ),
-                    onTap: () async {
+                    onTap: () async {  
                       final t = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.now(),
                       );
-                      if (t != null) timeCtrl.text = t.format(context);
+                      print( t.toString());
+                      if (t != null) sleepTimeCtrl.text = t.format(context);
                     },
                   ),
                   const SizedBox(height: 12),
@@ -309,7 +343,7 @@ class ChildCard extends StatelessWidget {
                       onPressed: () {
                         // simple validation
                         if ((type == 'sleep' &&
-                                (timeCtrl.text.isEmpty ||
+                                (sleepTimeCtrl.text.isEmpty ||
                                     wakeCtrl.text.isEmpty)) ||
                             (type != 'sleep' && timeCtrl.text.isEmpty)) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -322,7 +356,7 @@ class ChildCard extends StatelessWidget {
                           time: timeCtrl.text,
                           item: itemCtrl.text,
                           comments: commentsCtrl.text,
-                          sleepTime: type == 'sleep' ? timeCtrl.text : null,
+                          sleepTime: type == 'sleep' ? sleepTimeCtrl.text : null,
                           wakeTime: type == 'sleep' ? wakeCtrl.text : null,
                           signature: signatureCtrl.text,
                         );
@@ -371,14 +405,20 @@ class ChildCard extends StatelessWidget {
                       context,
                       'breakfast',
                       status: '',
-                      time: child?.breakfast?.startTime ?? 'Not-Updated',
-                      item: child?.breakfast?.item ?? 'Not-Updated',
-                      comments: child?.breakfast?.comments ?? 'Not-Updated',
+                      time: child?.breakfast?.startTime ?? 'no update',
+                      item: child?.breakfast?.item ?? 'no update',
+                      comments: child?.breakfast?.comments ?? 'no update',
                       onAddEntryPressed: () {
                         if (!isCanAddEdit) return;
                         _openEntryDialog(
                           context,
                           'breakfast',
+                          existing: ActivityModel(
+                            type: 'breakfast',
+                            time: child?.breakfast?.startTime,
+                            item: child?.breakfast?.item,
+                            comments: child?.breakfast?.comments,
+                          ),
                           onSave: (act) => _addActivity(context, act),
                         );
                       },
@@ -386,21 +426,48 @@ class ChildCard extends StatelessWidget {
                     _buildActivitySection(
                       context,
                       'morning-tea',
-                      time: child?.morningTea?.startTime ?? 'Not-Updated',
+                      time: child?.morningTea?.startTime ?? 'no update',
                       onAddEntryPressed: () {
-                        // _showItemBasedDialog(context, 'morning-tea');
+                        // _showItemBasedDialog(context, 'morning-tea',
+
+                        // );
+
+                        if (!isCanAddEdit) return;
+                        _openEntryDialog(
+                          context,
+                          'morning-tea',
+                          existing: ActivityModel(
+                            type: 'morning-tea',
+                            time: child?.morningTea?.startTime,
+                            item: child?.morningTea?.item,
+                            comments: child?.morningTea?.comments,
+                          ),
+                          onSave: (act) => _addActivity(context, act),
+                        );
                       },
-                      comments: child?.morningTea?.comments ?? 'Not-Updated',
+                      comments: child?.morningTea?.comments ?? 'no update',
                     ),
                     _buildActivitySection(
                       context,
                       'lunch',
-                      time: child?.lunch?.startTime ?? 'Not-Updated',
+                      time: child?.lunch?.startTime ?? 'no update',
                       onAddEntryPressed: () {
+                        if (!isCanAddEdit) return;
+                        _openEntryDialog(
+                          context,
+                          'lunch',
+                          existing: ActivityModel(
+                            type: 'lunch',
+                            time: child?.lunch?.startTime,
+                            item: child?.lunch?.item,
+                            comments: child?.lunch?.comments,
+                          ),
+                          onSave: (act) => _addActivity(context, act),
+                        );
                         // _showItemBasedDialog(context, 'lunch');
                       },
-                      item: child?.lunch?.item ?? 'Not-Updated',
-                      comments: child?.lunch?.comments ?? 'Not-Updated',
+                      item: child?.lunch?.item ?? 'no update',
+                      comments: child?.lunch?.comments ?? 'no update',
                     ),
                     _buildActivitySectionMultiple(
                       context,
@@ -419,34 +486,48 @@ class ChildCard extends StatelessWidget {
                           context, 'sleep',
                           onSave: (act) => _addActivity(context, act)),
                       onEditEntry: (act) => _openEntryDialog(context, 'sleep',
-                          existing: act, onSave: (ed) => _addActivity(context, ed)),
+                          existing: act,
+                          onSave: (ed) => _addActivity(context, ed)),
                     ),
 
                     _buildActivitySection(
                       context,
                       'afternoon-tea',
-                      time: child?.afternoonTea?.startTime ?? 'Not-Updated',
+                      time: child?.afternoonTea?.startTime ?? 'no update',
                       onAddEntryPressed: () {
+                        if (!isCanAddEdit) return;
+                        _openEntryDialog(
+                          context,
+                          'afternoon-tea',
+                          existing: ActivityModel(
+                            type: 'afternoon-tea',
+                            time: child?.afternoonTea?.startTime,
+                            item: child?.afternoonTea?.item,
+                            comments: child?.afternoonTea?.comments,
+                          ),
+                          onSave: (act) => _addActivity(context, act),
+                        );
                         // _showItemBasedDialog(context, 'afternoon-tea');
                       },
-                      comments: child?.afternoonTea?.comments ?? 'Not-Updated',
+                      comments: child?.afternoonTea?.comments ?? 'no update',
                     ),
                     // Snacks section
                     _buildActivitySection(
                       context,
                       'snacks',
-                      time: child?.snacks?.startTime ?? 'Not-Updated',
+                      time: child?.snacks?.startTime ?? 'no update',
                       onAddEntryPressed: () {
                         // _showItemBasedDialog(context, 'snacks');
                       },
-                      item: child?.snacks?.item ?? 'Not-Updated',
-                      comments: child?.snacks?.comments ?? 'Not-Updated',
+                      item: child?.snacks?.item ?? 'no update',
+                      comments: child?.snacks?.comments ?? 'no update',
                     ),
                     // Sleep section (multiple entries)
 
                     _buildActivitySectionMultiple(
                       context,
                       'sunscreen',
+                      isEntriesShow: true,
                       items: child?.sunscreen
                               ?.map((s) => ActivityModel(
                                     type: 'sunscreen',
@@ -455,13 +536,14 @@ class ChildCard extends StatelessWidget {
                                     signature: s.signature,
                                   ))
                               .toList() ??
-                          [],
+                          [], 
                       onAddEntryPressed: () => _openEntryDialog(
                           context, 'sunscreen',
                           onSave: (act) => _addActivity(context, act)),
                       onEditEntry: (act) => _openEntryDialog(
                           context, 'sunscreen',
-                          existing: act, onSave: (ed) => _addActivity(context, ed)),
+                          existing: act,
+                          onSave: (ed) => _addActivity(context, ed)),
                     ),
 
                     // multiple‐entry section for toileting
@@ -469,6 +551,7 @@ class ChildCard extends StatelessWidget {
                     _buildActivitySectionMultiple(
                       context,
                       'toileting',
+                      isEntriesShow: true,
                       items: child?.toileting
                               ?.map((t) => ActivityModel(
                                     type: 'toileting',
@@ -482,12 +565,14 @@ class ChildCard extends StatelessWidget {
                       onAddEntryPressed: () => _showToiletingDialog(context,
                           onSave: (act) => _addActivity(context, act)),
                       onEditEntry: (act) => _showToiletingDialog(context,
-                          existing: act, onSave: (ed) => _addActivity(context, ed)),
+                          existing: act,
+                          onSave: (ed) => _addActivity(context, ed)),
                     ),
 
                     _buildActivitySectionMultiple(
                       context,
                       'bottle',
+                      isEntriesShow: true,
                       items: child?.bottle
                               ?.map((b) => ActivityModel(
                                     type: 'bottle',
@@ -500,7 +585,8 @@ class ChildCard extends StatelessWidget {
                           context, 'bottle',
                           onSave: (act) => _addActivity(context, act)),
                       onEditEntry: (act) => _openEntryDialog(context, 'bottle',
-                          existing: act, onSave: (ed) => _addActivity(context, ed)),
+                          existing: act,
+                          onSave: (ed) => _addActivity(context, ed)),
                     ),
 
                     // Theme(
@@ -735,7 +821,7 @@ class ChildCard extends StatelessWidget {
     );
   }
 
-  // Build statistics (activities, meals, naps)
+  // Build statistics (activities, m eals, naps)
   Widget _buildStats(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -860,9 +946,9 @@ class ChildCard extends StatelessWidget {
         children: [
           Text(label, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(width: 8),
-          if (items.isNotEmpty && isEntriesShow)
+          if ( isEntriesShow)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
               decoration: BoxDecoration(
                 color: AppColors.white.withOpacity(.2),
                 borderRadius: BorderRadius.circular(8),
@@ -883,131 +969,156 @@ class ChildCard extends StatelessWidget {
             ),
         ],
       ),
-      children: items.map((activity) {
-        return Stack(
-          children: <Widget>[
-            Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(12),
-                gradient: LinearGradient(
-                  colors: [
-                    _getStatusColor(status ?? ''),
-                    AppColors.white,
-                  ],
-                  stops: const [0.02, 0.02],
+      children: items.isEmpty
+          ? [
+              SizedBox(height: 8),
+                Text(
+                items.isEmpty
+                  ? (type == 'sunscreen'
+                    ? 'No sunscreen applications recorded.'
+                    : type == 'sleep'
+                      ? 'No sleep records available.'
+                      : type == 'toileting'
+                        ? 'No toileting records available.'
+                        : type == 'bottle'
+                          ? 'No bottle records available.'
+                          : 'No data available')
+                  : '',
+                style: Theme.of(context).textTheme.bodySmall,
                 ),
-              ),
-              child: ListTile(
-                title: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (type == 'sleep') ...[
-                      Text('Sleep Time: ${activity.sleepTime}'),
-                      const SizedBox(width: 16),
-                      Text('Wake Time: ${activity.wakeTime}'),
-                    ],
-                    if (type == 'sunscreen') ...[
-                      _buildActivityItem(
-                          context, 'Time:', activity.time ?? 'Not-Updated'),
-                      _buildActivityItem(context, 'Signature:',
-                          activity.signature ?? 'Not-Updated'),
-                    ],
-                    if (type == 'bottle') ...[
-                      _buildActivityItem(
-                          context, 'Time:', activity.time ?? 'Not-Updated'),
-                    ],
-                    if (type == 'toileting') ...[
-                      Row(
+              SizedBox(height: 20),
+            ]
+          : items.map((activity) {
+              return Stack(
+                children: <Widget>[
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        colors: [
+                          _getStatusColor(status ?? ''),
+                          AppColors.white,
+                        ],
+                        stops: const [0.02, 0.02],
+                      ),
+                    ),
+                    child: ListTile(
+                      title: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildActivityItem(context, 'Time:',
-                                  activity.time ?? 'Not-Updated'),
-                              if (activity.status != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: .0),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'Status: ',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                                fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          // badge-warning color
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: Colors.orange,
-                                            width: 1,
-                                          ),
+                          if (type == 'sleep') ...[
+                            Text('Sleep Time: ${activity.sleepTime}'),
+                            const SizedBox(width: 16),
+                            Text('Wake Time: ${activity.wakeTime}'),
+                          ],
+                          if (type == 'sunscreen') ...[
+                            _buildActivityItem(context, 'Time:',
+                                activity.time ?? 'no update'),
+                            _buildActivityItem(context, 'Signature:',
+                                activity.signature ?? 'no update'),
+                          ],
+                          if (type == 'bottle') ...[
+                            _buildActivityItem(context, 'Time:',
+                                activity.time ?? 'no update'),
+                          ],
+                          if (type == 'toileting') ...[
+                            Row(
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildActivityItem(context, 'Time:',
+                                        activity.time ?? 'no update'),
+                                    if (activity.status != null)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: .0),
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              'Status: ',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                // badge-warning color
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                border: Border.all(
+                                                  color: Colors.orange,
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                activity.status ?? 'clean',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                        color: Colors.orange),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        child: Text(
-                                          activity.status ?? 'clean',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(color: Colors.orange),
-                                        ),
                                       ),
-                                    ],
-                                  ),
+                                  ],
                                 ),
-                            ],
-                          ),
+                              ],
+                            ),
+                            _buildActivityItem(context, 'Signature:',
+                                activity.signature ?? 'no update'),
+                            const SizedBox(width: 16),
+                          ] else
+                            ...[],
                         ],
                       ),
-                      _buildActivityItem(context, 'Signature:',
-                          activity.signature ?? 'Not-Updated'),
-                      const SizedBox(width: 16),
-                    ] else
-                      ...[],
-                  ],
-                ),
-                subtitle: _buildActivityItem(
-                    context, 'Comments: ', activity.comments ?? 'Not-Updated'),
-                // trailing: Container(
-                //   height: 30,width: 30,
-                //   margin: const EdgeInsets.all(2),
-                //   decoration: BoxDecoration(
-                //     shape: BoxShape.circle,
-                //     border: Border.all(
-                //     color: Theme.of(context).primaryColor,
-                //     width: 1,
-                //     ),
-                //   ),
-                //   child: IconButton(
-                //     padding: const EdgeInsets.all(0),
-                //     iconSize: 20,
-                //     icon: const Icon(Icons.edit, color: AppColors.primaryColor),
-                //     onPressed: () => onEditEntry(activity),
-                //   ),
-                // ),
-              ),
-            ),
-            if (isCanAddEdit) // ← only show edit icon
-              Positioned(
-                right: 10,
-                top: 10,
-                child: IconButton(
-                  icon: const Icon(Icons.edit, color: AppColors.primaryColor),
-                  onPressed: () => onEditEntry(activity),
-                ),
-              )
-          ],
-        );
-      }).toList(),
+                      subtitle: _buildActivityItem(context, 'Comments: ',
+                          activity.comments ?? 'no update'),
+                      // trailing: Container(
+                      //   height: 30,width: 30,
+                      //   margin: const EdgeInsets.all(2),
+                      //   decoration: BoxDecoration(
+                      //     shape: BoxShape.circle,
+                      //     border: Border.all(
+                      //     color: Theme.of(context).primaryColor,
+                      //     width: 1,
+                      //     ),
+                      //   ),
+                      //   child: IconButton(
+                      //     padding: const EdgeInsets.all(0),
+                      //     iconSize: 20,
+                      //     icon: const Icon(Icons.edit, color: AppColors.primaryColor),
+                      //     onPressed: () => onEditEntry(activity),
+                      //   ),
+                      // ),
+                    ),
+                  ),
+                  if (isCanAddEdit) // ← only show edit icon
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      child: IconButton(
+                        icon: const Icon(Icons.edit,
+                            color: AppColors.primaryColor),
+                        onPressed: () => onEditEntry(activity),
+                      ),
+                    )
+                ],
+              );
+            }).toList(),
     );
   }
 
@@ -1717,7 +1828,7 @@ class ChildCard extends StatelessWidget {
                                 type: type,
                                 time: timeController.text,
                                 comments: commentsController.text.isEmpty
-                                    ? 'Not-Update'
+                                    ? 'no update'
                                     : commentsController.text,
                               ),
                             );
@@ -1988,6 +2099,7 @@ extension StringExtension on String {
 
 // ensure ActivityModel has nullable fields used above:
 class ActivityModel {
+  final String? id;
   final String type;
   final String? time;
   final String? item;
@@ -1997,6 +2109,7 @@ class ActivityModel {
   final String? signature;
   final String? status;
   ActivityModel({
+    this.id,
     required this.type,
     this.status,
     this.time,

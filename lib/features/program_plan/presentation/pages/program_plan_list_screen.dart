@@ -193,10 +193,9 @@ class _ProgramPlansListScreenState extends State<ProgramPlansListScreen> {
                           },
                           id: plan.id?.toString() ?? '',
                           name: plan.room?.name ?? '',
-                          createdBy: 
-                          plan.creator?.name ?? '',
+                          createdBy:   plan.creator?.name ?? '',
                           createdAt: plan.createdAt?.toString() ?? '',
-                          endDate: plan.updatedAt?.toString() ?? '',
+                          publishedDate: plan.updatedAt?.toString() ?? '',
                         );
                       },
                     );
@@ -353,7 +352,7 @@ class ProgramPlanCard extends StatelessWidget {
   final String name;
   final String createdBy;
   final String createdAt;
-  final String endDate;
+  final String publishedDate;
   final bool isSelected;
   final Function(bool) onSelect;
   final VoidCallback onEditPressed;
@@ -367,7 +366,7 @@ class ProgramPlanCard extends StatelessWidget {
     required this.name,
     required this.createdBy,
     required this.createdAt,
-    required this.endDate,
+    required this.publishedDate,
     required this.isSelected,
     required this.onSelect,
     required this.onEditPressed,
@@ -420,7 +419,7 @@ class ProgramPlanCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        '${DateTime.tryParse(endDate)?.month != null ? DateFormat('MMMM').format(DateTime.tryParse(endDate)!) : ''} ${DateTime.tryParse(endDate)?.year ?? ''}',
+                        '${DateTime.tryParse(publishedDate)?.month != null ? DateFormat('MMMM').format(DateTime.tryParse(publishedDate)!) : ''} ${DateTime.tryParse(publishedDate)?.year ?? ''}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -453,22 +452,22 @@ class ProgramPlanCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 // Created Date and Updated Date
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                    // Flexible(
+                    //   child: Text(
+                    //     'Created: ${DateTime.tryParse(createdAt)?.let((date) => DateFormat('dd MMM yyyy / HH:mm').format(date)) ?? 'N/A'}',
+                    //     style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    //           fontSize: 12,
+                    //           color: Colors.grey[600],
+                    //         ),
+                    //     overflow: TextOverflow.ellipsis,
+                    //   ),
+                    // ),
+                    // const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        'Created: ${DateTime.tryParse(createdAt)?.let((date) => DateFormat('dd MMM yyyy / HH:mm').format(date)) ?? 'N/A'}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        'Updated: ${DateTime.tryParse(endDate)?.let((date) => DateFormat('dd MMM yyyy / HH:mm').format(date)) ?? 'N/A'}',
+                        'Published On: ${DateTime.tryParse(publishedDate)?.let((date) => DateFormat('dd MMM yyyy').format(date)) ?? 'N/A'}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontSize: 12,
                               color: Colors.grey[600],

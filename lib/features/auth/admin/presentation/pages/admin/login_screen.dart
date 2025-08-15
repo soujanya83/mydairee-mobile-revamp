@@ -160,14 +160,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             }
                             await UserTypeHelper.saveUserType(state.loginData?.user?.userType??'');
                             // ignore: use_build_context_synchronously
-                            Navigator.push(context, MaterialPageRoute(builder: (context) {
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
                               return DashboardScreen();
                             }));
                           } else{
                             UIHelpers.showToast(
                               context,
                               message: "Authentication failed - Token missing",
-                              backgroundColor: AppColors.errorColor,
+                              backgroundColor: AppColors.errorColor
                             );
                           }
                         }

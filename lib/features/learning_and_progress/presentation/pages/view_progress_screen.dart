@@ -55,26 +55,81 @@ class _ViewProgressScreenState extends State<ViewProgressScreen> {
           } else if (state is ViewProgressError) {
             return Center(child: Text(state.message));
           } else if (state is ViewProgressLoaded) {
-            final assessments = state.assessments;
-            return ListView.builder(
+            final assessments = state.assessments ?? [];
+
+            // --- GROUP BY SUBJECT, THEN BY ACTIVITY ---
+            final Map<String, Map<String, List<AssessmentModel>>> grouped = {};
+            for (final a in assessments) {
+              final subject = (a.subject ?? '').trim().isEmpty ? 'Other' : a.subject ?? 'Other';
+              final activity = (a.activityTitle ?? '').trim().isEmpty ? 'Other' : a.activityTitle ?? 'Other';
+              grouped.putIfAbsent(subject, () => {});
+              grouped[subject]!.putIfAbsent(activity, () => []);
+              grouped[subject]![activity]!.add(a);
+            }
+
+            return ListView(
               padding: const EdgeInsets.all(16),
-              itemCount: assessments.length,
-              itemBuilder: (context, i) {
-                final a = assessments[i];
-                return AssessmentItemCard(
-                  assessment: a,
-                  onStatusTap: () {
-                    final next = _getNextStatus(a.status);
-                    context.read<ViewProgressBloc>().add(
-                      UpdateAssessmentStatusEvent(
-                        assessmentId: a.id,
-                        childId: widget.childId,
-                        newStatus: next,
+              children: [
+                for (final subject in grouped.keys)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Subject header with item count
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: [
+                            Text(
+                              subject,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withOpacity(.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '${grouped[subject]?.values.expand((l) => l).length ?? 0} ITEMS',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.green[800],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                );
-              },
+                      // For each activity under this subject
+                      for (final activity in grouped[subject]?.keys ?? [])
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Activity header
+                            // Padding(
+                            //   padding: const EdgeInsets.only(left: 8.0, top: 8, bottom: 4),
+                            //   child: Text(
+                            //     activity,
+                            //     style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            //       fontWeight: FontWeight.w600,
+                            //       color: Colors.blueGrey[700],
+                            //     ),
+                            //   ),
+                            // ),
+                            // List of sub-activities (AssessmentItemCard)
+                            ...?grouped[subject]?[activity]?.map((a) => AssessmentItemCard(
+                                  assessment: a,
+                                  onStatusTap: () {
+                                    // Your status tap logic here
+                                  },
+                                )),
+                          ],
+                        ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+              ],
             );
           }
           return const SizedBox();
@@ -193,10 +248,10 @@ class AssessmentItemCard extends StatelessWidget {
   Color _statusColor(AssessmentStatus s) {
     switch (s) {
       case AssessmentStatus.introduced:
-        return Colors.blue;
+        return Colors.orange;
       case AssessmentStatus.practicing:
       case AssessmentStatus.working:  // mapped same as practicing
-        return Colors.orange;
+        return Colors.blue;
       case AssessmentStatus.completed:
         return Colors.green;
       default:
@@ -252,7 +307,7 @@ class TrianglePainter extends CustomPainter {
     for (var i = 0; i < 3; i++) {
       stroke.color = (i < colored)
         ? _statusColor(status)
-        : Colors.grey.withOpacity(.3)!;
+        : Colors.grey.withOpacity(.3);
       final p1 = sideOrder[i][0], p2 = sideOrder[i][1];
       canvas.drawLine(p1, p2, stroke);
     }
@@ -275,10 +330,10 @@ class TrianglePainter extends CustomPainter {
   Color _statusColor(AssessmentStatus s) {
     switch (s) {
       case AssessmentStatus.introduced:
-        return Colors.blue;
+        return Colors.orange;
       case AssessmentStatus.practicing:
       case AssessmentStatus.working:
-        return Colors.orange;
+        return Colors.blue;
       case AssessmentStatus.completed:
         return Colors.green;
       default:

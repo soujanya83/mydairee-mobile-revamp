@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:mydiaree/features/snapshot/data/model/snapshot_model.dart'; 
+import 'package:mydiaree/features/snapshot/data/model/snapshot_model.dart';
 
 abstract class SnapshotState extends Equatable {
   const SnapshotState();

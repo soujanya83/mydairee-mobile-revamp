@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/services/api_services.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
@@ -18,8 +19,18 @@ class DailyTrackingRepository {
     //  final nUrl = 'https://mydiaree.com.au/api/DailyDiary/list?center_id=102&room_id=1621392989&selected_date=2025-08-12';
     return await getAndParseData(
       url,
-      // nUrl,
-      fromJson: (json) => DailyDiareeModel.fromJson(json),
+      fromJson: (json) {
+        debugPrint(json.toString(), wrapWidth: 1024);
+        print('vvvvvvvvvvvvv');
+        final data = DailyDiareeModel.fromJson(json);
+        print('======++++++++++++++++=========');
+        print(data.data);
+        print(data.data?.centers?.length);
+        print(data.data?.rooms?.length);
+        print(data.message);
+        print(data.data?.children?.length);
+        return data;
+      },
     );
   }
 
@@ -32,6 +43,15 @@ class DailyTrackingRepository {
   }) async {
     final data = FormData.fromMap({
       'date': date,
+      'time': time,
+      'item': item,
+      if (comments != null) 'comments': comments,
+      // Add each childId as 'child_ids[]'
+      for (var id in childIds) 'child_ids[]': id,
+    });
+    print('Posting Breakfast Data:');
+    print({
+      'date': date,
       'child_ids': childIds,
       'time': time,
       'item': item,
@@ -41,6 +61,39 @@ class DailyTrackingRepository {
       '${AppUrls.baseUrl}/api/activities/breakfast',
       data,
     );
+    print('Response from Breakfast API: ${resp.data.toString()}');
+    return ApiResponse(success: resp.success, message: resp.message, data: resp.data);
+  }
+
+
+  Future<ApiResponse<dynamic>> postLunch({
+    required String date,
+    required List<String> childIds,
+    required String time,
+    required String item,
+    String? comments,
+  }) async {
+    final data = FormData.fromMap({
+      'date': date,
+      'time': time,
+      'item': item,
+      if (comments != null) 'comments': comments,
+      // Add each childId as 'child_ids[]'
+      for (var id in childIds) 'child_ids[]': id,
+    });
+    print('Posting Breakfast Data:');
+    print({
+      'date': date,
+      'child_ids': childIds,
+      'time': time,
+      'item': item,
+      if (comments != null) 'comments': comments,
+    });
+    final resp = await ApiServices.postData(
+      '${AppUrls.baseUrl}/api/activities/lunch',
+      data,
+    );
+    print('Response from Lunch API: ${resp.data.toString()}');
     return ApiResponse(success: resp.success, message: resp.message, data: resp.data);
   }
 
@@ -73,7 +126,7 @@ class DailyTrackingRepository {
   }) async {
     final data = FormData.fromMap({
       'date': date,
-      'child_ids': childIds,
+      for (var id in childIds) 'child_ids[]': id,
       'time': time,
       if (comments != null) 'comments': comments,
     });
@@ -92,7 +145,7 @@ class DailyTrackingRepository {
   }) async {
     final data = FormData.fromMap({
       'date': date,
-      'child_ids': childIds,
+       for (var id in childIds) 'child_ids[]': id,
       'time': time,
       if (comments != null) 'comments': comments,
     });
@@ -113,13 +166,14 @@ class DailyTrackingRepository {
   }) async {
     final map = {
       'date': date,
-      'child_ids': childIds,
+      for (var id in childIds) 'child_ids[]': id,
       'sleep_time': sleepTime,
       'wake_time': wakeTime,
       if (comments != null) 'comments': comments,
       if (id != null) 'id': id,
     };
     final data = FormData.fromMap(map);
+    print('data of sleep: ${data.fields}');
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/dailyDiary/storeSleep',
       data,
