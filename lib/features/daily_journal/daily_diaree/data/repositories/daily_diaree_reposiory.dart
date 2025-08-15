@@ -192,18 +192,20 @@ class DailyTrackingRepository {
   }) async {
     final map = {
       'date': date,
-      'child_ids': childIds,
+      for (var id in childIds) 'child_ids[]': id,
       'time': time,
-      'status': status,
+      'status': status.toLowerCase(),
       if (comments != null) 'comments': comments,
       if (signature != null) 'signature': signature,
       if (id != null) 'id': id,
     };
     final data = FormData.fromMap(map);
+    print(data.fields.toString());
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/dailyDiary/storeToileting',
       data,
     );
+    print('response of storeToileting: ${resp.data}');
     return ApiResponse(success: resp.success, message: resp.message, data: resp.data);
   }
 
@@ -217,12 +219,14 @@ class DailyTrackingRepository {
   }) async {
     final map = {
       'date': date,
-      'child_ids': childIds,
+       for (var id in childIds) 'child_ids[]': id,
       'time': time,
       if (comments != null) 'comments': comments,
       if (signature != null) 'signature': signature,
       if (id != null) 'id': id,
     };
+    print('============= storeSunscreen =============');
+    print(map);
     final data = FormData.fromMap(map);
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/dailyDiary/storeSunscreen',
@@ -240,16 +244,18 @@ class DailyTrackingRepository {
   }) async {
     final map = {
       'date': date,
-      'child_ids': childIds,
+       for (var id in childIds) 'child_ids[]': id,
       'time': time,
       if (comments != null) 'comments': comments,
       if (id != null) 'id': id,
     };
     final data = FormData.fromMap(map);
+    print('data of bottle: ${data.fields}');
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/dailyDiary/storeBottle',
       data,
     );
+    print('response of storeBottle: ${resp.data}');
     return ApiResponse(success: resp.success, message: resp.message, data: resp.data);
   }
 }

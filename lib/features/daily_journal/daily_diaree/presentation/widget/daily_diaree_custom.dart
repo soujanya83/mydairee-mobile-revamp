@@ -237,7 +237,8 @@ class ChildCard extends StatelessWidget {
                   'afternoon-tea',
                   'snacks',
                   'sunscreen',
-                  'toileting'
+                  'toileting',
+                  'bottle',
                 ].contains(type)) ...[
                   TextFormField(
                     controller: timeCtrl,
@@ -322,7 +323,8 @@ class ChildCard extends StatelessWidget {
                   'snacks',
                   'sunscreen',
                   'sleep',
-                  'toileting'
+                  'toileting',
+                  'bottle',
                 ].contains(type)) ...[
                   TextFormField(
                     controller: commentsCtrl,
@@ -359,6 +361,7 @@ class ChildCard extends StatelessWidget {
                           sleepTime: type == 'sleep' ? sleepTimeCtrl.text : null,
                           wakeTime: type == 'sleep' ? wakeCtrl.text : null,
                           signature: signatureCtrl.text,
+                          id: existing?.id,
                         );
                         _addActivity(context, result);
                         Navigator.pop(context);
@@ -478,6 +481,7 @@ class ChildCard extends StatelessWidget {
                                     sleepTime: s.startTime,
                                     wakeTime: s.endTime,
                                     comments: s.comments,
+                                    id: s.id.toString(),
                                   ))
                               .toList() ??
                           [],
@@ -517,7 +521,7 @@ class ChildCard extends StatelessWidget {
                       'snacks',
                       time: child?.snacks?.startTime ?? 'no update',
                       onAddEntryPressed: () {
-                        // _showItemBasedDialog(context, 'snacks');
+                        _showItemBasedDialog(context, 'snacks');
                       },
                       item: child?.snacks?.item ?? 'no update',
                       comments: child?.snacks?.comments ?? 'no update',
@@ -534,6 +538,7 @@ class ChildCard extends StatelessWidget {
                                     time: s.startTime,
                                     comments: s.comments,
                                     signature: s.signature,
+                                    id: s.id.toString(),
                                   ))
                               .toList() ??
                           [], 
@@ -559,6 +564,7 @@ class ChildCard extends StatelessWidget {
                                     comments: t.comments,
                                     signature: t.signature,
                                     status: t.status,
+                                    id: t.id.toString(),
                                   ))
                               .toList() ??
                           [],
@@ -578,6 +584,7 @@ class ChildCard extends StatelessWidget {
                                     type: 'bottle',
                                     time: b.startTime,
                                     comments: b.comments,
+                                    id: b.id.toString(),
                                   ))
                               .toList() ??
                           [],
@@ -1022,7 +1029,9 @@ class ChildCard extends StatelessWidget {
                           ],
                           if (type == 'bottle') ...[
                             _buildActivityItem(context, 'Time:',
-                                activity.time ?? 'no update'),
+                                activity.time ?? 'no update',
+                                
+                                ),
                           ],
                           if (type == 'toileting') ...[
                             Row(
@@ -1951,7 +1960,15 @@ class ChildCard extends StatelessWidget {
   }) {
     // initialize controllers with existing values (if any)
     final timeCtrl = TextEditingController(text: existing?.time);
-    final statusCtrl = TextEditingController(text: existing?.status);
+    // Ensure status is formatted: first character uppercase, rest lowercase, and handle null/invalid types
+    String? statusValue = existing?.status;
+    if (statusValue != null && statusValue.isNotEmpty) {
+      statusValue = statusValue[0].toUpperCase() + statusValue.substring(1).toLowerCase();
+    } else {
+      statusValue = null;
+    }
+    final statusCtrl = TextEditingController(text: statusValue);
+    final signatureCtrl = TextEditingController(text: existing?.signature);
     final commentsCtrl = TextEditingController(text: existing?.comments);
 
     showDialog(
@@ -2010,13 +2027,15 @@ class ChildCard extends StatelessWidget {
 
                 // Status dropdown
                 DropdownButtonFormField<String>(
-                  value: existing?.status,
+                  value: ['Clean', 'Wet', 'Soiled', 'Successful'].contains(statusCtrl.text) && statusCtrl.text.isNotEmpty
+                      ? statusCtrl.text
+                      : null,
                   decoration: InputDecoration(
                     labelText: 'Status',
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8)),
                   ),
-                  items: ['Clean', 'Wet', 'Soiled', 'Successful(Toilet)']
+                  items: ['Clean', 'Wet', 'Soiled', 'Successful']
                       .map((st) => DropdownMenuItem(
                             value: st,
                             child: Text(st),
@@ -2025,7 +2044,16 @@ class ChildCard extends StatelessWidget {
                   onChanged: (v) => statusCtrl.text = v ?? '',
                 ),
                 const SizedBox(height: 12),
-
+                // Signature field
+                TextFormField(
+                  controller: signatureCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Signature',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 // Comments field
                 TextFormField(
                   controller: commentsCtrl,
@@ -2061,13 +2089,17 @@ class ChildCard extends StatelessWidget {
                           type: 'toileting',
                           time: timeCtrl.text,
                           status: statusCtrl.text,
+                          signature: signatureCtrl.text.isEmpty
+                              ? ''
+                              : signatureCtrl.text,
                           comments: commentsCtrl.text.isEmpty
-                              ? 'Not-Update'
+                              ? ''
                               : commentsCtrl.text,
+                          id: existing?.id,
                         );
                         print(timeCtrl.text);
                         onSave(updated); // pass back to caller
-                        // Navigator.pop(context);
+                        Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _getButtonColor('toileting'),
