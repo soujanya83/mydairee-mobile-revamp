@@ -7,6 +7,7 @@ import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
+import 'package:mydiaree/features/observation/data/model/observation_list_response.dart';
 import 'package:mydiaree/features/reflection/data/model/reflection_list_model.dart' hide Center;
 
 class ImageCarousel extends StatefulWidget {
@@ -165,7 +166,7 @@ class ReflectionCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        title,
+                        stripHtmlTags(title),
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),

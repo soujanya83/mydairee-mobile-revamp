@@ -189,7 +189,7 @@ class ChildCard extends StatelessWidget {
         backgroundColor: AppColors.successColor,
       );
       print('[_addActivity] Calling onAddEntriesPressed()');
-      // onAddEntriesPressed(); // reload parent
+      onAddEntriesPressed(); // reload parent
     } else {
       UIHelpers.showToast(
         context,

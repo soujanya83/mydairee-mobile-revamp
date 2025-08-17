@@ -29,43 +29,23 @@ class PermissionListModel {
 }
 
 class PermissionModel {
-    String? key;
-    String? label;
+  final String name;
+  final String label;
 
-    PermissionModel({
-        this.key,
-        this.label,
-    });
+  PermissionModel({
+    required this.name,
+    required this.label,
+  });
 
-    factory PermissionModel.fromJson(Map<String, dynamic> json) => PermissionModel(
-        key: json["key"],
-        label: json["label"],
+  factory PermissionModel.fromJson(Map<String, dynamic> json) {
+    return PermissionModel(
+      name: json['name'] ?? '',
+      label: json['label'] ?? '',
     );
+  }
 
-    Map<String, dynamic> toJson() => {
-        "key": key,
-        "label": label,
-    };
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'label': label,
+      };
 }
-
-
-// class PermissionModel {
-//   final String key;
-//   final String label;
-
-//   PermissionModel({required this.key, required this.label});
-
-//   factory PermissionModel.fromJson(Map<String, dynamic> json) {
-//     return PermissionModel(
-//       key: json['key'] ?? '',
-//       label: json['label'] ?? '',
-//     );
-//   }
-
-//   Map<String, dynamic> toJson() {
-//     return {
-//       'key': key,
-//       'label': label,
-//     };
-//   }
-// }

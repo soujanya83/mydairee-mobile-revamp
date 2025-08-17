@@ -7,7 +7,11 @@ abstract class StaffSettingsEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchStaffEvent extends StaffSettingsEvent {}
+class FetchStaffEvent extends StaffSettingsEvent {
+  String centerId;
+
+  FetchStaffEvent({required this.centerId});
+}
 
 class AddStaffEvent extends StaffSettingsEvent {
   final String name;

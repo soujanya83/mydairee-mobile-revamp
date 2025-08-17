@@ -63,7 +63,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
 
   @override
   void initState() {
-    _selectedCenterId = globalSelectedCenterId??'';
+    _selectedCenterId = globalSelectedCenterId ?? '';
     super.initState();
     initDataGet();
   }
@@ -369,7 +369,6 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
         initialFromDate: _fromDate,
         initialToDate: _toDate,
         initialStatuses: _statuses,
-
         onApplyFilters: (authorIds, childIds, fromDate, toDate, statuses) {
           _applyAdvancedFilters(
             authorIds ?? [],
@@ -486,14 +485,15 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                     if (!UserTypeHelper.isParent)
                       UIHelpers.addButton(
                         context: context,
-                        ontap: () {
-                          Navigator.push(
+                        ontap: () async {
+                          await Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => AddObservationScreen(
                                         type: 'add',
                                         centerId: _selectedCenterId,
                                       )));
+                          initDataGet();
                         },
                       ),
                   ],
@@ -545,54 +545,54 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
               // ),
 
               // Filter options
-              if(!UserTypeHelper.isParent)
-              Row(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                           if(!UserTypeHelper.isParent)
-                          _buildFilterChip(
-                            'All',
-                            _statusFilter.isEmpty,
-                            () {
-                              setState(() {
-                                _statusFilter = '';
-                              });
-                              _applyAdvancedFilters([], [], '', '', []);
-                            },
-                          ),
-                          if (!UserTypeHelper.isParent)
-                            _buildFilterChip(
-                              'Draft',
-                              _statusFilter == 'draft',
-                              () => _handleStatusFilter('draft'),
-                            ),
-                           if(!UserTypeHelper.isParent)
-                          _buildFilterChip(
-                            'Published',
-                            _statusFilter == 'published',
-                            () => _handleStatusFilter('published'),
-                          ),
-                          if (!UserTypeHelper.isParent)
-                            _buildFilterChip(
-                              'Pending',
-                              _statusFilter == 'pending',
-                              () => _handleStatusFilter('pending'),
-                            ),
-                        ],
+              if (!UserTypeHelper.isParent)
+                Row(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            if (!UserTypeHelper.isParent)
+                              _buildFilterChip(
+                                'All',
+                                _statusFilter.isEmpty,
+                                () {
+                                  setState(() {
+                                    _statusFilter = '';
+                                  });
+                                  _applyAdvancedFilters([], [], '', '', []);
+                                },
+                              ),
+                            if (!UserTypeHelper.isParent)
+                              _buildFilterChip(
+                                'Draft',
+                                _statusFilter == 'draft',
+                                () => _handleStatusFilter('draft'),
+                              ),
+                            if (!UserTypeHelper.isParent)
+                              _buildFilterChip(
+                                'Published',
+                                _statusFilter == 'published',
+                                () => _handleStatusFilter('published'),
+                              ),
+                            if (!UserTypeHelper.isParent)
+                              _buildFilterChip(
+                                'Pending',
+                                _statusFilter == 'pending',
+                                () => _handleStatusFilter('pending'),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.filter_list),
-                    onPressed: _showAdvancedFilterDialog,
-                    color: AppColors.primaryColor,
-                  ),
-                ],
-              ),
+                    IconButton(
+                      icon: const Icon(Icons.filter_list),
+                      onPressed: _showAdvancedFilterDialog,
+                      color: AppColors.primaryColor,
+                    ),
+                  ],
+                ),
               const SizedBox(height: 16),
 
               // Observation count
@@ -607,8 +607,8 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
               // **List area**: only this part reacts to _isLoading / error
               if (_isLoading)
                 Padding(
-                  padding: EdgeInsetsGeometry.only(top: screenHeight*.3),
-                  child: const Center(child: CircularProgressIndicator()))
+                    padding: EdgeInsetsGeometry.only(top: screenHeight * .3),
+                    child: const Center(child: CircularProgressIndicator()))
               else if (_errorMessage.isNotEmpty)
                 Center(
                   child: Column(
@@ -647,7 +647,8 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                       mediaUrl =
                           '${AppUrls.baseUrl}/${observation.media[0].mediaUrl}';
                     }
-                    if(UserTypeHelper.isParent && observation.status.toLowerCase()=='draft' ){
+                    if (UserTypeHelper.isParent &&
+                        observation.status.toLowerCase() == 'draft') {
                       return SizedBox();
                     }
 
@@ -664,11 +665,11 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                     );
                   },
                 ),
-            if (_isLoadingMore)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(child: CircularProgressIndicator()),
-              ),
+              if (_isLoadingMore)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
               // if still in search/filter mode, lightly dim & show spinner
               if (_isSearching || _isFiltering)
                 Container(

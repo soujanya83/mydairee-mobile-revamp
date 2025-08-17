@@ -43,6 +43,7 @@ class CustomScaffold extends StatelessWidget {
             ),
         backgroundColor: Colors.transparent,
         body: body,
+        
       )
     ]);
   }

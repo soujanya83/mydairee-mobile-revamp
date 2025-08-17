@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_action_button.dart';
@@ -8,9 +7,8 @@ import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
 import 'package:mydiaree/features/settings/parent_setting/data/model/parent_model.dart';
-import 'package:mydiaree/features/settings/parent_setting/presentation/bloc/list/parent_setting_bloc.dart';
-import 'package:mydiaree/features/settings/parent_setting/presentation/bloc/list/parent_setting_event.dart';
-import 'package:mydiaree/features/settings/parent_setting/presentation/bloc/list/parent_setting_state.dart';
+import 'package:mydiaree/features/settings/parent_setting/data/repositories/parent_settings_repository.dart';
+
 import 'package:mydiaree/features/settings/parent_setting/presentation/pages/add_parent_setting_screen.dart';
 
 class ParentSettingsScreen extends StatefulWidget {
@@ -21,35 +19,47 @@ class ParentSettingsScreen extends StatefulWidget {
 }
 
 class _ParentSettingsScreenState extends State<ParentSettingsScreen> {
-  String? _selectedCenter = 'Melbourne Center';
+  String? _selectedCenter = '1';
+  bool _isLoading = false;
+  final ParentRepository _repository = ParentRepository();
+  List<ParentModel> _parents = [];
+
   @override
   void initState() {
     super.initState();
-    context.read<ParentSettingsBloc>().add(FetchParentsEvent());
+    _fetchParents();
   }
 
-  void _navigateToAddParentScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const AddParentScreen(isEdit: false),
-      ),
-    );
+  Future<void> _fetchParents() async {
+    setState(() => _isLoading = true);
+    try {
+      final parents = await _repository.getParents(centerId: _selectedCenter ?? '1');
+      setState(() {
+        _parents = parents;
+      });
+    } catch (e) {
+      UIHelpers.showToast(context, message: e.toString(), backgroundColor: AppColors.errorColor);
+    }
+    setState(() => _isLoading = false);
   }
 
-  void _navigateToEditParentScreen(ParentModel parent) {
-    Navigator.push(
+  Future<void> _addOrEditParent({ParentModel? parent}) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AddParentScreen(
-          isEdit: true,
+          isEdit: parent != null,
           parent: parent,
+          centerId: _selectedCenter,
         ),
       ),
     );
+    if (result == true) {
+      await _fetchParents();
+    }
   }
 
-  void _showDeleteConfirmationDialog(String parentId) {
+  void _showDeleteConfirmationDialog(int parentId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -62,11 +72,9 @@ class _ParentSettingsScreenState extends State<ParentSettingsScreen> {
           ),
           TextButton(
             style: TextButton.styleFrom(foregroundColor: AppColors.errorColor),
-            onPressed: () {
-              context
-                  .read<ParentSettingsBloc>()
-                  .add(DeleteParentEvent(parentId));
+            onPressed: () async {
               Navigator.pop(context);
+              _deleteParentWithOverlay(parentId);
             },
             child: const Text('Yes, delete it!'),
           ),
@@ -75,198 +83,183 @@ class _ParentSettingsScreenState extends State<ParentSettingsScreen> {
     );
   }
 
+  Future<void> _deleteParentWithOverlay(int parentId) async {
+    setState(() => _isLoading = true);
+    final success = await _repository.deleteParent(parentId);
+    setState(() => _isLoading = false);
+    if (success) {
+      UIHelpers.showToast(context, message: 'Parent deleted successfully!', backgroundColor: AppColors.successColor);
+      await _fetchParents();
+    } else {
+      UIHelpers.showToast(context, message: 'Failed to delete parent', backgroundColor: AppColors.errorColor);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return CustomScaffold(
-      appBar: const CustomAppBar(title: 'Parent Settings'),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 10,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              UIHelpers.addButton(
-                ontap: _navigateToAddParentScreen,
-                context: context,
-              ),
-            const  SizedBox(
-                width: 10,
-              ),
-            ],
-          ),
-          const  SizedBox(
-                height: 10,
-              ),
-          StatefulBuilder(builder: (context, setState) {
-            return CenterDropdown(
-              selectedCenterId: _selectedCenter,
-              onChanged: (value) {
-                context.read<ParentSettingsBloc>().add(FetchParentsEvent());
-              },
-            );
-          }),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20),
-                        BlocConsumer<ParentSettingsBloc, ParentSettingsState>(
-                          listener: (context, state) {
-                            if (state is ParentSettingsSuccess) {
-                              UIHelpers.showToast(
-                                context,
-                                message: state.message,
-                                backgroundColor: AppColors.successColor,
-                              );
-                            } else if (state is ParentSettingsFailure) {
-                              UIHelpers.showToast(
-                                context,
-                                message: state.message,
-                                backgroundColor: AppColors.errorColor,
-                              );
-                            }
-                          },
-                          builder: (context, state) {
-                            if (state is ParentSettingsLoading) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
-                            if (state is ParentSettingsLoaded) {
-                              final parentList = state.parents;
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: parentList.length,
-                                itemBuilder: (context, index) {
-                                  final parent = parentList[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10),
-                                    child: PatternBackground(
-                                      elevation: 1,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Sr. No.: ${index + 1}',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                CircleAvatar(
-                                                  radius: 20,
-                                                  backgroundImage: NetworkImage(
-                                                      parent.avatarUrl),
-                                                  onBackgroundImageError: (_,
-                                                          __) =>
-                                                      const Icon(Icons.person),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  'Name: ${parent.name}',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodyMedium,
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              'Email: ${parent.email}',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              'Contact No.: ${parent.contactNo.isNotEmpty ? parent.contactNo : 'N/A'}',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              'Children:',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                            ),
-                                            ...parent.children
-                                                .map((child) => Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              left: 16),
-                                                      child: Text(
-                                                        '• ${child['name']} (${child['role']})',
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyMedium,
-                                                      ),
-                                                    )),
-                                            const SizedBox(height: 12),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                CustomActionButton(
-                                                  icon: Icons.edit_rounded,
-                                                  color: AppColors.primaryColor,
-                                                  onPressed: () =>
-                                                      _navigateToEditParentScreen(
-                                                          parent),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                CustomActionButton(
-                                                  icon: Icons.delete,
-                                                  color: AppColors.errorColor,
-                                                  onPressed: () =>
-                                                      _showDeleteConfirmationDialog(
-                                                          parent.id),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            }
-                            return const Center(
-                                child: Text('No parents available'));
-                          },
-                        ),
-                      ],
+    return Stack(
+      children: [
+        AbsorbPointer(
+          absorbing: _isLoading,
+          child: CustomScaffold(
+            appBar: const CustomAppBar(title: 'Parent Settings'),
+            body: Column(
+              children: [
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    UIHelpers.addButton(
+                      ontap: () => _addOrEditParent(),
+                      context: context,
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 10),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                StatefulBuilder(builder: (context, setState) {
+                  return CenterDropdown(
+                    selectedCenterId: _selectedCenter,
+                    onChanged: (value) async {
+                      setState(() {
+                        _selectedCenter = value.id;
+                      });
+                      await _fetchParents();
+                    },
+                  );
+                }),
+                  const SizedBox(height: 10),
+                Expanded(
+                  child: _isLoading
+                      ? const SizedBox.shrink()
+                      : SingleChildScrollView(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 20),
+                                    _parents.isEmpty
+                                        ? const Center(child: Text('No parents available'))
+                                        : ListView.builder(
+                                            shrinkWrap: true,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            itemCount: _parents.length,
+                                            itemBuilder: (context, index) {
+                                              final parent = _parents[index];
+                                              final hasImage = parent.imageUrl != null && parent.imageUrl!.isNotEmpty;
+                                              return Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                                child: PatternBackground(
+                                                  elevation: 1,
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(16),
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          'Sr. No.: ${index + 1}',
+                                                          style: Theme.of(context)
+                                                              .textTheme
+                                                              .bodyMedium
+                                                              ?.copyWith(fontWeight: FontWeight.bold),
+                                                        ),
+                                                        const SizedBox(height: 8),
+                                                        Row(
+                                                          children: [
+                                                            hasImage
+                                                                ? CircleAvatar(
+                                                                    radius: 20,
+                                                                    backgroundImage: NetworkImage(
+                                                                      parent.imageUrl!.startsWith('http')
+                                                                          ? parent.imageUrl!
+                                                                          : 'https://mydiaree.com.au/${parent.imageUrl}',
+                                                                    ),
+                                                                  )
+                                                                : const CircleAvatar(
+                                                                    radius: 20,
+                                                                    backgroundColor: AppColors.grey,
+                                                                    child: Icon(Icons.person, color: Colors.white),
+                                                                  ),
+                                                            const SizedBox(width: 8),
+                                                            Text(
+                                                              'Name: ${parent.name}',
+                                                              style: Theme.of(context).textTheme.bodyMedium,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(height: 4),
+                                                        Text(
+                                                          'Email: ${parent.email}',
+                                                          style: Theme.of(context).textTheme.bodyMedium,
+                                                        ),
+                                                        const SizedBox(height: 4),
+                                                        Text(
+                                                          'Contact No.: ${parent.contactNo.isNotEmpty ? parent.contactNo : 'N/A'}',
+                                                          style: Theme.of(context).textTheme.bodyMedium,
+                                                        ),
+                                                        const SizedBox(height: 4),
+                                                        Text(
+                                                          'Children:',
+                                                          style: Theme.of(context)
+                                                              .textTheme
+                                                              .bodyMedium
+                                                              ?.copyWith(fontWeight: FontWeight.bold),
+                                                        ),
+                                                        ...parent.children.map((child) => Padding(
+                                                              padding: const EdgeInsets.only(left: 16),
+                                                              child: Text(
+                                                                '• ${child.name} ${child.lastname} (${child.relation})',
+                                                                style: Theme.of(context).textTheme.bodyMedium,
+                                                              ),
+                                                            )),
+                                                        const SizedBox(height: 12),
+                                                        Row(
+                                                          mainAxisAlignment: MainAxisAlignment.end,
+                                                          children: [
+                                                            CustomActionButton(
+                                                              icon: Icons.edit_rounded,
+                                                              color: AppColors.primaryColor,
+                                                              onPressed: () => _addOrEditParent(parent: parent),
+                                                            ),
+                                                            const SizedBox(width: 8),
+                                                            CustomActionButton(
+                                                              icon: Icons.delete,
+                                                              color: AppColors.errorColor,
+                                                              onPressed: () => _showDeleteConfirmationDialog(parent.id),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+        if (_isLoading)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.2),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:mydiaree/main.dart';
 
 class AssessmentsScreen extends StatefulWidget {
   final AddNewObservationData? observationData;
+  final String? observationId;
   final Function(String) onTabChanged;
   final Function()? onSaveDevelopmentMilestone;
 
@@ -17,6 +18,7 @@ class AssessmentsScreen extends StatefulWidget {
     this.observationData,
     required this.onTabChanged,
     this.onSaveDevelopmentMilestone,
+    this.observationId,
   });
 
   @override
@@ -61,6 +63,8 @@ class _AssessmentsScreenState extends State<AssessmentsScreen>
             break;
         }
         // widget.onTabChanged(subTab);
+
+        setState(() {}); // <-- Add this line to rebuild on tab change
       }
     });
 
@@ -459,36 +463,37 @@ class _AssessmentsScreenState extends State<AssessmentsScreen>
 
                               // Save button
                               const SizedBox(height: 20),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    final subactivityIds =
-                                        selectedEYLFActivities
-                                            .map((e) => int.parse(e))
-                                            .toList();
-                                    ObservationRepository _observationRepository =
-                                        ObservationRepository();
-                                    final response =
-                                        await _observationRepository
-                                            .saveEYLFAssessment(
-                                      observationId: widget
-                                          .observationData!.observation.id,
-                                      subactivityIds: subactivityIds,
-                                    );
-                                    if (response.success) {
-                                      UIHelpers.showToast(context,
-                                          message: 'EYLF saved');
-                                      _tabController.animateTo(
-                                          2); // Switch to Developmental Milestone tab
-                                    } else {
-                                      UIHelpers.showToast(context,
-                                          message: response.message);
-                                    }
-                                  },
-                                  child: const Text('Save EYLF Selection'),
-                                ),
-                              ),
+                              // SizedBox(
+                              //   width: double.infinity,
+                              //   child: ElevatedButton(
+                              //     onPressed: () async {
+                              //       final subactivityIds =
+                              //           selectedEYLFActivities
+                              //               .map((e) => int.parse(e))
+                              //               .toList();
+                              //       ObservationRepository
+                              //           _observationRepository =
+                              //           ObservationRepository();
+                              //       final response =
+                              //           await _observationRepository
+                              //               .saveEYLFAssessment(
+                              //         observationId: widget
+                              //             .observationData!.observation.id,
+                              //         subactivityIds: subactivityIds,
+                              //       );
+                              //       if (response.success) {
+                              //         UIHelpers.showToast(context,
+                              //             message: 'EYLF saved');
+                              //         _tabController.animateTo(
+                              //             2); // Switch to Developmental Milestone tab
+                              //       } else {
+                              //         UIHelpers.showToast(context,
+                              //             message: response.message);
+                              //       }
+                              //     },
+                              //     child: const Text('Save EYLF Selection'),
+                              //   ),
+                              // ),
                             ],
                           ),
                       ],
@@ -654,34 +659,42 @@ class _AssessmentsScreenState extends State<AssessmentsScreen>
                           }).toList(),
 
                           // Save button
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-  onPressed: () async {
-    final selections = devMilestoneValues.entries
-      .where((e) => e.value != null)
-      .map((e) => {
-        "idSub": int.parse(e.key),
-        "assessment": e.value,
-      }).toList();
-    ObservationRepository _observationRepository = ObservationRepository();
-    final response = await _observationRepository.saveDevelopmentMilestone(
-      observationId: widget.observationData!.observation.id,
-      selections: selections,
-    );
-    if (response.success) {
-      UIHelpers.showToast(context, message: 'Developmental milestones saved');
-      if (widget.onSaveDevelopmentMilestone != null) {
-        widget.onSaveDevelopmentMilestone!();
-      }
-    } else {
-      UIHelpers.showToast(context, message: response.message);
-    }
-  },
-  child: const Text('Save Development Milestone'),
-),
-                          ),
+                          // const SizedBox(height: 20),
+                          // SizedBox(
+                          //   width: double.infinity,
+                          //   child: ElevatedButton(
+                          //     onPressed: () async {
+                          //       final selections = devMilestoneValues.entries
+                          //           .where((e) => e.value != null)
+                          //           .map((e) => {
+                          //                 "idSub": int.parse(e.key),
+                          //                 "assessment": e.value,
+                          //               })
+                          //           .toList();
+                          //       ObservationRepository _observationRepository =
+                          //           ObservationRepository();
+                          //       final response = await _observationRepository
+                          //           .saveDevelopmentMilestone(
+                          //         observationId:
+                          //             widget.observationData!.observation.id,
+                          //         selections: selections,
+                          //       );
+                          //       if (response.success) {
+                          //         UIHelpers.showToast(context,
+                          //             message:
+                          //                 'Developmental milestones saved');
+                          //         if (widget.onSaveDevelopmentMilestone !=
+                          //             null) {
+                          //           widget.onSaveDevelopmentMilestone!();
+                          //         }
+                          //       } else {
+                          //         UIHelpers.showToast(context,
+                          //             message: response.message);
+                          //       }
+                          //     },
+                          //     child: const Text('Save Development Milestone'),
+                          //   ),
+                          // ),
                         ],
                       ],
                     ),
@@ -690,45 +703,126 @@ class _AssessmentsScreenState extends State<AssessmentsScreen>
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final subactivities = assessmentValues.entries
-                      .where((e) => e.value != null)
-                      .map((e) => {
-                            "idSubActivity": int.parse(e.key),
-                            "assesment": e.value,
-                          })
-                      .toList();
-                  ObservationRepository observationRepository =
-                      ObservationRepository();
+          Container(
+            margin: const EdgeInsets.all(16.0),
+            width: double.infinity,
+            child: Builder(
+              builder: (context) {
+                if (_tabController.index == 0) {
+                  // Montessori tab
+                  return ElevatedButton(
+                    onPressed: () async {
+                      final subactivities = assessmentValues.entries
+                          .where((e) => e.value != null)
+                          .map((e) => {
+                                "idSubActivity": int.parse(e.key),
+                                "assesment":
+                                    e.value == "Practicing" ? "Working" : e.value,
+                              })
+                          .toList();
 
-                  final response = await observationRepository.saveMontessoriAssessment(
-                    observationId: widget.observationData!.observation.id,
-                    subactivities: subactivities,
+                      ObservationRepository observationRepository =
+                          ObservationRepository();
+
+                      final response =
+                          await observationRepository.saveMontessoriAssessment(
+                        observationId: widget.observationId ?? '',
+                        subactivities: subactivities,
+                      );
+                      if (response.success) {
+                        UIHelpers.showToast(context, message: 'Montessori saved');
+                        _tabController.animateTo(1);
+                      } else {
+                        UIHelpers.showToast(context, message: response.message);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      'Save Montessori',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   );
-                  if (response.success) {
-                    UIHelpers.showToast(context, message: 'Montessori saved');
-                    _tabController.animateTo(1);
-                  } else {
-                    UIHelpers.showToast(context, message: response.message);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text(
-                  'Save Montessori',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+                } else if (_tabController.index == 1) {
+                  // EYLF tab
+                  return ElevatedButton(
+                    onPressed: () async {
+                      final subactivityIds = selectedEYLFActivities
+                          .map((e) => int.parse(e))
+                          .toList();
+                      ObservationRepository _observationRepository =
+                          ObservationRepository();
+                      final response =
+                          await _observationRepository.saveEYLFAssessment(
+                        observationId: widget.observationId.toString(),
+                        subactivityIds: subactivityIds,
+                      );
+                      if (response.success) {
+                        UIHelpers.showToast(context, message: 'EYLF saved');
+                        _tabController.animateTo(2);
+                      } else {
+                        UIHelpers.showToast(context, message: response.message);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      'Save EYLF Selection',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                } else {
+                  // Developmental Milestone tab
+                  return ElevatedButton(
+                    onPressed: () async {
+                      final selections = devMilestoneValues.entries
+                          .where((e) => e.value != null)
+                          .map((e) => {
+                                "idSub": int.parse(e.key),
+                                "assessment": e.value,
+                              })
+                          .toList();
+                      ObservationRepository _observationRepository =
+                          ObservationRepository();
+                      final response =
+                          await _observationRepository.saveDevelopmentMilestone(
+                        observationId: widget.observationId.toString(),
+                        selections: selections,
+                      );
+                      if (response.success) {
+                        UIHelpers.showToast(context,
+                            message: 'Developmental milestones saved');
+                        if (widget.onSaveDevelopmentMilestone != null) {
+                          widget.onSaveDevelopmentMilestone!();
+                        }
+                      } else {
+                        UIHelpers.showToast(context, message: response.message);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      'Save Development Milestone',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                }
+              },
             ),
           ),
         ],
@@ -892,7 +986,6 @@ class _AssessmentsScreenState extends State<AssessmentsScreen>
   //   ];
   // }
 
-
   // Updated EYLF section with white background and primary color checkboxes
   Widget _buildEYLFSection(
       String title, String sectionId, List<Map<String, String>> activities) {
@@ -997,7 +1090,6 @@ class _AssessmentsScreenState extends State<AssessmentsScreen>
     );
   }
 
-  
   // Helper method to build each milestone row
   Widget _buildMilestoneRow(String id, String description) {
     return Padding(

@@ -1,4 +1,6 @@
+import 'package:flutter/rendering.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
+import 'package:mydiaree/core/services/api_services.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/features/observation/data/model/add_new_observation_response.dart';
 import 'package:mydiaree/features/observation/data/model/child_response.dart';
@@ -17,7 +19,7 @@ class ObservationRepository {
     // return ApiResponse(success: true, message: 'Observations fetched successfully', data: ObservationApiResponse.fromJson(dummyObservations));
     String url = '${AppUrls.baseUrl}/api/observation/index?center_id=$centerId';
 
-    if (searchQuery != null && searchQuery.isNotEmpty){
+    if (searchQuery != null && searchQuery.isNotEmpty) {
       url += '&search=$searchQuery';
     }
 
@@ -43,7 +45,8 @@ class ObservationRepository {
   Future<ApiResponse<ObservationItem?>> viewObservation({
     required String observationId,
   }) async {
-    final url = '${AppUrls.baseUrl}/api/observation/view?observation_id=$observationId';
+    final url =
+        '${AppUrls.baseUrl}/api/observation/view?observation_id=$observationId';
 
     return await getAndParseData(
       url,
@@ -187,7 +190,6 @@ class ObservationRepository {
                         'child': [],
                         'seen': obs['seen'] ?? [],
                       }))
-
                   .toList() ??
               [],
           centers: [], // The response doesn't include centers
@@ -214,7 +216,8 @@ class ObservationRepository {
   Future<ApiResponse<StaffResponse?>> getStaff({
     required String centerId,
   }) async {
-    final url = '${AppUrls.baseUrl}/api/observation/get-staff?center_id=$centerId';
+    final url =
+        '${AppUrls.baseUrl}/api/observation/get-staff?center_id=$centerId';
 
     return await getAndParseData(
       url,
@@ -236,22 +239,25 @@ class ObservationRepository {
   }
 
   Future<ApiResponse<AddNewObservationResponse?>> getAddNewObservation({
-      String? observationId,
+    String? observationId,
     required String tab,
     required String tab2,
     required String centerId,
   }) async {
-    final url =
-      '${AppUrls.baseUrl}/api/observation/addnew'
-      '${observationId?.isNotEmpty == true ? '?id=$observationId' : ''}'
-      '${observationId?.isNotEmpty == true ? '&' : '?'}tab=$tab&tab2=$tab2&center_id=$centerId';
-      print('-----------');
-      print(url);
+    final url = '${AppUrls.baseUrl}/api/observation/addnew'
+        '${observationId?.isNotEmpty == true ? '?id=$observationId' : ''}'
+        '${observationId?.isNotEmpty == true ? '&' : '?'}tab=$tab&tab2=$tab2&center_id=$centerId';
+    print('-----------');
+    print(url);
 
     return await getAndParseData(
       url,
-      // dummyData: dummyAddNewObservationData,
-      fromJson: (json) => AddNewObservationResponse.fromJson(json),
+      fromJson: (json) {
+        print('============');
+        print('Response JSON: ${json['data']['observation']}');
+        //  debugPrint(json.toString(), wrapWidth: 1024);
+        return AddNewObservationResponse.fromJson(json);
+      },
     );
   }
 
@@ -271,14 +277,18 @@ class ObservationRepository {
   }
 
   Future<ApiResponse> saveMontessoriAssessment({
-    required int observationId,
+    required String observationId,
     required List<Map<String, dynamic>> subactivities,
   }) async {
     final url = '${AppUrls.baseUrl}/api/observation/montessori/store';
+    print('=========');
+    print(url);
     final data = {
       "observationId": observationId,
       "subactivities": subactivities,
     };
+    print('=========');
+    print(data);
     return await postAndParse(
       url,
       data,
@@ -287,10 +297,15 @@ class ObservationRepository {
 
 // EYLF Save
   Future<ApiResponse> saveEYLFAssessment({
-    required int observationId,
+    required String observationId,
     required List<int> subactivityIds,
   }) async {
     final url = '${AppUrls.baseUrl}/api/observation/eylf/store';
+    print('=========');
+    print({
+      'observationId': observationId.toString(),
+      'subactivityIds': subactivityIds,
+    });
     return await postAndParse(
       url,
       {
@@ -302,7 +317,7 @@ class ObservationRepository {
 
 // Developmental Milestone Save
   Future<ApiResponse> saveDevelopmentMilestone({
-    required int observationId,
+    required String  observationId,
     required List<Map<String, dynamic>> selections,
   }) async {
     final url = '${AppUrls.baseUrl}/api/observation/devmilestone/store';
@@ -322,17 +337,20 @@ class ObservationRepository {
     required Map<String, dynamic> fields,
   }) async {
     final url = '${AppUrls.baseUrl}/api/observation/store';
+    print('================');
+    print(fields);
+    print('================');
     return await postAndParse(
       url,
       fields,
       filesPath: filePaths,
-      fileField: filePaths.isNotEmpty ? 'files' : null,
+      fileField: filePaths.isNotEmpty ? 'media[]' : null,
     );
   }
 
 // Update Observation Status
   Future<ApiResponse> updateObservationStatus({
-    required int observationId,
+    required String observationId,
     required String status,
   }) async {
     const url = '${AppUrls.baseUrl}/api/observation/status/update';
@@ -343,6 +361,18 @@ class ObservationRepository {
         'status': status,
       },
     );
+  }
+
+  Future<ApiResponse> getRoomsByCenterId(String centerId) async {
+    final url =
+        '${AppUrls.baseUrl}/api/observation/get-rooms?center_id=$centerId';
+    return await ApiServices.getData(url);
+  }
+
+  Future<ApiResponse> getChildrenByCenterId(String centerId) async {
+    final url =
+        '${AppUrls.baseUrl}/api/observation/get-children?center_id=$centerId';
+    return await ApiServices.getData(url);
   }
 }
 

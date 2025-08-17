@@ -31,8 +31,6 @@ import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_blo
 import 'package:mydiaree/features/room/presentation/bloc/view_room/vieiw_room_bloc.dart';
 import 'package:mydiaree/features/service_detail/presentation/bloc/add_room/service_detail_bloc.dart';
 import 'package:mydiaree/features/settings/center_settings/presentation/bloc/center_settings/center_setting_bloc.dart';
-import 'package:mydiaree/features/settings/manage_permissions/presentation/bloc/list/manage_permission_bloc.dart';
-import 'package:mydiaree/features/settings/manage_permissions/presentation/bloc/users/assigned_user_bloc.dart';
 import 'package:mydiaree/features/settings/parent_setting/presentation/bloc/list/parent_setting_bloc.dart';
 import 'package:mydiaree/features/settings/staff_setting/presentation/bloc/list/staff_setting_bloc.dart';
 import 'package:mydiaree/features/settings/super_admin_settings/presentation/bloc/list/super_admin_setting_bloc.dart';
@@ -104,10 +102,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<StaffSettingsBloc>(
             create: (context) => StaffSettingsBloc()),
         BlocProvider<ParentSettingsBloc>(
-            create: (context) => ParentSettingsBloc()),
-        BlocProvider<PermissionBloc>(create: (context) => PermissionBloc()),
-        BlocProvider<AssignerPermissionUserBloc>(
-            create: (context) => AssignerPermissionUserBloc()),
+            create: (context) => ParentSettingsBloc()), 
         BlocProvider<MenuBloc>(create: (context) => MenuBloc()),
         BlocProvider<RecipeBloc>(create: (context) => RecipeBloc()),
         BlocProvider<IngredientBloc>(create: (context) => IngredientBloc()),

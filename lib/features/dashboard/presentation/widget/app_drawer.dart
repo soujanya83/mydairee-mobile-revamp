@@ -10,6 +10,7 @@ import 'package:mydiaree/features/daily_journal/daily_diaree/presentation/pages/
 import 'package:mydiaree/features/daily_journal/headchecks/presentation/pages/accident/headchecks_list_screen.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks%20copy/presentation/pages/accident/sleepcheck_list_screen.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks/presentation/pages/sleep_check_list_screen.dart';
+import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:mydiaree/features/healthy_menu/ingredients/presentation/pages/ingredient_list_screen.dart';
 import 'package:mydiaree/features/healthy_menu/menu/presentation/pages/menu_screen.dart';
 import 'package:mydiaree/features/healthy_menu/reciepe/presentation/pages/reciepe_screen.dart';
@@ -45,7 +46,7 @@ class AppDrawer extends StatelessWidget {
               icon: Icons.home,
               title: 'Dashboard',
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) =>  DashboardScreen()), (route) => false);
               },
             ),
             divier,

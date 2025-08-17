@@ -1,165 +1,92 @@
+import 'package:dio/dio.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
-import 'package:mydiaree/core/services/apiresoponse.dart';
+import 'package:mydiaree/core/services/api_services.dart';
 import 'package:mydiaree/features/settings/manage_permissions/data/model/permission_model.dart';
 import 'package:mydiaree/features/settings/manage_permissions/data/model/user_model.dart';
 
 class ManagePermissionsRepository {
-  // Dummy data for permissions
-  final Map<String, dynamic> _dummyPermissions = {
-    "success": true,
-    "data": [
-      {"key": "addObservation", "label": "Add Observation"},
-      {"key": "approveObservation", "label": "Approve Observation"},
-      {"key": "deleteObservation", "label": "Delete Observation"},
-      {"key": "updateObservation", "label": "Update Observation"},
-      {"key": "viewAllObservation", "label": "View All Observation"},
-      {"key": "addReflection", "label": "Add Reflection"},
-      {"key": "approveReflection", "label": "Approve Reflection"},
-      {"key": "updatereflection", "label": "Updatereflection"},
-      {"key": "deletereflection", "label": "Deletereflection"},
-      {"key": "viewAllReflection", "label": "View All Reflection"},
-      {"key": "addQIP", "label": "Add Q I P"},
-      {"key": "editQIP", "label": "Edit Q I P"},
-      {"key": "deleteQIP", "label": "Delete Q I P"},
-      {"key": "downloadQIP", "label": "Download Q I P"},
-      {"key": "printQIP", "label": "Print Q I P"},
-      {"key": "mailQIP", "label": "Mail Q I P"},
-      {"key": "viewQip", "label": "View Qip"},
-      {"key": "viewRoom", "label": "View Room"},
-      {"key": "addRoom", "label": "Add Room"},
-      {"key": "editRoom", "label": "Edit Room"},
-      {"key": "deleteRoom", "label": "Delete Room"},
-      {"key": "addProgramPlan", "label": "Add Program Plan"},
-      {"key": "editProgramPlan", "label": "Edit Program Plan"},
-      {"key": "viewProgramPlan", "label": "View Program Plan"},
-      {"key": "deleteProgramPlan", "label": "Delete Program Plan"},
-      {"key": "addAnnouncement", "label": "Add Announcement"},
-      {"key": "approveAnnouncement", "label": "Approve Announcement"},
-      {"key": "deleteAnnouncement", "label": "Delete Announcement"},
-      {"key": "updateAnnouncement", "label": "Update Announcement"},
-      {"key": "viewAllAnnouncement", "label": "View All Announcement"},
-      {"key": "addSurvey", "label": "Add Survey"},
-      {"key": "approveSurvey", "label": "Approve Survey"},
-      {"key": "deleteSurvey", "label": "Delete Survey"},
-      {"key": "updateSurvey", "label": "Update Survey"},
-      {"key": "viewAllSurvey", "label": "View All Survey"},
-      {"key": "addRecipe", "label": "Add Recipe"},
-      {"key": "approveRecipe", "label": "Approve Recipe"},
-      {"key": "deleteRecipe", "label": "Delete Recipe"},
-      {"key": "updateRecipe", "label": "Update Recipe"},
-      {"key": "addMenu", "label": "Add Menu"},
-      {"key": "approveMenu", "label": "Approve Menu"},
-      {"key": "deleteMenu", "label": "Delete Menu"},
-      {"key": "updateMenu", "label": "Update Menu"},
-      {"key": "viewDailyDiary", "label": "View Daily Diary"},
-      {"key": "updateDailyDiary", "label": "Update Daily Diary"},
-      {"key": "updateHeadChecks", "label": "Update Head Checks"},
-      {"key": "updateAccidents", "label": "Update Accidents"},
-      {"key": "updateModules", "label": "Update Modules"},
-      {"key": "addUsers", "label": "Add Users"},
-      {"key": "viewUsers", "label": "View Users"},
-      {"key": "updateUsers", "label": "Update Users"},
-      {"key": "addCenters", "label": "Add Centers"},
-      {"key": "viewCenters", "label": "View Centers"},
-      {"key": "updateCenters", "label": "Update Centers"},
-      {"key": "addParent", "label": "Add Parent"},
-      {"key": "viewParent", "label": "View Parent"},
-      {"key": "updateParent", "label": "Update Parent"},
-      {"key": "addChildGroup", "label": "Add Child Group"},
-      {"key": "viewChildGroup", "label": "View Child Group"},
-      {"key": "updateChildGroup", "label": "Update Child Group"},
-      {"key": "updatePermission", "label": "Update Permission"},
-      {"key": "addprogress", "label": "Addprogress"},
-      {"key": "editprogress", "label": "Editprogress"},
-      {"key": "viewprogress", "label": "Viewprogress"},
-      {"key": "editlesson", "label": "Editlesson"},
-      {"key": "viewlesson", "label": "Viewlesson"},
-      {"key": "printpdflesson", "label": "Printpdflesson"},
-      {"key": "assessment", "label": "Assessment"},
-      {"key": "addSelfAssessment", "label": "Add Self Assessment"},
-      {"key": "editSelfAssessment", "label": "Edit Self Assessment"},
-      {"key": "deleteSelfAssessment", "label": "Delete Self Assessment"},
-      {"key": "viewSelfAssessment", "label": "View Self Assessment"}
-    ]
-  };
+  static const String baseUrl = '${AppUrls.baseUrl}/api/settings';
 
-  final Map<String, dynamic> _dummyUsers = {
-    "success": true,
-    "data": [
-      {
-        "id": 1,
-        "name": "John Doe",
-        "permissions": [
-          {"key": "addObservation", "label": "Add Observation"},
-          {"key": "approveObservation", "label": "Approve Observation"},
-        ]
-      },
-      {
-        "id": 2,
-        "name": "Jane Smith",
-        "permissions": [
-          {"key": "approveObservation", "label": "Approve Observation"},
-          {"key": "addReflection", "label": "Add Reflection"}
-        ]
-      },
-      {
-        "id": 3,
-        "name": "Alice Johnson",
-        "permissions": [
-          {"key": "viewUsers", "label": "View Users"},
-          {"key": "updatePermission", "label": "Update Permission"}
-        ]
-      }
-    ]
-  };
-
-  Future<ApiResponse> addPermissions({
-    List<String> permissions = const [],
-    String userId = '',
-    bool dummy = false,
-  }) async {
-    return postAndParse(
-      dummy: true,
-      AppUrls.addPermissions,
-      {
-        'user_id': userId,
-        'permissions': permissions,
-      },
+  Future<List<PermissionModel>> getPermissions() async {
+    final headers = await ApiServices.getAuthHeaders();
+    final dio = Dio();
+    print('DEBUG: Fetching permissions with headers: $headers');
+    final response = await dio.request(
+      '$baseUrl/permissions-assigned',
+      options: Options(method: 'GET', headers: headers),
     );
-  }
-
-  Future<ApiResponse<PermissionListModel?>> getPermissions(
-      {bool dummy = false}) async {
-    return getAndParseData<PermissionListModel>(
-      dummyData: _dummyPermissions,
-      AppUrls.getPermissions,
-      fromJson: (json) =>
-          PermissionListModel.fromJson(json as Map<String, dynamic>),
-    );
-  }
-
-  Future<ApiResponse<List<UserModel>>> fetchUsers({bool dummy = false}) async {
-    try {
-      if (dummy) {
-        await Future.delayed(
-            const Duration(seconds: 4)); // Simulate network delay
-        return ApiResponse(
-          success: _dummyUsers["success"] as bool,
-          data: (_dummyUsers["data"] as List)
-              .map((json) => UserModel.fromJson(json as Map<String, dynamic>))
-              .toList(),
-          message: "Users fetched successfully",
-        );
-      }
-      return ApiResponse(success: false, message: "Real API not implemented");
-    } catch (e) {
-      return ApiResponse(success: false, message: "Error: $e");
+    print('DEBUG: Response status: ${response.statusCode}, data: ${response.data}');
+    if (response.statusCode == 200 && response.data['permissions'] != null) {
+      final List<dynamic> dataList = response.data['permissions'];
+      return dataList.map((e) => PermissionModel.fromJson(e)).toList();
+    } else {
+      throw Exception(response.data['message'] ?? 'Failed to fetch permissions');
     }
   }
 
-  Future<void> updateUserPermissions(
-      int userId, List<String> permissions) async {
-    await Future.delayed(Duration(seconds: 1)); // Simulate network delay
-    print('Updated permissions for user $userId: $permissions');
+  Future<List<UserModel>> getAssignedUsers() async {
+    final headers = await ApiServices.getAuthHeaders();
+    final dio = Dio();
+    print('DEBUG: Fetching assigned users with headers: $headers');
+    final response = await dio.request(
+      '$baseUrl/permissions-assigned',
+      options: Options(method: 'GET', headers: headers),
+    );
+    print('DEBUG: Response status: ${response.statusCode}, data: ${response.data}');
+    if (response.statusCode == 200 && response.data['assigned_users'] != null) {
+      final List<dynamic> dataList = response.data['assigned_users'];
+      return dataList.map((e) => UserModel.fromJson(e)).toList();
+    } else {
+      throw Exception(response.data['message'] ?? 'Failed to fetch assigned users');
+    }
+  }
+
+  Future<List<UserModel>> getStaff(String centerId) async {
+    final headers = await ApiServices.getAuthHeaders();
+    final dio = Dio();
+    print('DEBUG: Fetching staff for centerId: $centerId with headers: $headers');
+    final response = await dio.request(
+      '$baseUrl/staff_settings?center_id=$centerId',
+      options: Options(method: 'GET', headers: headers),
+    );
+    print('DEBUG: Response status: ${response.statusCode}, data: ${response.data}');
+    if (response.statusCode == 200 &&
+        response.data['data'] != null &&
+        response.data['data']['staff'] != null) {
+      final List<dynamic> dataList = response.data['data']['staff'];
+      return dataList
+          .map((e) => UserModel(
+                id: e['id'] is int ? e['id'] : int.tryParse(e['id'].toString()) ?? 0,
+                name: e['name'] ?? '',
+                colorClass: e['userType'] ?? '',
+              ))
+          .toList();
+    } else {
+      throw Exception(response.data['message'] ?? 'Failed to fetch staff');
+    }
+  }
+
+  Future<bool> assignPermissions({
+    required List<String> userIds,
+    required String centerId,
+    required Map<String, String> permissions,
+  }) async {
+    final headers = await ApiServices.getAuthHeaders();
+    final dio = Dio();
+    final formDataMap = Map<String, dynamic>.from(permissions);
+    // Add all user_ids[] for each user
+    for (final userId in userIds) {
+      formDataMap.putIfAbsent('user_ids[]', () => []).add(userId);
+    }
+    formDataMap['centerid'] = centerId;
+    final formData = FormData.fromMap(formDataMap);
+    print('DEBUG: Assigning permissions with data: $formDataMap and headers: $headers');
+    final response = await dio.request(
+      '${AppUrls.baseUrl}/api/settings/assign-permissions',
+      options: Options(method: 'POST', headers: headers),
+      data: formData,
+    );
+    print('DEBUG: Response status: ${response.statusCode}, data: ${response.data}');
+    return response.statusCode == 200 && (response.data['success'] == true || response.data['status'] == true);
   }
 }

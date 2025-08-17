@@ -34,9 +34,9 @@ Future<ApiResponse<T?>> postAndParse<T>(String url, Map<String, dynamic> data,
           message: '',
         );
       }
-    // print('Response: ${response.data}');
-    // print('Success: ${response.success}');
-    // print('Message: ${response.message}');
+    print('Response: ${response.data}');
+    print('Success: ${response.success}');
+    print('Message: ${response.message}');
     if (response.success) {
       return ApiResponse(
           success: true,

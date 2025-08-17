@@ -7,7 +7,14 @@ abstract class ParentSettingsEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchParentsEvent extends ParentSettingsEvent {}
+class FetchParentsEvent extends ParentSettingsEvent {
+  final String centerId;
+
+  const FetchParentsEvent({required this.centerId});
+
+  @override
+  List<Object?> get props => [centerId];
+}
 
 class AddParentEvent extends ParentSettingsEvent {
   final String name;

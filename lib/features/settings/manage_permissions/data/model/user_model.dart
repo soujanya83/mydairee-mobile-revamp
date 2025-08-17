@@ -3,23 +3,25 @@ import 'package:mydiaree/features/settings/manage_permissions/data/model/permiss
 class UserModel {
   final int id;
   final String name;
-  final List<PermissionModel> permissions;
+  final String colorClass;
 
-  UserModel({required this.id, required this.name, required this.permissions});
+  UserModel({
+    required this.id,
+    required this.name,
+    required this.colorClass,
+  });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'],
-      name: json['name'],
-      permissions: (json['permissions'] as List<dynamic>)
-          .map((e) => PermissionModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      name: json['name'] ?? '',
+      colorClass: json['colorClass'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'permissions': permissions.map((e) => e.toJson()).toList(),
+        'colorClass': colorClass,
       };
 }

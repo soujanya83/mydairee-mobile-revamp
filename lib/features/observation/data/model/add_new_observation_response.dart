@@ -158,7 +158,10 @@ class Observation {
       dateModified: json['date_modified'],
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
-      media: (json['media'] as List?)?.map((e) => Media.fromJson(e)).toList() ?? [],
+      media: (json['media'] as List?)
+              ?.where((e) => e is Map<String, dynamic>)
+              .map((e) => Media.fromJson(e as Map<String, dynamic>))
+              .toList() ?? [],
       child: (json['child'] as List?)?.map((e) => ChildObservation.fromJson(e)).toList() ?? [],
       montessoriLinks: (json['montessori_links'] as List?)?.map((e) => MontessoriLink.fromJson(e)).toList() ?? [],
       eylfLinks: (json['eylf_links'] as List?)?.map((e) => EylfLink.fromJson(e)).toList() ?? [],
@@ -193,7 +196,7 @@ class Media {
       mediaUrl: json['mediaUrl'] ?? '',
       mediaType: json['mediaType'] ?? '',
       caption: json['caption'],
-      priority: json['priority'],
+      priority: json['priority'].toString(),
     );
   }
 }

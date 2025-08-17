@@ -21,6 +21,8 @@ import 'package:dio/dio.dart';
 import 'package:mydiaree/core/services/api_services.dart';
 import 'package:mydiaree/core/config/app_urls.dart';
 
+String observationIdAfterSave = '';
+
 class AddObservationScreen extends StatefulWidget {
   final String type;
   final String centerId;
@@ -29,7 +31,8 @@ class AddObservationScreen extends StatefulWidget {
   const AddObservationScreen({
     super.key,
     required this.type,
-    required this.centerId,  this.id,
+    required this.centerId,
+    this.id,
   });
 
   @override
@@ -43,7 +46,8 @@ class AddObservationScreenState extends State<AddObservationScreen>
   bool _addCompleted = false;
 
   late ObservationRepository _observationRepository;
-  bool isLoading = true;
+  bool isLoading = false;
+  bool isSaving = false;
   AddNewObservationData? observationData;
   String currentTab = "observation";
   String currentSubTab = "MONTESSORI";
@@ -61,11 +65,10 @@ class AddObservationScreenState extends State<AddObservationScreen>
   static TextEditingController futurePlanController = TextEditingController();
 
   final List<ChildModel> _allChildren = [];
-  final List<RoomsModel> _rooms = [];
+  final List<RoomsModel> _allRooms = [];
 
   List<Media> selectedMedia = [];
   bool isDeletingMedia = false;
- 
 
   final _formKey = GlobalKey<FormState>();
 
@@ -73,10 +76,14 @@ class AddObservationScreenState extends State<AddObservationScreen>
   void initState() {
     super.initState();
     _controller = TabController(length: 3, vsync: this);
-
+    if (widget.type == 'edit') {
+      observationIdAfterSave = widget.id ?? '';
+    }
     _observationRepository = ObservationRepository();
+    selectedChildren.clear();
+    selectedRooms.clear();
     _loadObservationData();
-
+    _fetchRoomsAndChildren();
     _controller!.addListener(() {
       if (!_controller!.indexIsChanging) {
         if (_addCompleted && _controller!.index == 0) {
@@ -86,6 +93,58 @@ class AddObservationScreenState extends State<AddObservationScreen>
         _updateTabInfo();
       }
     });
+  }
+
+  Future<void> _fetchRoomsAndChildren() async {
+    try {
+      // Fetch children
+      final childrenResp =
+          await _observationRepository.getChildrenByCenterId(widget.centerId);
+      if (childrenResp.success &&
+          childrenResp.data != null &&
+          childrenResp.data['children'] != null){
+        _allChildren.clear();
+        for (var child in childrenResp.data['children']) {
+          _allChildren.add(ChildModel(
+            childId: child['id'].toString(),
+            name: '${child['name'] ?? ''} ${child['lastname'] ?? ''}',
+            imageUrl: child['imageUrl'] ?? '',
+          ));
+        }
+      } else {
+        print('Failed to load children: ${childrenResp.message}');
+      }
+    } catch (e) {
+      print('Error loading children: $e');
+    } finally {
+      if (this.mounted) setState(() {});
+    }
+
+    try {
+      // Fetch rooms
+      final roomsResp =
+          await _observationRepository.getRoomsByCenterId(widget.centerId);
+      if (roomsResp.success &&
+          roomsResp.data != null &&
+          roomsResp.data['rooms'] != null) {
+        _allRooms.clear();
+        for (var room in roomsResp.data['rooms']) {
+          _allRooms.add(RoomsModel(
+            room: RoomsDescModel(
+              id: room['id'].toString(),
+              name: room['name'] ?? '',
+            ),
+            child: [],
+          ));
+        }
+      } else {
+        print('Failed to load rooms: ${roomsResp.message}');
+      }
+    } catch (e) {
+      print('Error loading rooms: $e');
+    } finally {
+      if (this.mounted) setState(() {});
+    }
   }
 
   Future<void> _loadObservationData() async {
@@ -136,7 +195,7 @@ class AddObservationScreenState extends State<AddObservationScreen>
       case 0:
         tab = "observation";
         break;
-       case 1:
+      case 1:
         tab = "assessments";
         if (currentSubTab == "MONTESSORI" ||
             currentSubTab == "EYLF" ||
@@ -159,34 +218,24 @@ class AddObservationScreenState extends State<AddObservationScreen>
   }
 
   String stripHtmlTags(String htmlString) {
-    return htmlString
+    // Decode HTML entities and remove HTML tags
+    final decoded = htmlString
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'");
+    return decoded
         .replaceAll(RegExp(r'<[^>]*>'), '')
         .replaceAll('\n', ' ')
         .trim();
   }
 
   void _populateFormFields() {
-    if (observationData != null) {
-      _allChildren.clear();
-      for (var child in observationData!.children) {
-        _allChildren.add(ChildModel(
-          childId: child.id.toString(),
-          name: '${child.name} ${child.lastname}',
-          imageUrl: child.imageUrl,
-        ));
-      }
-
-      _rooms.clear();
-      for (var room in observationData!.rooms) {
-        _rooms.add(RoomsModel(
-          room: RoomsDescModel(
-            id: room.id.toString(),
-            name: room.name,
-          ),
-          child: [],
-        ));
-      }
-    }
+    // print('===============');
+    // print(observationData!.observation.id);
+    // print('-------------');return;
+  
 
     if (observationData != null && observationData!.observation.id > 0) {
       titleController.text = stripHtmlTags(observationData!.observation.title);
@@ -211,16 +260,31 @@ class AddObservationScreenState extends State<AddObservationScreen>
       }
 
       selectedRooms.clear();
-      if (observationData!.observation.room.isNotEmpty) {
-        final roomIds = observationData!.observation.room.split(',');
-        for (String roomId in roomIds) {
-          for (var room in _rooms) {
-            if (room.room.id == roomId.trim()) {
-              selectedRooms.add(room);
-              break;
-            }
+      // Handle observationData!.observation.room which can be like "[1797944727]" or "1797944727,1797944728"
+      selectedRooms.clear();
+      try {
+        String roomStr = observationData!.observation.room;
+        print('Raw room string: $roomStr');
+        // Remove brackets if present
+        roomStr = roomStr.replaceAll('[', '').replaceAll(']', '');
+        print('Room string after removing brackets: $roomStr');
+        if (roomStr.isNotEmpty) {
+          final roomIds = roomStr.split(',');
+          print('Parsed room IDs: $roomIds');
+          for (String roomId in roomIds) {
+        // Remove any surrounding quotes from the room ID
+        final trimmedId = roomId.trim().replaceAll('"', '');
+        if (trimmedId.isEmpty) continue;
+        for (var room in _allRooms) {
+          if (room.room.id == trimmedId) {
+            selectedRooms.add(room);
+            break;
           }
         }
+          }
+        }
+      } catch (e) {
+        print('Error parsing room ids: $e');
       }
     }
   }
@@ -249,14 +313,14 @@ class AddObservationScreenState extends State<AddObservationScreen>
     await showDialog<List<Map<String, String>>>(
       context: context,
       builder: (context) => CustomMultiSelectDialog(
-        itemsId: _rooms.map((room) => room.room.id).toList(),
-        itemsName: _rooms.map((room) => room.room.name).toList(),
+        itemsId: _allRooms.map((room) => room.room.id).toList(),
+        itemsName: _allRooms.map((room) => room.room.name).toList(),
         initiallySelectedIds:
             selectedRooms.map((room) => room.room.id).toList(),
         title: 'Select Rooms',
         onItemTap: (selectedIds) {
           setState(() {
-            selectedRooms = _rooms
+            selectedRooms = _allRooms
                 .where((room) => selectedIds.contains(room.room.id))
                 .toList();
           });
@@ -564,7 +628,8 @@ class AddObservationScreenState extends State<AddObservationScreen>
                             GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 3,
                                 crossAxisSpacing: 8,
                                 mainAxisSpacing: 8,
@@ -577,30 +642,38 @@ class AddObservationScreenState extends State<AddObservationScreen>
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(12),
                                       child: Container(
-                                      width: 100,
-                                      height: 100,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.rectangle,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: AppColors.primaryColor, width: 2),
-                                        boxShadow: const [
-                                        const BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: 6,
-                                          offset: Offset(0, 2),
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.rectangle,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                              color: AppColors.primaryColor,
+                                              width: 2),
+                                          boxShadow: const [
+                                            const BoxShadow(
+                                              color: Colors.black12,
+                                              blurRadius: 6,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
                                         ),
-                                        ],
-                                      ),
-                                      child: Image.network(
-                                        '${AppUrls.baseUrl}/${media.mediaUrl}',
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) => Container(
-                                        color: Colors.grey[300],
-                                        child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                                        child: Image.network(
+                                          '${AppUrls.baseUrl}/${media.mediaUrl}',
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Container(
+                                            color: Colors.grey[300],
+                                            child: const Icon(
+                                                Icons.broken_image,
+                                                color: Colors.grey,
+                                                size: 40),
+                                          ),
                                         ),
                                       ),
-                                      ),
-                                    ) ,
+                                    ),
                                     Positioned(
                                       right: 4,
                                       top: 4,
@@ -619,7 +692,8 @@ class AddObservationScreenState extends State<AddObservationScreen>
                                               ),
                                             ],
                                           ),
-                                          child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                          child: const Icon(Icons.close,
+                                              color: Colors.white, size: 16),
                                         ),
                                       ),
                                     ),
@@ -643,6 +717,7 @@ class AddObservationScreenState extends State<AddObservationScreen>
                               CustomButton(
                                 height: 45,
                                 width: 150,
+                                isLoading: isSaving,
                                 text: 'SAVE & NEXT',
                                 ontap: () async {
                                   if (!_formKey.currentState!.validate()) {
@@ -672,36 +747,49 @@ class AddObservationScreenState extends State<AddObservationScreen>
                                     'child_voice': childVoiceController.text,
                                     'future_plan': futurePlanController.text,
                                     'selected_rooms': selectedRooms
-                                      .map((r) => r.room.id)
-                                      .toList(),
+                                        .map((r) => r.room.id)
+                                        .toList(),
                                     'selected_children': selectedChildren
                                         .map((c) => c.childId)
                                         .join(','),
-                                   
                                     'center_id': widget.centerId,
                                   };
-                                  if(widget.type=='edit' || true){
-                                    fields.addAll({'id':'766'
-                                    //  observationData?.observation.id
-                                    //         .toString() ??
-                                    //     ''
-                                        });
+                                  if (widget.type == 'edit' || true) {
+                                    fields.addAll({
+                                      'id': widget.id ?? '',
+                                      //  observationData?.observation.id
+                                      //         .toString() ??
+                                      //     ''
+                                    });
                                   }
-
                                   final filePaths =
                                       files.map((f) => f.path).toList();
-
+                                  if (this.mounted) {
+                                    setState(() {
+                                      isSaving = true;
+                                    });
+                                  }
                                   final response = await _observationRepository
                                       .saveObservation(
                                     filePaths: filePaths,
                                     fields: fields,
                                   );
+                                  if (this.mounted) {
+                                    setState(() {
+                                      isSaving = false;
+                                    });
+                                  }
                                   if (response.success) {
                                     UIHelpers.showToast(context,
                                         message: 'Observation saved');
-                                    setState((){
+                                    setState(() {
                                       _addCompleted = true;
                                     });
+                                    if (response.data != null &&
+                                        response.data['id'] != null) {
+                                      observationIdAfterSave =
+                                          response.data['id'].toString();
+                                    }
                                     _controller!.animateTo(1);
                                   } else {
                                     // ignore: use_build_context_synchronously
@@ -718,6 +806,9 @@ class AddObservationScreenState extends State<AddObservationScreen>
                   ),
                 ),
                 AssessmentsScreen(
+                  observationId: widget.type == 'edit'
+                      ? widget.id.toString()
+                      : observationIdAfterSave,
                   observationData: observationData,
                   onTabChanged: (subTab) {
                     setState(() {
@@ -731,8 +822,7 @@ class AddObservationScreenState extends State<AddObservationScreen>
                 ),
                 ObservationLinkingScreen(
                   observationData: observationData,
-                  observationId:
-                      observationData?.observation.id.toString() ?? '',
+                  observationId: observationIdAfterSave,
                 ),
               ],
             ),

@@ -8,9 +8,11 @@ import 'package:mydiaree/core/services/user_type_helper.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
+import 'package:mydiaree/core/widgets/custom_buton.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_dropdown.dart';
+import 'package:mydiaree/features/daily_journal/daily_diaree/presentation/pages/add_entry_dialog.dart';
 import 'package:mydiaree/features/room/data/repositories/room_repositories.dart';
 import 'package:mydiaree/features/room/data/model/room_list_model.dart';
 import 'package:mydiaree/features/daily_journal/daily_diaree/presentation/bloc/screen%20name/daily_diaree_bloc.dart';
@@ -87,6 +89,40 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
       appBar: const CustomAppBar(title: 'Daily Childcare Tracking'),
       body: Column(
         children: [
+          // Add Entry Button
+
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0, left: 16, right: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Add Daily Entry',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.primaryColor,
+                      ),
+                ),
+                UIHelpers.addButton(
+                  context: context,
+                  ontap: () async {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Scaffold(
+                            body: AddEntryDialog(
+                              roomId: selectedRoomId ??
+                                  '', // TODO: Pass this as a parameter or get from context
+                            ),
+                          ),
+                        ));
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
           // Filters: Center, Room, Date
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

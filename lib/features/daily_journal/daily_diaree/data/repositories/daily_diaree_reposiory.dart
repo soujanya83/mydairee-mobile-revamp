@@ -49,14 +49,8 @@ class DailyTrackingRepository {
       // Add each childId as 'child_ids[]'
       for (var id in childIds) 'child_ids[]': id,
     });
-    print('Posting Breakfast Data:');
-    print({
-      'date': date,
-      'child_ids': childIds,
-      'time': time,
-      'item': item,
-      if (comments != null) 'comments': comments,
-    });
+    print('++++++++++++Posting Breakfast Data:++++++++++++');
+    print(data.fields); 
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/activities/breakfast',
       data,
@@ -81,14 +75,8 @@ class DailyTrackingRepository {
       // Add each childId as 'child_ids[]'
       for (var id in childIds) 'child_ids[]': id,
     });
-    print('Posting Breakfast Data:');
-    print({
-      'date': date,
-      'child_ids': childIds,
-      'time': time,
-      'item': item,
-      if (comments != null) 'comments': comments,
-    });
+    print('Posting Lunch Data:');
+    print(data.fields);
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/activities/lunch',
       data,
@@ -106,15 +94,18 @@ class DailyTrackingRepository {
   }) async {
     final data = FormData.fromMap({
       'date': date,
-      'child_ids': childIds,
+      for (var id in childIds) 'child_ids[]': id,
       'time': time,
       'item': item,
       if (comments != null) 'comments': comments,
     });
+    print('Posting Late Snack Data:');
+    print(data.fields);
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/activities/late-snack',
       data,
     );
+    print('Response from Late Snack API: ${resp.data.toString()}');
     return ApiResponse(success: resp.success, message: resp.message, data: resp.data);
   }
 
@@ -130,6 +121,8 @@ class DailyTrackingRepository {
       'time': time,
       if (comments != null) 'comments': comments,
     });
+    print('Posting Morning Tea Data:');
+    print(data.fields);
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/activities/morning-tea',
       data,
@@ -149,10 +142,13 @@ class DailyTrackingRepository {
       'time': time,
       if (comments != null) 'comments': comments,
     });
+    print('Posting Afternoon Tea Data:');
+    print(data.fields);
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/activities/afternoon-tea',
       data,
     );
+    print('Response from Afternoon Tea API: ${resp.data.toString()}');
     return ApiResponse(success: resp.success, message: resp.message, data: resp.data);
   }
 
@@ -178,6 +174,7 @@ class DailyTrackingRepository {
       '${AppUrls.baseUrl}/api/dailyDiary/storeSleep',
       data,
     );
+    print('response of storeSleep: ${resp.data}');
     return ApiResponse(success: resp.success, message: resp.message, data: resp.data);
   }
 
@@ -225,13 +222,14 @@ class DailyTrackingRepository {
       if (signature != null) 'signature': signature,
       if (id != null) 'id': id,
     };
-    print('============= storeSunscreen =============');
-    print(map);
     final data = FormData.fromMap(map);
+    print('============= storeSunscreen =============');
+    print(data.fields);
     final resp = await ApiServices.postData(
       '${AppUrls.baseUrl}/api/dailyDiary/storeSunscreen',
       data,
     );
+    print('Response from storeSunscreen API: ${resp.data.toString()}');
     return ApiResponse(success: resp.success, message: resp.message, data: resp.data);
   }
 

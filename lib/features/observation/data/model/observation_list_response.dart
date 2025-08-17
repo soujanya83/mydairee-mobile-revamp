@@ -293,6 +293,7 @@ String stripHtmlTags(String htmlString) {
       .replaceAll('&lt;', '<')
       .replaceAll('&gt;', '>')
       .replaceAll('&amp;', '&')
+      .replaceAll('&nbsp;', ' ')
       .replaceAll('\n', ' ')
       .trim();
 }
