@@ -25,20 +25,32 @@ class GlobalRepository {
   }
 
   Future<ApiResponse<ChildrenAddProgramPlanModel?>> getChildren(String roomId) async {
-    return postAndParse<ChildrenAddProgramPlanModel?>(
+    print('Fetching children for roomId: $roomId');
+    final response = await postAndParse<ChildrenAddProgramPlanModel?>(
       AppUrls.getRoomChildren,
       {'room_id': roomId},
-      fromJson: (json) => ChildrenAddProgramPlanModel.fromJson(json),
+      fromJson: (json) {
+      print('Children data: $json');
+      return ChildrenAddProgramPlanModel.fromJson(json);
+      },
     );
+    print('Response: $response');
+    return response;
   }
 
   Future<ApiResponse<UserAddProgramPlanModel?>> getEducators(String roomId) async {
 
-    return postAndParse<UserAddProgramPlanModel?>(
-      AppUrls.getRoomUsers ,
+    print('Fetching educators for roomId: $roomId');
+    final response = await postAndParse<UserAddProgramPlanModel?>(
+      AppUrls.getRoomUsers,
       {'room_id': roomId},
-      fromJson: (json) => UserAddProgramPlanModel.fromJson(json),
+      fromJson: (json) {
+      print('Educators data: $json');
+      return UserAddProgramPlanModel.fromJson(json);
+      },
     );
+    print('Response: $response');
+    return response;
   }
 
   Future<ApiResponse<RoomListModel?>> getRooms({

@@ -20,18 +20,19 @@ import 'package:mydiaree/features/snapshot/presentation/bloc/add_snapshot/add_sn
 import 'package:mydiaree/features/snapshot/presentation/bloc/add_snapshot/add_snapshot_event.dart';
 import 'package:mydiaree/features/snapshot/presentation/bloc/add_snapshot/add_snapshot_state.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:mydiaree/features/snapshot/data/model/snapshot_model.dart';
 
 class AddSnapshotScreen extends StatefulWidget {
-  final String centerId;
-  final Map<String, dynamic>? snapshot;
+  final String centerId; 
+  final SnapshotModel? snapshotModel;
   final String screenType;
   final String? id;
 
   const AddSnapshotScreen({
     super.key,
     required this.centerId,
-    this.id,
-    this.snapshot,
+    this.id, 
+    this.snapshotModel,
     required this.screenType,
   });
 
@@ -55,25 +56,23 @@ class _AddSnapshotScreenState extends State<AddSnapshotScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.screenType == 'edit' && widget.snapshot != null) {
-      _initializeFromExistingData();
+    if (widget.screenType == 'edit') {
+      if (widget.snapshotModel != null) {
+        _initializeFromSnapshotModel(widget.snapshotModel!);
+      }
     }
   }
 
-  void _initializeFromExistingData() {
-    final data = widget.snapshot!;
-    titleController.text = data['title'] ?? '';
-    detailsController.text = data['about'] ?? '';
-    selectedRoomId = data['room_id'];
-    if (data['children'] is List) {
-      selectedChildren = List<ChildIten>.from(data['children']
-          .map((c) => ChildIten(id: c['id'] ?? '', name: c['name'] ?? '')));
-    }
-    if (data['images'] is List) {
-      selectedMedia = List<String>.from(data['images'])
-          .map((path) => {'path': path, 'type': 'network'})
-          .toList();
-    }
+  void _initializeFromSnapshotModel(SnapshotModel model) {
+    titleController.text = model.title;
+    detailsController.text = model.about;
+    selectedRoomId = model.rooms.isNotEmpty ? model.rooms.first.id.toString() : null;
+    selectedChildren = model.children
+        .map((c) => ChildIten(id: c.child.id.toString(), name: c.child.name))
+        .toList();
+    selectedMedia = model.media
+        .map((m) => {'path': m.mediaUrl, 'type': 'network'})
+        .toList();
   }
 
   Future<void> _pickMedia() async {

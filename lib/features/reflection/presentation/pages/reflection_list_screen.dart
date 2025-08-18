@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mydiaree/core/services/user_type_helper.dart';
+import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
 import 'package:mydiaree/features/reflection/data/model/reflection_list_model.dart' hide Center;
 import 'package:mydiaree/features/reflection/data/repositories/reflection_repository.dart';
+import 'package:mydiaree/features/reflection/presentation/pages/add_reflection_screen.dart';
 import 'package:mydiaree/features/reflection/presentation/widget/reflection_list_custom_widgets.dart';
 
 class ReflectionListScreen extends StatefulWidget {
@@ -97,11 +99,31 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-              CenterDropdown(
-                  selectedCenterId: _selectedCenterId,
-                  onChanged: (c) {
-                    setState(() {
-                      _selectedCenterId = c.id;
+            const SizedBox(height: 20,),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                UIHelpers.addButton( 
+                  ontap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddReflectionScreen(
+                          centerId: _selectedCenterId,
+                          screenType: 'add',
+                        ),
+                      ),
+                    );
+                  }, context: context,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20,),
+            CenterDropdown(
+                selectedCenterId: _selectedCenterId,
+                onChanged: (c) {
+                  setState(() {
+                    _selectedCenterId = c.id;
                     });
                     _fetchPage(page: 1);
                   },
@@ -157,6 +179,16 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                           permissionDelete: (!UserTypeHelper.isParent),
                           onEditPressed: () {
                             // navigate to edit
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddReflectionScreen(
+                                  centerId: _selectedCenterId,
+                                  id: r.id.toString(),
+                                  screenType: 'edit',
+                                ),
+                              ),
+                            );
                           },
                           onDeletePressed: () {
                             showDialog(

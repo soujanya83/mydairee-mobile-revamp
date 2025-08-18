@@ -124,26 +124,17 @@ class _SnapshotScreenState extends State<SnapshotScreen> {
                           permissionUpdate: !isParent,
                           permissionDelete: !isParent,
                           onEdit: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => AddSnapshotScreen(
-                            //       centerId: selectedCenterId ?? '',
-                            //       snapshot: {
-                            //         'id': snapshot.id.toString(),
-                            //         'title': snapshot.title,
-                            //         'about': snapshot.details,
-                            //         // 'room_id': snapshot.rooms.first.id.toString(),
-                            //         // 'children': snapshot.children
-                            //         //     .map((c) => {'id': c.id.toString(), 'name': c.name})
-                            //         //     .toList(),
-                            //         'images': snapshot.images,
-                            //       },
-                            //       screenType: 'edit',
-                            //       id: snapshot.id.toString(),
-                            //     ),
-                            //   ),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddSnapshotScreen(
+                                  centerId: selectedCenterId ?? '',
+                                  snapshotModel: snapshot,
+                                  screenType: 'edit',
+                                  id: snapshot.id.toString(),
+                                ),
+                              ),
+                            );
                           },
                           onDelete: () {
                             showDialog(

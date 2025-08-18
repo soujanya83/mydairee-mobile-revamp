@@ -4,6 +4,41 @@ import 'package:mydiaree/core/services/api_services.dart';
 import 'package:mydiaree/features/settings/manage_permissions/data/model/permission_model.dart';
 import 'package:mydiaree/features/settings/manage_permissions/data/model/user_model.dart';
 
+class StaffModel {
+  final int id;
+  final String name;
+  final String email;
+  final String contactNo;
+  final String userType;
+  final String? imageUrl;
+  final String? status;
+  final String? title;
+
+  StaffModel({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.contactNo,
+    required this.userType,
+    this.imageUrl,
+    this.status,
+    this.title,
+  });
+
+  factory StaffModel.fromJson(Map<String, dynamic> json) {
+    return StaffModel(
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      contactNo: json['contactNo'] ?? '',
+      userType: json['userType'] ?? '',
+      imageUrl: json['imageUrl'],
+      status: json['status'],
+      title: json['title'],
+    );
+  }
+}
+
 class ManagePermissionsRepository {
   static const String baseUrl = '${AppUrls.baseUrl}/api/settings';
 
@@ -24,7 +59,8 @@ class ManagePermissionsRepository {
     }
   }
 
-  Future<List<UserModel>> getAssignedUsers() async {
+
+    Future<List<UserModel>> getAssignedUsers() async {
     final headers = await ApiServices.getAuthHeaders();
     final dio = Dio();
     print('DEBUG: Fetching assigned users with headers: $headers');
@@ -41,26 +77,22 @@ class ManagePermissionsRepository {
     }
   }
 
-  Future<List<UserModel>> getStaff(String centerId) async {
+
+
+  Future<List<StaffModel>> getStaffList() async {
     final headers = await ApiServices.getAuthHeaders();
     final dio = Dio();
-    print('DEBUG: Fetching staff for centerId: $centerId with headers: $headers');
+    print('DEBUG: Fetching staff with headers: $headers');
     final response = await dio.request(
-      '$baseUrl/staff_settings?center_id=$centerId',
+      '$baseUrl/manage_permissions',
       options: Options(method: 'GET', headers: headers),
     );
     print('DEBUG: Response status: ${response.statusCode}, data: ${response.data}');
     if (response.statusCode == 200 &&
         response.data['data'] != null &&
-        response.data['data']['staff'] != null) {
-      final List<dynamic> dataList = response.data['data']['staff'];
-      return dataList
-          .map((e) => UserModel(
-                id: e['id'] is int ? e['id'] : int.tryParse(e['id'].toString()) ?? 0,
-                name: e['name'] ?? '',
-                colorClass: e['userType'] ?? '',
-              ))
-          .toList();
+        response.data['data']['users'] != null) {
+      final List<dynamic> dataList = response.data['data']['users'];
+      return dataList.map((e) => StaffModel.fromJson(e)).toList();
     } else {
       throw Exception(response.data['message'] ?? 'Failed to fetch staff');
     }

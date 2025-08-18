@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/cubit/globle_model/center_model.dart';
+import 'package:mydiaree/core/cubit/globle_repository.dart';
 import 'package:mydiaree/core/utils/helper_functions.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
@@ -38,7 +39,7 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      selectedCenterId = '1'; // Default center ID
+      selectedCenterId = globalSelectedCenterId; 
       _loadAnnouncements();
     });
   }

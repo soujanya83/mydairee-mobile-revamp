@@ -27,7 +27,7 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
   bool _isLoading = true;
   bool _isAssigning = false;
   List<String> _selectedUserIds = [];
-  List<UserModel> _staffList = [];
+  List<dynamic> _staffList = []; // Use dynamic to support StaffModel
 
   final ManagePermissionsRepository _repo = ManagePermissionsRepository();
 
@@ -35,7 +35,7 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
   void initState() {
     super.initState();
     _fetchPermissionsAndUsers();
-    _fetchStaff();
+    _fetchStaffList();
   }
 
   Future<void> _fetchPermissionsAndUsers() async {
@@ -60,9 +60,9 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
     setState(() => _isLoading = false);
   }
 
-  Future<void> _fetchStaff() async {
+  Future<void> _fetchStaffList() async {
     try {
-      final staff = await _repo.getStaff('1');
+      final staff = await _repo.getStaffList();
       setState(() {
         _staffList = staff;
       });
@@ -231,39 +231,11 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
                           ontap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => const AssignedUserListScreen(),
+                                builder: (context) => AssignedUserListScreen(
+                                  permissionList: _permissionList,
+                                ),
                               ),
                             );
-                            // showDialog(
-                            //   context: context,
-                            //   builder: (context) => AlertDialog(
-                            //     title: const Text('Assigned Users'),
-                            //     content: SizedBox(
-                            //       width: 350,
-                            //       child: ListView.builder(
-                            //         shrinkWrap: true,
-                            //         itemCount: _assignedUsers.length,
-                            //         itemBuilder: (context, index) {
-                            //           final user = _assignedUsers[index];
-                            //           return ListTile(
-                            //             leading: CircleAvatar(
-                            //               backgroundColor: AppColors.primaryColor,
-                            //               child: Text(user.name.isNotEmpty ? user.name[0] : ''),
-                            //             ),
-                            //             title: Text(user.name),
-                            //             subtitle: Text(user.name),
-                            //           );
-                            //         },
-                            //       ),
-                            //     ),
-                            //     actions: [
-                            //       TextButton(
-                            //         onPressed: () => Navigator.pop(context),
-                            //         child: const Text('Close'),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // );
                           },
                         )
                       ],
@@ -282,7 +254,7 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
                           builder: (context) => CustomMultiSelectDialog(
                             title: 'Select Users',
                             itemsId: _staffList.map((u) => u.id.toString()).toList(),
-                            itemsName: _staffList.map((u) => u.name).toList(),
+                            itemsName: _staffList.map((u) => u.name.toString()).toList(),
                             initiallySelectedIds: _selectedUserIds,
                             onItemTap: (ids) {
                               setState(() {
@@ -319,12 +291,12 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
                             children: _selectedUserIds.map((userId) {
                               final user = _staffList.firstWhere(
                                 (u) => u.id.toString() == userId,
-                                orElse: () => UserModel(id: int.tryParse(userId) ?? 0, name: userId, colorClass: ''),
+                                orElse: () => null,
                               );
                               return Padding(
                                 padding: const EdgeInsets.only(right: 8),
                                 child: Chip(
-                                  label: Text(user.name),
+                                  label: Text(user != null ? user.name : userId),
                                   deleteIcon: const Icon(Icons.close),
                                   onDeleted: () {
                                     setState(() {
@@ -491,4 +463,3 @@ class _ManagePermissionsScreenState extends State<ManagePermissionsScreen> {
     );
   }
 }
-

@@ -32,6 +32,7 @@ import 'package:mydiaree/features/reflection/presentation/bloc/add_relection/add
 import 'package:mydiaree/features/reflection/presentation/bloc/add_relection/add_reflection_state.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mydiaree/features/room/data/model/room_list_model.dart' hide CenterData;
+import 'package:html/parser.dart' as html_parser;
 
 class AddReflectionScreen extends StatefulWidget {
   final String centerId;
@@ -132,9 +133,16 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
     final reflection = reflectionMeta!.data!.reflection;
     if (reflection == null) return;
 
+    // Remove HTML tags from title and about
+    String stripHtml(String? html) {
+      if (html == null) return '';
+      final document = html_parser.parse(html);
+      return document.body?.text ?? '';
+    }
+
     // Title, About, EYLF
-    titleController.text = reflection.title ?? '';
-    reflectionController.text = reflection.about ?? '';
+    titleController.text = stripHtml(reflection.title);
+    reflectionController.text = stripHtml(reflection.about);
     eylfController.text = reflection.eylf ?? '';
 
     // Room
@@ -823,6 +831,22 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                                     .join(','); // e.g. "101,102"
                                 final selectedStaff = selectedEducatorIds
                                     .join(','); // e.g. "21,22"
+                                if (selectedRoom.isEmpty) {
+                                  UIHelpers.showToast(
+                                    context,
+                                    message: 'Please select a room.',
+                                    backgroundColor: AppColors.errorColor,
+                                  );
+                                  return;
+                                }
+                                if (selectedChildren.isEmpty) {
+                                  UIHelpers.showToast(
+                                    context,
+                                    message: 'Please select at least one child.',
+                                    backgroundColor: AppColors.errorColor,
+                                  );
+                                  return;
+                                }
                                 final ReflectionRepository repository =
                                     ReflectionRepository();
                                 setState(() {
@@ -844,7 +868,9 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                                         ? widget.id
                                         : null,
                                   );
-
+                                     setState(() {
+                                  isLoading = false;
+                                });
                                   UIHelpers.showToast(
                                     context,
                                     message: response.message,

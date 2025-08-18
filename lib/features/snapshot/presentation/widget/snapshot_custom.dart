@@ -1,32 +1,14 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
-import 'package:mydiaree/core/config/app_urls.dart';
-import 'package:mydiaree/core/utils/ui_helper.dart';
-import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_background_widget.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
-import 'package:mydiaree/core/widgets/custom_network_image.dart';
-import 'package:mydiaree/core/widgets/custom_scaffold.dart';
-import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
-import 'package:mydiaree/features/daily_journal/daily_diaree/presentation/widget/daily_diaree_custom.dart';
-import 'package:mydiaree/features/snapshot/data/model/snapshot_model.dart';
 import 'package:mydiaree/features/snapshot/presentation/bloc/snapshot_list/snapshot_bloc.dart';
 import 'package:mydiaree/features/snapshot/presentation/bloc/snapshot_list/snapshot_events.dart';
-import 'package:mydiaree/features/snapshot/presentation/bloc/snapshot_list/snapshot_state.dart';
-import 'package:mydiaree/main.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:mydiaree/core/config/app_colors.dart';
-import 'package:mydiaree/features/snapshot/presentation/bloc/snapshot_list/snapshot_bloc.dart';
 
-// helper to strip HTML tags
 String stripHtml(String html) => html.replaceAll(RegExp(r'<[^>]*>'), '');
 
 class ImageCarousel extends StatefulWidget {
@@ -258,7 +240,7 @@ class SnapshotCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: status == 'published' ? Colors.green : Colors.orange,
+                    color: status.toLowerCase() == 'published' ? Colors.green : Colors.orange,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

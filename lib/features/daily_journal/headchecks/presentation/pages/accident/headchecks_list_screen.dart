@@ -31,6 +31,7 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
 
   List<HeadCheckModel> headChecks = [];
   bool isLoading = false;
+  bool isSaving = false;
 
   @override
   void initState() {
@@ -134,7 +135,7 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
     print(comments);
     // return;
 
-    setState(() => isLoading = true);
+    setState(() => isSaving = true);
     final response = await HeadChecksRepository().addHeadChecks(
       hours: hours,
       mins: mins,
@@ -145,7 +146,7 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
       centerId: selectedCenterId ?? '',
       diaryDate: DateFormat('dd/MM/yyyy').format(selectedDate),
     );
-    setState(() => isLoading = false);
+    setState(() => isSaving = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -323,11 +324,13 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
                           ),
                   ),
                   const SizedBox(height: 20),
-                  CustomButton(
-                    width: 180,
-                    text: 'Save All Head Checks',
-                    ontap: saveAllHeadChecks,
-                  ),
+                  if (headChecks.isNotEmpty)
+                    CustomButton(
+                      isLoading: isSaving,
+                      width: 180,
+                      text: 'Save All Head Checks',
+                      ontap: saveAllHeadChecks,
+                    ),
                   const SizedBox(height: 15),
                 ],
               ),
