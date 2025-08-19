@@ -104,8 +104,9 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 UIHelpers.addButton( 
-                  ontap: () {
-                    Navigator.push(
+                  ontap: () async {
+                    // Await for result from AddReflectionScreen
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => AddReflectionScreen(
@@ -114,6 +115,10 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                         ),
                       ),
                     );
+                    // If result is not null (i.e., reflection was added/edited), reload list
+                    if (result != null) {
+                      _fetchPage(page: 1);
+                    }
                   }, context: context,
                 ),
               ],
@@ -177,9 +182,9 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                               [],
                           permissionUpdate: (!UserTypeHelper.isParent),
                           permissionDelete: (!UserTypeHelper.isParent),
-                          onEditPressed: () {
-                            // navigate to edit
-                            Navigator.push(
+                          onEditPressed: () async {
+                            // navigate to edit and reload list on return
+                            final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => AddReflectionScreen(
@@ -189,6 +194,9 @@ class _ReflectionListScreenState extends State<ReflectionListScreen> {
                                 ),
                               ),
                             );
+                            if (result != null) {
+                              _fetchPage(page: 1);
+                            }
                           },
                           onDeletePressed: () {
                             showDialog(

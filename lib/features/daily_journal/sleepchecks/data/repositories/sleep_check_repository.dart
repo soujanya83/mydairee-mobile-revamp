@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:mydiaree/core/config/app_urls.dart';
 import 'package:mydiaree/core/services/api_services.dart';
 import 'package:mydiaree/core/services/apiresoponse.dart';
 import 'package:mydiaree/features/daily_journal/sleepchecks/data/models/sleep_check_response_model.dart';
 
 class SleepCheckRepository {
-  final String baseUrl = 'https://mydiaree.com.au/api';
+  final String baseUrl = '${AppUrls.baseUrl}/api';
 
   Future<ApiResponse<SleepCheckResponseModel?>> getSleepChecks({
     required String centerId,
@@ -43,7 +44,8 @@ class SleepCheckRepository {
       'notes': notes,
       'userid': userId,
     };
-
+    print('============');
+   print(data);
     return await postAndParse(url, data);
   }
 

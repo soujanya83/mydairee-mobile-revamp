@@ -31,11 +31,13 @@ String stripHtmlTags(String htmlString) {
 class ObservationLinkingScreen extends StatefulWidget {
   final AddNewObservationData? observationData;
   final String observationId;
+  final String centerId;
 
   const ObservationLinkingScreen({
     super.key,
     this.observationData,
-    this.observationId = '',
+    required this.observationId,
+    required this.centerId,
   });
 
   @override
@@ -73,12 +75,14 @@ class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
 
       // Update linked observations list
       _updateLinkedObservations();
-
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
+      if (this.mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e,s) {
       print('Error fetching data: $e');
+      print('Stack trace: $s');
       setState(() {
         isLoading = false;
       });
@@ -104,7 +108,7 @@ class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
       final headers = await ApiServices.getAuthHeaders();
 
       final response = await dio.get(
-        '${AppUrls.baseUrl}/api/observation/observationslink?obsId=${widget.observationId}&center_id=1',
+        '${AppUrls.baseUrl}/api/observation/observationslink?obsId=${widget.observationId}&center_id=${widget.centerId}',
         options: Options(
           headers: headers,
         ),
@@ -121,7 +125,8 @@ class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
 
         print('Linked observation IDs: $linkedObservationIds');
       }
-    } catch (e) {
+    } catch (e,s) {
+      print('Stack trace: $s');
       print('Error fetching linked observations: $e');
       linkedObservationIds = [];
     }
@@ -230,6 +235,12 @@ class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
       );
       if (resp.success) {
         UIHelpers.showToast(context, message: 'Status updated to $status');
+        // Pop until observation list screen if published or draft
+        if (status == 'Published' || status == 'Draft') {
+          // If you use named routes, replace '/observationList' with your route name
+          Navigator.of(context).popUntil((route) =>
+              route.settings.name == '/observationList' || route.isFirst);
+        }
         // Optionally refresh data or UI
       } else {
         UIHelpers.showToast(context,

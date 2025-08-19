@@ -110,9 +110,9 @@ class HeadCheckCard extends StatelessWidget {
               maxLines: 1,
               keyboardType: TextInputType.number,
               controller: headCountController,
-              onChanged: (value) {
-                onHeadCountChanged?.call(value ?? '');
-              },
+              // onChanged: (value) {
+              //   onHeadCountChanged?.call(value ?? '');
+              // },
             ),
             const SizedBox(height: 15),
             Text(
@@ -123,9 +123,9 @@ class HeadCheckCard extends StatelessWidget {
             CustomTextFormWidget(
               maxLines: 1,
               controller: signatureController,
-              onChanged: (value) {
-                onSignatureChanged?.call(value ?? '');
-              },
+              // onChanged: (value) {
+              //   onSignatureChanged?.call(value ?? '');
+              // },
             ),
             const SizedBox(height: 15),
             Text(
@@ -136,9 +136,9 @@ class HeadCheckCard extends StatelessWidget {
             CustomTextFormWidget(
               maxLines: 2,
               controller: commentsController,
-              onChanged: (value) {
-                onCommentsChanged?.call(value ?? '');
-              },
+              // onChanged: (value) {
+              //   onCommentsChanged?.call(value ?? '');
+              // },
             ),
             const SizedBox(height: 10),
             if (onDelete != null)

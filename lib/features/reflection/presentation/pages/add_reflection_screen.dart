@@ -814,7 +814,7 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                             message: state.message,
                             backgroundColor: AppColors.successColor,
                           );
-                          Navigator.pop(context);
+                          Navigator.pop(context, true); // <-- Return true to trigger reload
                         }
                       },
                       child: BlocBuilder<AddReflectionBloc, AddReflectionState>(
@@ -880,8 +880,7 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
                                   );
                                   // Optionally unset loading state here
                                   if (response.success) {
-                                    // Optionally trigger a bloc event if needed
-                                    Navigator.pop(context);
+                                    Navigator.pop(context, true); // <-- Return true to trigger reload
                                   }
                                 } catch (e) {
                                   UIHelpers.showToast(
@@ -915,3 +914,4 @@ class _AddReflectionScreenState extends State<AddReflectionScreen> {
     super.dispose();
   }
 }
+

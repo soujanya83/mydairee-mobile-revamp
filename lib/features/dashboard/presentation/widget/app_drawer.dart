@@ -26,9 +26,9 @@ import 'package:mydiaree/features/settings/parent_setting/presentation/pages/par
 import 'package:mydiaree/features/settings/staff_setting/presentation/pages/staff_settings_screen.dart';
 import 'package:mydiaree/features/settings/super_admin_settings/presentation/pages/supere_admin_settings_screen.dart';
 import 'package:mydiaree/features/snapshot/presentation/pages/snapshot_screen.dart';
-import 'package:mydiaree/main.dart';
-import 'package:mydiaree/features/auth/admin/presentation/pages/admin/user_type_screen.dart';
+import 'package:mydiaree/main.dart'; 
 import 'package:mydiaree/core/services/shared_preference_service.dart';
+import 'package:mydiaree/features/settings/profile_setting/presentation/pages/profile_setting_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -230,6 +230,18 @@ class AppDrawer extends StatelessWidget {
                           MaterialPageRoute(
                               builder: (_) => ManagePermissionsScreen()));
                     }),
+                CustomDrawerTile(
+                  showDivider: false,
+                  title: 'Profile Settings',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ProfileSettingScreen(
+                                 
+                                )));
+                  },
+                ),
                 // CustomDrawerTile(
                 //   title: 'Accident',
                 //   onTap: () {}

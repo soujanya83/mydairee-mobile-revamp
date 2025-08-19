@@ -10,7 +10,7 @@ import 'package:mydiaree/features/daily_journal/accident/data/models/child_detai
 import 'package:mydiaree/features/daily_journal/accident/data/models/create_accident_response_model.dart';
 
 class AccidentRepository {
-  final String baseUrl = 'https://mydiaree.com.au/api';
+  final String baseUrl = '${AppUrls.baseUrl}/api';
 
   Future<ApiResponse<AccidentListResponseModel?>> getAccidents({
     required String centerId,
@@ -186,10 +186,10 @@ class AccidentRepository {
       'enra_time': enraTime,
       'add_notes': addNotes,
     };
-
     FormData formData = FormData.fromMap(data);
     print('============');
-    print(data);
+    print(jsonEncode(data));
+    print('============');
     return await ApiServices.postData(url, formData);
   }
 }

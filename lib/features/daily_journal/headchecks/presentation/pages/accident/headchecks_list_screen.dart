@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
+import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_buton.dart';
@@ -32,6 +33,11 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
   List<HeadCheckModel> headChecks = [];
   bool isLoading = false;
   bool isSaving = false;
+
+  // Add controllers for each field
+  final List<TextEditingController> _headCountControllers = [];
+  final List<TextEditingController> _signatureControllers = [];
+  final List<TextEditingController> _commentsControllers = [];
 
   @override
   void initState() {
@@ -72,7 +78,23 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
       roomId: selectedRoomId ?? '',
       date: selectedDate,
     );
+    if (!response.success) {
+      UIHelpers.showToast(context, message: 'Failed to fetch head checks', backgroundColor: AppColors.errorColor,textColor: AppColors.white);
+      setState(() => isLoading = false);
+      return;
+    }
     headChecks = response.data?.headChecks ?? [];
+
+    // Initialize controllers for each headCheck
+    _headCountControllers.clear();
+    _signatureControllers.clear();
+    _commentsControllers.clear();
+    for (final hc in headChecks) {
+      _headCountControllers.add(TextEditingController(text: hc.headCount ?? ''));
+      _signatureControllers.add(TextEditingController(text: hc.signature ?? ''));
+      _commentsControllers.add(TextEditingController(text: hc.comments ?? ''));
+    }
+
     setState(() => isLoading = false);
   }
 
@@ -111,6 +133,15 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
   }
 
   Future<void> saveAllHeadChecks() async {
+    // Update headChecks from controllers before sending
+    for (int i = 0; i < headChecks.length; i++) {
+      headChecks[i] = headChecks[i].copyWith(
+        headCount: _headCountControllers[i].text,
+        signature: _signatureControllers[i].text,
+        comments: _commentsControllers[i].text,
+      );
+    }
+
     final hours = headChecks
       .map((e) => e.time.split(':')[0].replaceAll(RegExp(r'[^\d]'), ''))
       .toList();
@@ -174,6 +205,9 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
           createdAt: '',
         ),
       );
+      _headCountControllers.add(TextEditingController());
+      _signatureControllers.add(TextEditingController());
+      _commentsControllers.add(TextEditingController());
     });
   }
 
@@ -236,10 +270,10 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
                         : ListView.builder(
                             itemCount: headChecks.length,
                             itemBuilder: (context, index) {
-                                final headCheck = headChecks[index];
-                                String hour = '';
-                                String minute = '';
-                                try {
+                              final headCheck = headChecks[index];
+                              String hour = '';
+                              String minute = '';
+                              try {
                                 final timeParts = headCheck.time.split(':');
                                 if (timeParts.isNotEmpty) {
                                   hour = timeParts[0].replaceAll('hh', 'h');
@@ -247,16 +281,14 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
                                 if (timeParts.length > 1) {
                                   minute = timeParts[1].replaceAll('mm', 'm');
                                 }
-                                } catch (e) {
+                              } catch (e) {
                                 hour = '';
                                 minute = '';
-                                }
-                              final headCountController = TextEditingController(
-                                  text: headCheck.headCount ?? '');
-                              final signatureController = TextEditingController(
-                                  text: headCheck.signature ?? '');
-                              final commentsController = TextEditingController(
-                                  text: headCheck.comments ?? '');
+                              }
+                              // Use persistent controllers
+                              final headCountController = _headCountControllers[index];
+                              final signatureController = _signatureControllers[index];
+                              final commentsController = _commentsControllers[index];
 
                               return Padding(
                                 padding: const EdgeInsets.all(8.0),
@@ -269,7 +301,6 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
                                   commentsController: commentsController,
                                   onHourChanged: (newHour) {
                                     setState(() {
-                                      // Convert "5h" to "5hh"
                                       final formattedHour =
                                           (newHour ?? '').replaceAll('h', 'hh');
                                       final formattedMinute =
@@ -290,24 +321,9 @@ class _HeadChecksScreenState extends State<HeadChecksScreen> {
                                               '$formattedHour:$formattedMinute');
                                     });
                                   },
-                                  onHeadCountChanged: (val) {
-                                    setState(() {
-                                      headChecks[index] =
-                                          headCheck.copyWith(headCount: val);
-                                    });
-                                  },
-                                  onSignatureChanged: (val) {
-                                    setState(() {
-                                      headChecks[index] =
-                                          headCheck.copyWith(signature: val);
-                                    });
-                                  },
-                                  onCommentsChanged: (val) {
-                                    setState(() {
-                                      headChecks[index] =
-                                          headCheck.copyWith(comments: val);
-                                    });
-                                  },
+                                  onHeadCountChanged: null,
+                                  onSignatureChanged: null,
+                                  onCommentsChanged: null,
                                   onDelete: headCheck.id != null
                                       ? () async {
                                           await HeadChecksRepository()

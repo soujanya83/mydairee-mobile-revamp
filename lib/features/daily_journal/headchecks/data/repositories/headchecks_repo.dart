@@ -59,6 +59,8 @@ class HeadChecksRepository {
       "diarydate": diaryDate,
       "headcheck": true, 
     };
+    print('==============');
+    print(data);
     return await postAndParse(url, data);
   }
 

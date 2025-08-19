@@ -24,11 +24,17 @@ import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_sta
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_event.dart';
 
 class AddRoomScreen extends StatefulWidget {
-  final String screenType;
   final String centerId;
-  final Map<String, dynamic>? room;
-  const AddRoomScreen(
-      {super.key, required this.centerId, this.room, required this.screenType});
+  final String screenType;
+  final Room? room; // <-- Add this parameter
+
+  const AddRoomScreen({
+    Key? key,
+    required this.centerId,
+    required this.screenType,
+    this.room, // <-- Add this parameter
+  }) : super(key: key);
+
   @override
   State<AddRoomScreen> createState() => _AddRoomScreenState();
 }
@@ -70,15 +76,38 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
   void initState() {
     super.initState();
     fetchStaff();
-    if (widget.room != null && widget.screenType == 'edit') {
-      name.text = widget.room!['name'] ?? '';
-      capacity.text = widget.room!['capacity']?.toString() ?? '';
-      ageFrom.text = widget.room!['ageFrom']?.toString() ?? '';
-      ageTo.text = widget.room!['ageTo']?.toString() ?? '';
-      _chosenStatus = widget.room!['status'] ?? 'Active';
-      currentColor =
-          Color(widget.room!['color'] ?? AppColors.primaryColor.value);
-      pickerColor = currentColor;
+    if (widget.screenType == 'edit' && widget.room != null) {
+      final room = widget.room!;
+      name.text = room.name ?? '';
+      capacity.text = room.capacity?.toString() ?? '';
+      ageFrom.text = room.ageFrom?.toString() ?? '';
+      ageTo.text = room.ageTo?.toString() ?? '';
+      _chosenStatus = room.status ?? 'Active';
+
+      // --- Color parsing with error handling ---
+      Color safeColor = AppColors.primaryColor;
+      String? colorStr = room.color;
+      if (colorStr != null && colorStr.isNotEmpty) {
+        try {
+          // Remove any leading '#' or '##'
+          colorStr = colorStr.replaceAll(RegExp(r'^#+'), '');
+          // Remove any non-hex characters and limit to 6 or 8 chars
+          colorStr = colorStr.replaceAll(RegExp(r'[^0-9a-fA-F]'), '');
+          if (colorStr.length == 6) {
+            colorStr = 'FF' + colorStr; // Add alpha if missing
+          } else if (colorStr.length == 8) {
+            // already has alpha
+          } else {
+            throw Exception('Invalid color length');
+          }
+          safeColor = Color(int.parse('0x$colorStr'));
+        } catch (e) {
+          // fallback to default color
+          safeColor = AppColors.primaryColor;
+        }
+      }
+      currentColor = safeColor;
+      pickerColor = safeColor;
       try {
         if (educatorData != null &&
             educatorData!.success &&
@@ -174,7 +203,7 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
           '#${currentColor.value.toRadixString(16).padLeft(8, '0').substring(2)}',
       dcenterid: widget.centerId,
       educators: educatorIds,
-      roomId: (widget.screenType == 'edit') ? widget.room!['id'] : null,
+      roomId: (widget.screenType == 'edit') ? widget.room?.id.toString() : null,
     );
 
     UIHelpers.showToast(
@@ -305,14 +334,37 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                       ),
                     );
                   },
-                  child: Container(
-                    height: 45,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: currentColor,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.grey),
-                    ),
+                  child: Builder(
+                    builder: (context) {
+                      try {
+                        return Container(
+                          height: 45,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: currentColor,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.grey),
+                          ),
+                        );
+                      } catch (e) {
+                        // fallback UI if color error
+                        return Container(
+                          height: 45,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.grey),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Invalid color',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        );
+                      }
+                    },
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -376,10 +428,17 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                         setState(() {
                           isLoading = true;
                         });
-                        final staffIds = selectedStaff.map((s) => s.id).whereType<int>().toList();
+                        final staffIds = selectedStaff
+                            .map((s) => s.id)
+                            .whereType<int>()
+                            .toList();
                         final response = await RoomRepository().addRoom(
+                          roomId: widget.screenType == 'edit'
+                              ? widget.room?.id.toString()
+                              : null,
                           roomName: name.text,
                           roomCapacity: capacity.text,
+
                           ageFrom: ageFrom.text,
                           ageTo: ageTo.text,
                           roomStatus: _chosenStatus,
@@ -402,7 +461,14 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                               ? AppColors.successColor
                               : AppColors.errorColor,
                         );
-                        if (response.success) Navigator.pop(context);
+
+                        if (response.success) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            context.read<RoomListBloc>().add(
+                                FetchRoomsEvent(centerId: widget.centerId));
+                          });
+                          Navigator.pop(context);
+                        }
                       },
                     ),
                   ],

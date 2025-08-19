@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
             create: (context) => ForgotPasswordBloc()),
         BlocProvider<UpdatePasswordBloc>(
             create: (context) => UpdatePasswordBloc()),
-        BlocProvider<SignupBloc>(create: (context) => SignupBloc()),
+        // BlocProvider<SignupBloc>(create: (context) => SignupBloc()),
         BlocProvider<ForgotPasswordBloc>(
             create: (context) => ForgotPasswordBloc()),
         BlocProvider<RoomListBloc>(create: (context) => RoomListBloc()),

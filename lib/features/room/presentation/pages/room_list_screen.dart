@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mydiaree/core/services/user_type_helper.dart';
 import 'package:mydiaree/core/utils/helper_functions.dart';
 import 'package:mydiaree/core/utils/ui_helper.dart';
 import 'package:mydiaree/core/widgets/custom_app_bar.dart';
@@ -8,6 +9,7 @@ import 'package:mydiaree/core/widgets/custom_dropdown.dart';
 import 'package:mydiaree/core/widgets/custom_scaffold.dart';
 import 'package:mydiaree/core/widgets/custom_text_field.dart';
 import 'package:mydiaree/core/widgets/dropdowns/center_dropdown.dart';
+import 'package:mydiaree/features/program_plan/data/model/program_plan_data_model.dart';
 import 'package:mydiaree/features/room/data/repositories/room_repositories.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_bloc.dart';
 import 'package:mydiaree/features/room/presentation/bloc/list_room/list_room_event.dart';
@@ -213,12 +215,12 @@ class _RoomsListScreenState extends State<RoomsListScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         itemCount: rooms.length,
+                        reverse: true,
                         itemBuilder: (BuildContext context, int index) {
                           final room = rooms[index];
                           final roomId = room.id?.toString() ?? '';
                           final roomName = room.name ?? '';
-                          final roomColor =
-                              getColorFromHex(room.color ?? '#1711c1');
+                          final roomColor = getColorFromHex(room.color ?? '#1711c1');
                           final userName = room.createdBy ?? '';
                           final status = room.status ?? '';
                           final educators = (room.educators != null)
@@ -259,7 +261,20 @@ class _RoomsListScreenState extends State<RoomsListScreen> {
                               userName: userName.toString(),
                               status: status,
                               educators: educators,
-                              // onEditPressed: () {},
+                              onEditPressed: 
+                         UserTypeHelper.isParent?null:
+                           () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AddRoomScreen(
+                                      centerId: selectedCenterId ?? '',
+                                      screenType: 'edit', 
+                                      room: room, 
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           );
                         },

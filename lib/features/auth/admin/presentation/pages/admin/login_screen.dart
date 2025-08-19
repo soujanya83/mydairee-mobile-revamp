@@ -9,6 +9,7 @@ import 'package:mydiaree/features/auth/admin/presentation/bloc/login/login_event
 import 'package:mydiaree/features/auth/admin/presentation/bloc/login/login_state.dart';
 import 'package:mydiaree/core/config/app_colors.dart';
 import 'package:mydiaree/core/config/app_text.dart';
+import 'package:mydiaree/features/auth/admin/presentation/pages/admin/add_center_login.dart';
 import 'package:mydiaree/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:mydiaree/main.dart';
 import 'package:mydiaree/features/auth/admin/presentation/pages/admin/forgot_password_screen.dart';
@@ -51,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                         UIHelpers.verticalSpace(screenHeight * .1),
+                      UIHelpers.verticalSpace(screenHeight * .1),
                       Align(
                           alignment: Alignment.center,
                           child: UIHelpers.logoHorizontal()),
@@ -134,41 +135,51 @@ class _LoginScreenState extends State<LoginScreen> {
                       // ),
                       UIHelpers.verticalSpace(10),
                       BlocListener<LoginBloc, LoginState>(
-                          listener: (context, state)async {
+                          listener: (context, state) async {
                         if (state is LoginError) {
                           UIHelpers.showToast(
                             context,
                             message: state.message,
                             backgroundColor: AppColors.errorColor,
                           );
-                        } else if (state is LoginSuccess) { 
+                        } else if (state is LoginSuccess) {
                           UIHelpers.showToast(
                             context,
                             message: state.message,
                             backgroundColor: AppColors.successColor,
                           );
                           final token = state.loginData?.token;
-                          
-                          if (token != null && token.isNotEmpty){
+
+                          if (token != null && token.isNotEmpty) {
                             print("Token saved: $token");
                             await saveToken(token);
-                            await Future.delayed(const Duration(milliseconds: 100));
-                            
+                            await Future.delayed(
+                                const Duration(milliseconds: 100));
+
                             final savedToken = await getToken();
                             if (kDebugMode) {
-                              print("Token verification: ${savedToken != null && savedToken.isNotEmpty}");
+                              print(
+                                  "Token verification: ${savedToken != null && savedToken.isNotEmpty}");
                             }
-                            await UserTypeHelper.saveUserType(state.loginData?.user?.userType??'');
+                            await UserTypeHelper.saveUserType(
+                                state.loginData?.user?.userType ?? '');
                             // ignore: use_build_context_synchronously
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-                              return DashboardScreen();
-                            }));
-                          } else{
-                            UIHelpers.showToast(
-                              context,
-                              message: "Authentication failed - Token missing",
-                              backgroundColor: AppColors.errorColor
-                            );
+                            if (state.loginData?.user?.centerStatus == 1) {
+                              Navigator.pushReplacement(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return DashboardScreen();
+                              }));
+                            } else {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return AddCenterLoginScreen();
+                              }));
+                            }
+                          } else {
+                            UIHelpers.showToast(context,
+                                message:
+                                    "Authentication failed - Token missing",
+                                backgroundColor: AppColors.errorColor);
                           }
                         }
                       }, child: BlocBuilder<LoginBloc, LoginState>(
@@ -176,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return CustomButton(
                           text: AppTexts.login,
                           isLoading: state is LoginLoading,
-                          ontap: (){
+                          ontap: () {
                             if (_formKey.currentState!.validate()) {
                               context.read<LoginBloc>().add(LoginSubmitted(
                                     email: emailController.text,
@@ -187,19 +198,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       })),
                       UIHelpers.verticalSpace(10),
-                      // GestureDetector(
-                      //   onTap: () {
-                      //     Navigator.push(context,
-                      //         MaterialPageRoute(builder: (context) {
-                      //       return SignUpScreen();
-                      //     }));
-                      //   },
-                      //   child: Text(AppTexts.dontHaveAccount,
-                      //       style: Theme.of(context)
-                      //           .textTheme
-                      //           .bodySmall!
-                      //           .copyWith(color: AppColors.primaryColor)),
-                      // )
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return SignUpScreen();
+                          }));
+                        },
+                        child: Text(AppTexts.dontHaveAccount,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall!
+                                .copyWith(color: AppColors.primaryColor)),
+                      )
                     ],
                   ),
                 )),

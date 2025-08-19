@@ -267,6 +267,8 @@ class _AssessmentsScreenState extends State<AssessmentsScreen>
                             activityCategoryExpanded.putIfAbsent(
                                 activity.idActivity.toString(), () => false);
 
+                            final hasSubActivities = activity.subActivities.isNotEmpty;
+
                             return Card(
                               margin: const EdgeInsets.only(bottom: 16),
                               elevation: 2,
@@ -338,23 +340,33 @@ class _AssessmentsScreenState extends State<AssessmentsScreen>
                                       padding: const EdgeInsets.all(12),
                                       color: Colors
                                           .white, // Explicitly set white background
-                                      child: Column(
-                                        children: activity.subActivities
-                                            .map((subActivity) {
-                                          return Column(
-                                            children: [
-                                              _buildActivityRow(
-                                                subActivity.title,
-                                                subActivity.idSubActivity
-                                                    .toString(),
+                                      child: hasSubActivities
+                                          ? Column(
+                                              children: activity.subActivities
+                                                  .map((subActivity) {
+                                                return Column(
+                                                  children: [
+                                                    _buildActivityRow(
+                                                      subActivity.title,
+                                                      subActivity.idSubActivity
+                                                          .toString(),
+                                                    ),
+                                                    if (subActivity !=
+                                                        activity.subActivities.last)
+                                                      const Divider(),
+                                                  ],
+                                                );
+                                              }).toList(),
+                                            )
+                                          : const Center(
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(vertical: 12),
+                                                child: Text(
+                                                  'No data',
+                                                  style: TextStyle(color: Colors.grey),
+                                                ),
                                               ),
-                                              if (subActivity !=
-                                                  activity.subActivities.last)
-                                                const Divider(),
-                                            ],
-                                          );
-                                        }).toList(),
-                                      ),
+                                            ),
                                     ),
                                 ],
                               ),

@@ -218,6 +218,10 @@ class ApiServices {
         data: body,
         options: options,
       );
+      print('Response Received');
+      print('Status Code: ${response.statusCode}');
+      print('Response Data: ${response.data}');
+
       if (validApiResponse(response)) {
         return ApiResponse(
             success: true,

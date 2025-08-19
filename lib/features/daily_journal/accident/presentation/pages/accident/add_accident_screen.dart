@@ -15,6 +15,7 @@ import 'package:mydiaree/features/daily_journal/accident/data/models/child_detai
 import 'package:mydiaree/features/daily_journal/accident/data/models/create_accident_response_model.dart';
 import 'package:mydiaree/features/daily_journal/accident/data/models/accident_detail_response_model.dart';
 import 'package:mydiaree/features/daily_journal/accident/data/repositories/accident_repo.dart';
+import 'package:mydiaree/features/daily_journal/accident/presentation/pages/accident/accident_image_screen.dart';
 import 'package:mydiaree/features/daily_journal/accident/presentation/widget/add_accident_custom_widgets.dart'; 
 
 class AddAccidentScreen extends StatefulWidget {
@@ -38,7 +39,7 @@ class AddAccidentScreen extends StatefulWidget {
 class _AddAccidentScreenState extends State<AddAccidentScreen> {
   final _formKey = GlobalKey<FormState>();
   final AccidentRepository _repository = AccidentRepository();
-  
+
   // Person Details
   final TextEditingController _personNameController = TextEditingController();
   final TextEditingController _personRoleController = TextEditingController();
@@ -46,14 +47,14 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
   String _recordTimeHour = "10";
   String _recordTimeMin = "00";
   Uint8List? _personSignature;
-  
+
   // Child Details
   List<ChildrenData> _children = [];
   ChildrenData? _selectedChild;
   final TextEditingController _childAgeController = TextEditingController();
   DateTime _childDob = DateTime.now();
   String _childGender = "Male";
-  
+
   // Incident Details
   DateTime _incidentDate = DateTime.now();
   String _incidentTimeHour = "10";
@@ -62,14 +63,16 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
   final TextEditingController _witnessNameController = TextEditingController();
   DateTime _witnessDate = DateTime.now();
   Uint8List? _witnessSignature;
+  String? _witnessSignatureUrl; // <-- Add this line
   final TextEditingController _activityController = TextEditingController();
   final TextEditingController _causeController = TextEditingController();
   final TextEditingController _symptomsController = TextEditingController();
   final TextEditingController _missingController = TextEditingController();
   final TextEditingController _takenController = TextEditingController();
   File? _injuryImage;
-  String? _base64InjuryImage;
-  
+  Uint8List? _injuryMarkImage;
+  String? _base64InjuryImage; // (used for injury image url if network)
+
   // Injury Types
   bool _abrasion = false;
   bool _electricShock = false;
@@ -100,62 +103,77 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
   bool _eyeInjury = false;
   bool _other = false;
   final TextEditingController _remarksController = TextEditingController();
-  
+
   // Action Taken
   final TextEditingController _actionTakenController = TextEditingController();
   String _emergencyServices = "Yes";
   String _medicalAttention = "Yes";
-  final TextEditingController _medicalDetailsController = TextEditingController();
-  final TextEditingController _preventionStep1Controller = TextEditingController();
-  final TextEditingController _preventionStep2Controller = TextEditingController();
-  final TextEditingController _preventionStep3Controller = TextEditingController();
-  
+  final TextEditingController _medicalDetailsController =
+      TextEditingController();
+  final TextEditingController _preventionStep1Controller =
+      TextEditingController();
+  final TextEditingController _preventionStep2Controller =
+      TextEditingController();
+  final TextEditingController _preventionStep3Controller =
+      TextEditingController();
+
   // Parent/Guardian Notifications
   final TextEditingController _parent1NameController = TextEditingController();
-  final TextEditingController _contact1MethodController = TextEditingController();
+  final TextEditingController _contact1MethodController =
+      TextEditingController();
   DateTime _contact1Date = DateTime.now();
   String _contact1TimeHour = "10";
   String _contact1TimeMin = "00";
   bool _contact1Made = false;
   bool _contact1Msg = false;
-  
+
   final TextEditingController _parent2NameController = TextEditingController();
-  final TextEditingController _contact2MethodController = TextEditingController();
+  final TextEditingController _contact2MethodController =
+      TextEditingController();
   DateTime _contact2Date = DateTime.now();
   String _contact2TimeHour = "10";
   String _contact2TimeMin = "00";
   bool _contact2Made = false;
   bool _contact2Msg = false;
-  
+
   // Notifications
-  final TextEditingController _responsiblePersonNameController = TextEditingController();
+  final TextEditingController _responsiblePersonNameController =
+      TextEditingController();
   Uint8List? _responsiblePersonSignature;
+  String? _responsiblePersonSignatureUrl;
+  String? _originalResponsiblePersonSignatureUrl; // <-- Add this
   DateTime _rpInternalNotifDate = DateTime.now();
   String _rpInternalNotifTimeHour = "10";
   String _rpInternalNotifTimeMin = "00";
-  
-  final TextEditingController _nominatedSupervisorNameController = TextEditingController();
+
+  final TextEditingController _nominatedSupervisorNameController =
+      TextEditingController();
   Uint8List? _nominatedSupervisorSignature;
+  String? _nominatedSupervisorSignatureUrl;
+  String? _originalNominatedSupervisorSignatureUrl; // <-- Add this
   DateTime _nsvDate = DateTime.now();
   String _nsvTimeHour = "10";
   String _nsvTimeMin = "00";
-  
+
   final TextEditingController _otherAgencyController = TextEditingController();
   DateTime _enorDate = DateTime.now();
   String _enorTimeHour = "10";
   String _enorTimeMin = "00";
-  
-  final TextEditingController _regulatoryAuthorityController = TextEditingController();
+
+  final TextEditingController _regulatoryAuthorityController =
+      TextEditingController();
   DateTime _enraDate = DateTime.now();
   String _enraTimeHour = "10";
   String _enraTimeMin = "00";
-  
+
   final TextEditingController _addNotesController = TextEditingController();
-  
+
   // Dropdown options
-  List<String> hours = List.generate(24, (index) => index.toString().padLeft(2, '0'));
-  List<String> minutes = List.generate(60, (index) => index.toString().padLeft(2, '0'));
-  
+  List<String> hours =
+      List.generate(24, (index) => index.toString().padLeft(2, '0'));
+  List<String> minutes =
+      List.generate(60, (index) => index.toString().padLeft(2, '0'));
+
   bool _isLoading = false;
   bool _isSaving = false;
 
@@ -220,13 +238,13 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
 
     if (response.success && response.data != null) {
       final accident = response.data!.accident;
-      
+
       // Populate form fields with accident data
       _populateFields(accident);
-      
+
       // Also load children data for the dropdown
       await _loadCreateData();
-      
+
       // Find the selected child in the children list
       if (_children.isNotEmpty) {
         _selectedChild = _children.firstWhere(
@@ -251,12 +269,12 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
     List<String> timeParts = _parseTime(accident.time);
     _recordTimeHour = timeParts[0];
     _recordTimeMin = timeParts[1];
-    
+
     // Child Details
     _childAgeController.text = accident.childAge;
     _childDob = _parseDate(accident.childDob);
     _childGender = accident.childGender;
-    
+
     // Incident Details
     _incidentDate = _parseDate(accident.incidentDate);
     timeParts = _parseTime(accident.incidentTime);
@@ -270,7 +288,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
     _symptomsController.text = accident.illnessSymptoms;
     _missingController.text = accident.missingUnaccounted;
     _takenController.text = accident.takenRemoved;
-    
+
     // Injury Types
     _abrasion = accident.abrasion == 1;
     _electricShock = accident.electricShock == 1;
@@ -301,7 +319,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
     _eyeInjury = accident.eyeInjury == 1;
     _other = accident.other == 1;
     _remarksController.text = accident.remarks;
-    
+
     // Action Taken
     _actionTakenController.text = accident.actionTaken;
     _emergencyServices = accident.emergServAttend;
@@ -310,7 +328,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
     _preventionStep1Controller.text = accident.preventionStep1;
     _preventionStep2Controller.text = accident.preventionStep2;
     _preventionStep3Controller.text = accident.preventionStep3;
-    
+
     // Parent/Guardian Notifications
     _parent1NameController.text = accident.parent1Name;
     _contact1MethodController.text = accident.contact1Method;
@@ -318,44 +336,134 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
     timeParts = _parseTime(accident.contact1Time);
     _contact1TimeHour = timeParts[0];
     _contact1TimeMin = timeParts[1];
-    _contact1Made = accident.contact1Made == "Yes" || accident.contact1Made == "1";
+    _contact1Made =
+        accident.contact1Made == "Yes" || accident.contact1Made == "1";
     _contact1Msg = accident.contact1Msg == "Yes" || accident.contact1Msg == "1";
-    
+
     _parent2NameController.text = accident.parent2Name;
     _contact2MethodController.text = accident.contact2Method;
     _contact2Date = _parseDate(accident.contact2Date);
     timeParts = _parseTime(accident.contact2Time);
     _contact2TimeHour = timeParts[0];
     _contact2TimeMin = timeParts[1];
-    _contact2Made = accident.contact2Made == "Yes" || accident.contact2Made == "1";
+    _contact2Made =
+        accident.contact2Made == "Yes" || accident.contact2Made == "1";
     _contact2Msg = accident.contact2Msg == "Yes" || accident.contact2Msg == "1";
-    
+
     // Notifications
     _responsiblePersonNameController.text = accident.responsiblePersonName;
     _rpInternalNotifDate = _parseDate(accident.rpInternalNotifDate);
     timeParts = _parseTime(accident.rpInternalNotifTime);
     _rpInternalNotifTimeHour = timeParts[0];
     _rpInternalNotifTimeMin = timeParts[1];
-    
+
     _nominatedSupervisorNameController.text = accident.nominatedSupervisorName;
     _nsvDate = _parseDate(accident.nominatedSupervisorDate);
     timeParts = _parseTime(accident.nominatedSupervisorTime);
     _nsvTimeHour = timeParts[0];
     _nsvTimeMin = timeParts[1];
-    
+
     _otherAgencyController.text = accident.extNotifOtherAgency;
     _enorDate = _parseDate(accident.enorDate);
     timeParts = _parseTime(accident.enorTime);
     _enorTimeHour = timeParts[0];
     _enorTimeMin = timeParts[1];
-    
+
     _regulatoryAuthorityController.text = accident.extNotifRegulatoryAuth;
     _enraDate = _parseDate(accident.enraDate);
     timeParts = _parseTime(accident.enraTime);
     _enraTimeHour = timeParts[0];
     _enraTimeMin = timeParts[1];
-    
+
     _addNotesController.text = accident.addNotes;
+
+    // Injury Image
+    if (accident.injuryImage.isNotEmpty) {
+      try {
+        if (accident.injuryImage.startsWith('data:image')) {
+          final base64Str = accident.injuryImage.split(',').last;
+          _injuryMarkImage = base64Decode(base64Str);
+          _base64InjuryImage = null;
+        } else if (accident.injuryImage.startsWith('http')) {
+          _base64InjuryImage = accident.injuryImage;
+          _injuryMarkImage = null;
+        }
+      } catch (_) {
+        _injuryMarkImage = null;
+        _base64InjuryImage = null;
+      }
+    } else {
+      _injuryMarkImage = null;
+      _base64InjuryImage = null;
+    }
+
+    // Witness Signature
+    if (accident.witnessSign.isNotEmpty) {
+      try {
+        if (accident.witnessSign.startsWith('data:image')) {
+          final base64Str = accident.witnessSign.split(',').last;
+          _witnessSignature = base64Decode(base64Str);
+          _witnessSignatureUrl = null;
+        } else if (accident.witnessSign.startsWith('http')) {
+          _witnessSignature = null;
+          _witnessSignatureUrl = accident.witnessSign;
+        }
+      } catch(_) {
+        _witnessSignature = null;
+        _witnessSignatureUrl = null;
+      }
+    } else {
+      _witnessSignature = null;
+      _witnessSignatureUrl = null;
+    }
+
+    // Responsible Person Signature
+    if (accident.responsiblePersonSign.isNotEmpty) {
+      try {
+        if (accident.responsiblePersonSign.startsWith('data:image')) {
+          final base64Str = accident.responsiblePersonSign.split(',').last;
+          _responsiblePersonSignature = base64Decode(base64Str);
+          _responsiblePersonSignatureUrl = null;
+          _originalResponsiblePersonSignatureUrl = null;
+        } else if (accident.responsiblePersonSign.startsWith('http')) {
+          _responsiblePersonSignature = null;
+          _responsiblePersonSignatureUrl = accident.responsiblePersonSign;
+          _originalResponsiblePersonSignatureUrl = accident.responsiblePersonSign;
+        }
+      } catch (_) {
+        _responsiblePersonSignature = null;
+        _responsiblePersonSignatureUrl = null;
+        _originalResponsiblePersonSignatureUrl = null;
+      }
+    } else {
+      _responsiblePersonSignature = null;
+      _responsiblePersonSignatureUrl = null;
+      _originalResponsiblePersonSignatureUrl = null;
+    }
+
+    // Nominated Supervisor Signature
+    if (accident.nominatedSupervisorSign.isNotEmpty) {
+      try {
+        if (accident.nominatedSupervisorSign.startsWith('data:image')) {
+          final base64Str = accident.nominatedSupervisorSign.split(',').last;
+          _nominatedSupervisorSignature = base64Decode(base64Str);
+          _nominatedSupervisorSignatureUrl = null;
+          _originalNominatedSupervisorSignatureUrl = null;
+        } else if (accident.nominatedSupervisorSign.startsWith('http')) {
+          _nominatedSupervisorSignature = null;
+          _nominatedSupervisorSignatureUrl = accident.nominatedSupervisorSign;
+          _originalNominatedSupervisorSignatureUrl = accident.nominatedSupervisorSign;
+        }
+      } catch (_) {
+        _nominatedSupervisorSignature = null;
+        _nominatedSupervisorSignatureUrl = null;
+        _originalNominatedSupervisorSignatureUrl = null;
+      }
+    } else {
+      _nominatedSupervisorSignature = null;
+      _nominatedSupervisorSignatureUrl = null;
+      _originalNominatedSupervisorSignatureUrl = null;
+    }
   }
 
   DateTime _parseDate(String dateStr) {
@@ -428,7 +536,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
       _selectedChild = child;
       _childGender = child.gender;
       _childDob = _parseDate(child.dob);
-      
+
       // Calculate age
       final now = DateTime.now();
       final age = now.year - _childDob.year;
@@ -440,16 +548,16 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
   }
 
   Future<void> _loadChildDetails(String childId) async {
-    final response = await _repository.getChildDetails(childId:childId );
-    
+    final response = await _repository.getChildDetails(childId: childId);
+
     if (response.success && response.data != null) {
       final childDetails = response.data!.child;
-      
+
       setState(() {
         // Update with any additional details from the API
         _childDob = _parseDate(childDetails.dob);
         _childGender = childDetails.gender;
-        
+
         // Recalculate age based on DOB
         final now = DateTime.now();
         final age = now.year - _childDob.year;
@@ -457,28 +565,32 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
       });
     }
   }
-
-  Future<void> _pickInjuryImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
+ 
+  Future<void> _markInjuryImage() async {
+    final markedImage = await Navigator.push<Uint8List>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AccidentImageMarkScreen(
+          initialImage: _injuryMarkImage,
+        ),
+      ),
+    );
+    if (markedImage != null) {
       setState(() {
-        _injuryImage = File(pickedFile.path);
-        
-        // Convert to base64
-        final bytes = _injuryImage!.readAsBytesSync();
-        _base64InjuryImage = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+        _injuryMarkImage = markedImage;
+        _base64InjuryImage =
+            'data:image/png;base64,${base64Encode(markedImage)}';
       });
     }
   }
 
-  Future<void> _captureSignature({required Function(Uint8List) onSignatureCapture}) async {
+  Future<void> _captureSignature(
+      {required Function(Uint8List) onSignatureCapture}) async {
     final signature = await Navigator.push<Uint8List>(
       context,
       MaterialPageRoute(builder: (context) => SignaturePage()),
     );
-    
+
     if (signature != null) {
       onSignatureCapture(signature);
     }
@@ -548,26 +660,30 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
       _isSaving = true;
     });
 
-    try {
-      // Convert signatures to base64
+    try { 
       String? personSignBase64;
       if (_personSignature != null) {
-        personSignBase64 = 'data:image/png;base64,${base64Encode(_personSignature!)}';
+        personSignBase64 =
+            'data:image/png;base64,${base64Encode(_personSignature!)}';
       }
-      
+
       String? witnessSignBase64;
       if (_witnessSignature != null) {
-        witnessSignBase64 = 'data:image/png;base64,${base64Encode(_witnessSignature!)}';
+        witnessSignBase64 =
+            'data:image/png;base64,${base64Encode(_witnessSignature!)}';
       }
-      
+
       String? responsiblePersonSignBase64;
       if (_responsiblePersonSignature != null) {
-        responsiblePersonSignBase64 = 'data:image/png;base64,${base64Encode(_responsiblePersonSignature!)}';
+        responsiblePersonSignBase64 =
+            'data:image/png;base64,${base64Encode(_responsiblePersonSignature!)}';
       }
-      
+
+      // Only send if changed (i.e., _responsiblePersonSignature != null)
       String? nominatedSupervisorSignBase64;
       if (_nominatedSupervisorSignature != null) {
-        nominatedSupervisorSignBase64 = 'data:image/png;base64,${base64Encode(_nominatedSupervisorSignature!)}';
+        nominatedSupervisorSignBase64 =
+            'data:image/png;base64,${base64Encode(_nominatedSupervisorSignature!)}';
       }
 
       final response = await _repository.saveAccident(
@@ -618,11 +734,16 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
         contact2Made: _contact2Made ? '1' : '0',
         contact2Msg: _contact2Msg ? '1' : '0',
         responsiblePersonName: _responsiblePersonNameController.text,
-        responsiblePersonSign: responsiblePersonSignBase64,
+        responsiblePersonSign: widget.isEditing
+          ? (_responsiblePersonSignature != null ? responsiblePersonSignBase64 : null)
+          : responsiblePersonSignBase64,
         rpInternalNotifDate: _formatDate(_rpInternalNotifDate),
-        rpInternalNotifTime: _formatTime(_rpInternalNotifTimeHour, _rpInternalNotifTimeMin),
+        rpInternalNotifTime:
+            _formatTime(_rpInternalNotifTimeHour, _rpInternalNotifTimeMin),
         nominatedSupervisorName: _nominatedSupervisorNameController.text,
-        nominatedSupervisorSign: nominatedSupervisorSignBase64,
+        nominatedSupervisorSign: widget.isEditing
+          ? (_nominatedSupervisorSignature != null ? nominatedSupervisorSignBase64 : null)
+          : nominatedSupervisorSignBase64,
         nsvDate: _formatDate(_nsvDate),
         nsvTime: _formatTime(_nsvTimeHour, _nsvTimeMin),
         otherAgency: _otherAgencyController.text,
@@ -642,7 +763,9 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
         UIHelpers.showToast(
           // ignore: use_build_context_synchronously
           context,
-          message: widget.isEditing ? 'Accident updated successfully' : 'Accident added successfully',
+          message: widget.isEditing
+              ? 'Accident updated successfully'
+              : 'Accident added successfully',
           backgroundColor: AppColors.successColor,
         );
         Navigator.pop(context, true); // Return success to previous screen
@@ -669,8 +792,9 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      appBar: CustomAppBar(title: widget.isEditing ? "Edit Accident" : "Add Accident"),
-      body: _isLoading 
+      appBar: CustomAppBar(
+          title: widget.isEditing ? "Edit Accident" : "Add Accident"),
+      body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Padding(
@@ -690,32 +814,36 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Person Details Section
-                      _buildSectionHeader('Details of person completing this record'),
+                      _buildSectionHeader(
+                          'Details of person completing this record'),
                       CustomTextFormWidget(
                         controller: _personNameController,
                         hintText: 'Name',
                         title: 'Name',
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Name' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Name' : null,
                       ),
                       const SizedBox(height: 12),
                       CustomTextFormWidget(
                         controller: _personRoleController,
                         hintText: 'Position/Role',
                         title: 'Position/Role',
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Position/Role' : null,
+                        validator: (v) => v == null || v.isEmpty
+                            ? 'Enter Position/Role'
+                            : null,
                       ),
-                      const SizedBox(height: 16),
-                      _buildSignatureField(
-                        title: 'Signature',
-                        signature: _personSignature,
-                        onTap: () => _captureSignature(
-                          onSignatureCapture: (signature) {
-                            setState(() => _personSignature = signature);
-                          },
-                        ),
-                      ),
+                      // const SizedBox(height: 16),
+                      // _buildSignatureField(
+                      //   title: 'Signature',
+                      //   signature: _personSignature,
+                      //   onTap: () => _captureSignature(
+                      //     onSignatureCapture: (signature) {
+                      //       setState(() => _personSignature = signature);
+                      //     },
+                      //   ),
+                      // ),
                       const SizedBox(height: 16),
                       _buildDatePicker(
                         title: 'Date',
@@ -736,7 +864,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                           setState(() => _recordTimeMin = value!);
                         },
                       ),
-                      
+
                       // Child Details Section
                       const SizedBox(height: 24),
                       _buildSectionHeader('Child Details'),
@@ -755,7 +883,8 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                             children: const [
                               Icon(Icons.person_add, color: Colors.white),
                               SizedBox(width: 8),
-                              Text('Select Child', style: TextStyle(color: Colors.white)),
+                              Text('Select Child',
+                                  style: TextStyle(color: Colors.white)),
                             ],
                           ),
                         ),
@@ -818,7 +947,8 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      Text('Gender', style: Theme.of(context).textTheme.bodyMedium),
+                      Text('Gender',
+                          style: Theme.of(context).textTheme.bodyMedium),
                       const SizedBox(height: 8),
                       CustomDropdown(
                         height: 50,
@@ -826,7 +956,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         items: const ['Male', 'Female', 'Other'],
                         onChanged: (val) => setState(() => _childGender = val!),
                       ),
-                      
+
                       // Incident Details Section
                       const SizedBox(height: 24),
                       _buildSectionHeader('Incident Details'),
@@ -855,14 +985,17 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         controller: _locationController,
                         hintText: 'Location',
                         title: 'Location',
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Location' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Location' : null,
                       ),
                       const SizedBox(height: 16),
                       CustomTextFormWidget(
                         controller: _witnessNameController,
                         hintText: 'Witness Name',
                         title: 'Witness Name',
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Witness Name' : null,
+                        validator: (v) => v == null || v.isEmpty
+                            ? 'Enter Witness Name'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       _buildSignatureField(
@@ -871,8 +1004,10 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         onTap: () => _captureSignature(
                           onSignatureCapture: (signature) {
                             setState(() => _witnessSignature = signature);
+                            _witnessSignatureUrl = null;
                           },
                         ),
+                        networkImageUrl: _witnessSignatureUrl, // <-- Pass the url
                       ),
                       const SizedBox(height: 16),
                       _buildDatePicker(
@@ -886,9 +1021,11 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                       CustomTextFormWidget(
                         controller: _activityController,
                         hintText: 'Activity',
-                        title: 'General activity at the time of incident/injury/trauma/illness',
+                        title:
+                            'General activity at the time of incident/injury/trauma/illness',
                         maxLines: 2,
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Activity' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Activity' : null,
                       ),
                       const SizedBox(height: 16),
                       CustomTextFormWidget(
@@ -896,71 +1033,84 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         hintText: 'Cause',
                         title: 'Cause of injury/trauma',
                         maxLines: 2,
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Cause' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Cause' : null,
                       ),
                       const SizedBox(height: 16),
                       CustomTextFormWidget(
                         controller: _symptomsController,
                         hintText: 'Symptoms',
-                        title: 'Circumstances surrounding any illness, including apparent symptoms',
+                        title:
+                            'Circumstances surrounding any illness, including apparent symptoms',
                         maxLines: 2,
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Symptoms' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Symptoms' : null,
                       ),
                       const SizedBox(height: 16),
                       CustomTextFormWidget(
                         controller: _missingController,
                         hintText: 'Details',
-                        title: 'Circumstances if child appeared to be missing or otherwise unaccounted for',
+                        title:
+                            'Circumstances if child appeared to be missing or otherwise unaccounted for',
                         maxLines: 2,
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Details' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Details' : null,
                       ),
                       const SizedBox(height: 16),
                       CustomTextFormWidget(
                         controller: _takenController,
                         hintText: 'Details',
-                        title: 'Circumstances if child was taken or removed from the service',
+                        title:
+                            'Circumstances if child was taken or removed from the service',
                         maxLines: 2,
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Details' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Details' : null,
                       ),
-                      
+
                       // Injury Image
                       const SizedBox(height: 24),
                       _buildSectionHeader('Nature of Injury/Trauma/Illness'),
                       const SizedBox(height: 16),
                       GestureDetector(
-                        onTap: _pickInjuryImage,
+                        onTap: _markInjuryImage,
                         child: Container(
-                          height: _injuryImage != null ? 150 : 50,
-                          width: _injuryImage != null ? 150 : double.infinity,
+                          height: _injuryMarkImage != null || (_injuryMarkImage == null && _base64InjuryImage != null && _base64InjuryImage!.startsWith('http')) ? 200 : 50,
+                          width: _injuryMarkImage != null || (_injuryMarkImage == null && _base64InjuryImage != null && _base64InjuryImage!.startsWith('http')) ? 200 : double.infinity,
                           decoration: BoxDecoration(
                             color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: AppColors.primaryColor),
                           ),
-                          child: _injuryImage != null
+                          child: _injuryMarkImage != null
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(_injuryImage!, fit: BoxFit.cover),
+                                  child: Image.memory(_injuryMarkImage!, fit: BoxFit.contain),
                                 )
-                              : Center(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
-                                      Icon(Icons.add_photo_alternate),
-                                      SizedBox(width: 8),
-                                      Text('Add injury image'),
-                                    ],
-                                  ),
-                                ),
+                              : (_injuryMarkImage == null && _base64InjuryImage != null && _base64InjuryImage!.startsWith('http'))
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(_base64InjuryImage!, fit: BoxFit.contain),
+                                    )
+                                  : const Center(
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.edit, color: Colors.grey),
+                                          SizedBox(width: 8),
+                                          Text('Mark injury on image'),
+                                        ],
+                                      ),
+                                    ),
                         ),
                       ),
-                      
+
                       // Injury Types Checkboxes
                       const SizedBox(height: 24),
-                      Text('Select injury types:', style: Theme.of(context).textTheme.titleMedium),
+                      Text('Select injury types:',
+                          style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 8),
                       _buildInjuryTypeCheckboxes(),
-                      
+
                       const SizedBox(height: 16),
                       CustomTextFormWidget(
                         controller: _remarksController,
@@ -968,7 +1118,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         title: 'Additional remarks',
                         maxLines: 3,
                       ),
-                      
+
                       // Action Taken Section
                       const SizedBox(height: 24),
                       _buildSectionHeader('Action Taken'),
@@ -976,27 +1126,33 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                       CustomTextFormWidget(
                         controller: _actionTakenController,
                         hintText: 'Details of action taken',
-                        title: 'Details of action taken (including first aid, administration of medication etc.)',
+                        title:
+                            'Details of action taken (including first aid, administration of medication etc.)',
                         maxLines: 3,
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Details' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Details' : null,
                       ),
                       const SizedBox(height: 16),
-                      Text('Did emergency services attend?', style: Theme.of(context).textTheme.bodyMedium),
+                      Text('Did emergency services attend?',
+                          style: Theme.of(context).textTheme.bodyMedium),
                       const SizedBox(height: 8),
                       CustomDropdown(
                         height: 50,
                         value: _emergencyServices,
                         items: const ['Yes', 'No'],
-                        onChanged: (val) => setState(() => _emergencyServices = val!),
+                        onChanged: (val) =>
+                            setState(() => _emergencyServices = val!),
                       ),
                       const SizedBox(height: 16),
-                      Text('Was medical attention sought?', style: Theme.of(context).textTheme.bodyMedium),
+                      Text('Was medical attention sought?',
+                          style: Theme.of(context).textTheme.bodyMedium),
                       const SizedBox(height: 8),
                       CustomDropdown(
                         height: 50,
                         value: _medicalAttention,
                         items: const ['Yes', 'No'],
-                        onChanged: (val) => setState(() => _medicalAttention = val!),
+                        onChanged: (val) =>
+                            setState(() => _medicalAttention = val!),
                       ),
                       const SizedBox(height: 16),
                       if (_medicalAttention == 'Yes')
@@ -1008,12 +1164,14 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                               hintText: 'Medical attention details',
                               title: 'Details of medical attention',
                               maxLines: 3,
-                              validator: (v) => v == null || v.isEmpty ? 'Enter Details' : null,
+                              validator: (v) => v == null || v.isEmpty
+                                  ? 'Enter Details'
+                                  : null,
                             ),
                             const SizedBox(height: 16),
                           ],
                         ),
-                      
+
                       CustomTextFormWidget(
                         controller: _preventionStep1Controller,
                         hintText: 'Prevention step 1',
@@ -1034,27 +1192,31 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         title: 'Future prevention step 3',
                         maxLines: 2,
                       ),
-                      
+
                       // Parent/Guardian Notifications Section
                       const SizedBox(height: 24),
                       _buildSectionHeader('Parent/Guardian Notifications'),
-                      
+
                       // First Parent/Guardian
                       const SizedBox(height: 16),
-                      Text('First Parent/Guardian', style: Theme.of(context).textTheme.titleMedium),
+                      Text('First Parent/Guardian',
+                          style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 8),
                       CustomTextFormWidget(
                         controller: _parent1NameController,
                         hintText: 'Name',
                         title: 'Parent/Guardian name',
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Name' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Name' : null,
                       ),
                       const SizedBox(height: 16),
                       CustomTextFormWidget(
                         controller: _contact1MethodController,
                         hintText: 'Contact Method',
                         title: 'Method of Contact',
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Contact Method' : null,
+                        validator: (v) => v == null || v.isEmpty
+                            ? 'Enter Contact Method'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       _buildDatePicker(
@@ -1099,10 +1261,11 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                           ),
                         ],
                       ),
-                      
+
                       // Second Parent/Guardian
                       const SizedBox(height: 16),
-                      Text('Second Parent/Guardian (Optional)', style: Theme.of(context).textTheme.titleMedium),
+                      Text('Second Parent/Guardian (Optional)',
+                          style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 8),
                       CustomTextFormWidget(
                         controller: _parent2NameController,
@@ -1158,7 +1321,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                           ),
                         ],
                       ),
-                      
+
                       // Internal Notifications Section
                       const SizedBox(height: 24),
                       _buildSectionHeader('Internal Notifications'),
@@ -1167,7 +1330,8 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         controller: _responsiblePersonNameController,
                         hintText: 'Name',
                         title: 'Responsible Person in Charge Name',
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Name' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Name' : null,
                       ),
                       const SizedBox(height: 16),
                       _buildSignatureField(
@@ -1176,8 +1340,10 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         onTap: () => _captureSignature(
                           onSignatureCapture: (signature) {
                             setState(() => _responsiblePersonSignature = signature);
+                            _responsiblePersonSignatureUrl = null;
                           },
                         ),
+                        networkImageUrl: _responsiblePersonSignatureUrl,
                       ),
                       const SizedBox(height: 16),
                       _buildDatePicker(
@@ -1199,13 +1365,14 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                           setState(() => _rpInternalNotifTimeMin = value!);
                         },
                       ),
-                      
+
                       const SizedBox(height: 16),
                       CustomTextFormWidget(
                         controller: _nominatedSupervisorNameController,
                         hintText: 'Name',
                         title: 'Nominated Supervisor Name',
-                        validator: (v) => v == null || v.isEmpty ? 'Enter Name' : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter Name' : null,
                       ),
                       const SizedBox(height: 16),
                       _buildSignatureField(
@@ -1214,8 +1381,10 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         onTap: () => _captureSignature(
                           onSignatureCapture: (signature) {
                             setState(() => _nominatedSupervisorSignature = signature);
+                            _nominatedSupervisorSignatureUrl = null;
                           },
                         ),
+                        networkImageUrl: _nominatedSupervisorSignatureUrl,
                       ),
                       const SizedBox(height: 16),
                       _buildDatePicker(
@@ -1237,7 +1406,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                           setState(() => _nsvTimeMin = value!);
                         },
                       ),
-                      
+
                       // External Notifications Section
                       const SizedBox(height: 24),
                       _buildSectionHeader('External Notifications'),
@@ -1267,7 +1436,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                           setState(() => _enorTimeMin = value!);
                         },
                       ),
-                      
+
                       const SizedBox(height: 16),
                       CustomTextFormWidget(
                         controller: _regulatoryAuthorityController,
@@ -1294,7 +1463,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                           setState(() => _enraTimeMin = value!);
                         },
                       ),
-                      
+
                       // Additional Notes
                       const SizedBox(height: 24),
                       _buildSectionHeader('Additional Notes'),
@@ -1305,7 +1474,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                         title: 'Additional Notes',
                         maxLines: 4,
                       ),
-                      
+
                       // Save and Cancel Buttons
                       const SizedBox(height: 32),
                       Row(
@@ -1314,7 +1483,8 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                           OutlinedButton(
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 15),
                             ),
                             child: Text('CANCEL'),
                           ),
@@ -1462,6 +1632,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
     required String title,
     required Uint8List? signature,
     required Function() onTap,
+    String? networkImageUrl,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1471,7 +1642,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
         GestureDetector(
           onTap: onTap,
           child: Container(
-            height: signature != null ? 100 : 50,
+            height: signature != null || (networkImageUrl != null && networkImageUrl.startsWith('http')) ? 100 : 50,
             width: double.infinity,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
@@ -1482,16 +1653,21 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
                     borderRadius: BorderRadius.circular(8),
                     child: Image.memory(signature, fit: BoxFit.contain),
                   )
-                : Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.draw),
-                        SizedBox(width: 8),
-                        Text('Tap to sign'),
-                      ],
-                    ),
-                  ),
+                : (networkImageUrl != null && networkImageUrl.startsWith('http'))
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(networkImageUrl, fit: BoxFit.contain),
+                      )
+                    : const Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.draw),
+                            SizedBox(width: 8),
+                            Text('Tap to sign'),
+                          ],
+                        ),
+                      ),
           ),
         ),
       ],
@@ -1503,39 +1679,67 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
       spacing: 6.0,
       runSpacing: 0.0,
       children: [
-        _buildInjuryCheckbox('Abrasion/Scrape', _abrasion, (val) => setState(() => _abrasion = val!)),
-        _buildInjuryCheckbox('Electric Shock', _electricShock, (val) => setState(() => _electricShock = val!)),
-        _buildInjuryCheckbox('Allergic Reaction', _allergicReaction, (val) => setState(() => _allergicReaction = val!)),
-        _buildInjuryCheckbox('High Temperature', _highTemperature, (val) => setState(() => _highTemperature = val!)),
-        _buildInjuryCheckbox('Amputation', _amputation, (val) => setState(() => _amputation = val!)),
-        _buildInjuryCheckbox('Infectious Disease', _infectiousDisease, (val) => setState(() => _infectiousDisease = val!)),
-        _buildInjuryCheckbox('Anaphylaxis', _anaphylaxis, (val) => setState(() => _anaphylaxis = val!)),
-        _buildInjuryCheckbox('Ingestion', _ingestion, (val) => setState(() => _ingestion = val!)),
-        _buildInjuryCheckbox('Asthma', _asthma, (val) => setState(() => _asthma = val!)),
-        _buildInjuryCheckbox('Internal Injury', _internalInjury, (val) => setState(() => _internalInjury = val!)),
-        _buildInjuryCheckbox('Bite Wound', _biteWound, (val) => setState(() => _biteWound = val!)),
-        _buildInjuryCheckbox('Poisoning', _poisoning, (val) => setState(() => _poisoning = val!)),
-        _buildInjuryCheckbox('Broken Bone', _brokenBone, (val) => setState(() => _brokenBone = val!)),
-        _buildInjuryCheckbox('Rash', _rash, (val) => setState(() => _rash = val!)),
-        _buildInjuryCheckbox('Burn', _burn, (val) => setState(() => _burn = val!)),
-        _buildInjuryCheckbox('Respiratory', _respiratory, (val) => setState(() => _respiratory = val!)),
-        _buildInjuryCheckbox('Choking', _choking, (val) => setState(() => _choking = val!)),
-        _buildInjuryCheckbox('Seizure', _seizure, (val) => setState(() => _seizure = val!)),
-        _buildInjuryCheckbox('Concussion', _concussion, (val) => setState(() => _concussion = val!)),
-        _buildInjuryCheckbox('Sprain', _sprain, (val) => setState(() => _sprain = val!)),
-        _buildInjuryCheckbox('Crush', _crush, (val) => setState(() => _crush = val!)),
-        _buildInjuryCheckbox('Stabbing', _stabbing, (val) => setState(() => _stabbing = val!)),
+        _buildInjuryCheckbox('Abrasion/Scrape', _abrasion,
+            (val) => setState(() => _abrasion = val!)),
+        _buildInjuryCheckbox('Electric Shock', _electricShock,
+            (val) => setState(() => _electricShock = val!)),
+        _buildInjuryCheckbox('Allergic Reaction', _allergicReaction,
+            (val) => setState(() => _allergicReaction = val!)),
+        _buildInjuryCheckbox('High Temperature', _highTemperature,
+            (val) => setState(() => _highTemperature = val!)),
+        _buildInjuryCheckbox('Amputation', _amputation,
+            (val) => setState(() => _amputation = val!)),
+        _buildInjuryCheckbox('Infectious Disease', _infectiousDisease,
+            (val) => setState(() => _infectiousDisease = val!)),
+        _buildInjuryCheckbox('Anaphylaxis', _anaphylaxis,
+            (val) => setState(() => _anaphylaxis = val!)),
+        _buildInjuryCheckbox('Ingestion', _ingestion,
+            (val) => setState(() => _ingestion = val!)),
+        _buildInjuryCheckbox(
+            'Asthma', _asthma, (val) => setState(() => _asthma = val!)),
+        _buildInjuryCheckbox('Internal Injury', _internalInjury,
+            (val) => setState(() => _internalInjury = val!)),
+        _buildInjuryCheckbox('Bite Wound', _biteWound,
+            (val) => setState(() => _biteWound = val!)),
+        _buildInjuryCheckbox('Poisoning', _poisoning,
+            (val) => setState(() => _poisoning = val!)),
+        _buildInjuryCheckbox('Broken Bone', _brokenBone,
+            (val) => setState(() => _brokenBone = val!)),
+        _buildInjuryCheckbox(
+            'Rash', _rash, (val) => setState(() => _rash = val!)),
+        _buildInjuryCheckbox(
+            'Burn', _burn, (val) => setState(() => _burn = val!)),
+        _buildInjuryCheckbox('Respiratory', _respiratory,
+            (val) => setState(() => _respiratory = val!)),
+        _buildInjuryCheckbox(
+            'Choking', _choking, (val) => setState(() => _choking = val!)),
+        _buildInjuryCheckbox(
+            'Seizure', _seizure, (val) => setState(() => _seizure = val!)),
+        _buildInjuryCheckbox('Concussion', _concussion,
+            (val) => setState(() => _concussion = val!)),
+        _buildInjuryCheckbox(
+            'Sprain', _sprain, (val) => setState(() => _sprain = val!)),
+        _buildInjuryCheckbox(
+            'Crush', _crush, (val) => setState(() => _crush = val!)),
+        _buildInjuryCheckbox(
+            'Stabbing', _stabbing, (val) => setState(() => _stabbing = val!)),
         _buildInjuryCheckbox('Cut', _cut, (val) => setState(() => _cut = val!)),
-        _buildInjuryCheckbox('Tooth', _tooth, (val) => setState(() => _tooth = val!)),
-        _buildInjuryCheckbox('Drowning', _drowning, (val) => setState(() => _drowning = val!)),
-        _buildInjuryCheckbox('Venomous Bite', _venomousBite, (val) => setState(() => _venomousBite = val!)),
-        _buildInjuryCheckbox('Eye Injury', _eyeInjury, (val) => setState(() => _eyeInjury = val!)),
-        _buildInjuryCheckbox('Other', _other, (val) => setState(() => _other = val!)),
+        _buildInjuryCheckbox(
+            'Tooth', _tooth, (val) => setState(() => _tooth = val!)),
+        _buildInjuryCheckbox(
+            'Drowning', _drowning, (val) => setState(() => _drowning = val!)),
+        _buildInjuryCheckbox('Venomous Bite', _venomousBite,
+            (val) => setState(() => _venomousBite = val!)),
+        _buildInjuryCheckbox('Eye Injury', _eyeInjury,
+            (val) => setState(() => _eyeInjury = val!)),
+        _buildInjuryCheckbox(
+            'Other', _other, (val) => setState(() => _other = val!)),
       ],
     );
   }
 
-  Widget _buildInjuryCheckbox(String label, bool value, ValueChanged<bool?> onChanged) {
+  Widget _buildInjuryCheckbox(
+      String label, bool value, ValueChanged<bool?> onChanged) {
     return GestureDetector(
       onTap: () {
         onChanged(!value);
@@ -1543,7 +1747,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: value ? AppColors.primaryColor : Colors.transparent,
+          // color: value ? AppColors.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColors.primaryColor),
         ),
@@ -1563,7 +1767,7 @@ class _AddAccidentScreenState extends State<AddAccidentScreen> {
               child: Text(
                 label,
                 style: TextStyle(
-                  color: value ? Colors.white : Colors.black,
+                  color: Colors.black,
                   fontWeight: value ? FontWeight.bold : FontWeight.normal,
                 ),
               ),

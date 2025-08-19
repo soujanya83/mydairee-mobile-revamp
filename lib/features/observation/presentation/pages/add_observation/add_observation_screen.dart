@@ -821,6 +821,7 @@ class AddObservationScreenState extends State<AddObservationScreen>
                   },
                 ),
                 ObservationLinkingScreen(
+                  centerId: widget.centerId,
                   observationData: observationData,
                   observationId: observationIdAfterSave,
                 ),

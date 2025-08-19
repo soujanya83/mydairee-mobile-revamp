@@ -11,11 +11,13 @@ import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/pro
 import 'package:mydiaree/features/program_plan/presentation/bloc/programlist/program_list_state.dart';
 import 'package:mydiaree/features/program_plan/presentation/pages/add_program_plan_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mydiaree/features/program_plan/presentation/pages/program_plan_view_screen.dart';
 import 'package:mydiaree/features/room/presentation/widget/room_list_custom_widgets.dart';
 import 'package:mydiaree/main.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 import 'package:mydiaree/core/services/user_type_helper.dart';
+import 'package:mydiaree/features/program_plan/data/model/program_plan_list_model.dart';
 
 // ignore: must_be_immutable
 class ProgramPlansListScreen extends StatefulWidget {
@@ -143,19 +145,19 @@ class _ProgramPlansListScreenState extends State<ProgramPlansListScreen> {
                       itemBuilder: (context, index) {
                         final plan = plans[index];
                         final isSelected = selectedProgramIds.contains(plan.id);
-                        // disable edit/delete for parents
                         return ProgramPlanCard(
                           index: index,
                           isEditDelete: !isParent,
                           isSelected: isSelected,
-                          onSelect: (selected) {
-                            // setState(() {
-                            //   if (selected) {
-                            //     selectedProgramIds.add(plan.id.toString());
-                            //   } else {
-                            //     selectedProgramIds.remove(plan.id.toString());
-                            //   }
-                            // });
+                          onSelect: (selected) {},
+                          // --- Add view icon and navigation ---
+                          onViewPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ProgramPlanViewScreen(id: plan.id.toString()),
+                              ),
+                            );
                           },
                           onEditPressed: isParent
                               ? () {}
@@ -345,7 +347,9 @@ class _ProgramPlansListScreenState extends State<ProgramPlansListScreen> {
   }
 }
 
-class ProgramPlanCard extends StatelessWidget {
+
+
+class ProgramPlanCard extends StatelessWidget{
   final bool? isEditDelete;
   final int index;
   final String id;
@@ -355,12 +359,13 @@ class ProgramPlanCard extends StatelessWidget {
   final String publishedDate;
   final bool isSelected;
   final Function(bool) onSelect;
+  final VoidCallback onViewPressed;
   final VoidCallback onEditPressed;
   final VoidCallback onDeletePressed;
   final VoidCallback onPrintPressed;
 
   const ProgramPlanCard({
-     this.isEditDelete = true,
+    this.isEditDelete = true,
     required this.index,
     required this.id,
     required this.name,
@@ -369,6 +374,7 @@ class ProgramPlanCard extends StatelessWidget {
     required this.publishedDate,
     required this.isSelected,
     required this.onSelect,
+    required this.onViewPressed,
     required this.onEditPressed,
     required this.onDeletePressed,
     required this.onPrintPressed,
@@ -467,7 +473,7 @@ class ProgramPlanCard extends StatelessWidget {
                     // const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        'Published On: ${DateTime.tryParse(publishedDate)?.let((date) => DateFormat('dd MMM yyyy').format(date)) ?? 'N/A'}',
+                        'Published On: ${DateTime.tryParse(publishedDate) != null ? DateFormat('dd MMM yyyy').format(DateTime.parse(publishedDate)) : 'N/A'}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -482,14 +488,14 @@ class ProgramPlanCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // CustomActionButton(
-                    //   icon: Icons.print,
-                    //   color: AppColors.successColor,
-                    //   tooltip: 'Print',
-                    //   onPressed: onPrintPressed,
-                    // ),
+                    // --- View icon ---
+                    CustomActionButton(
+                      icon: Icons.remove_red_eye,
+                      color: AppColors.primaryColor,
+                      tooltip: 'View',
+                      onPressed: onViewPressed,
+                    ),
                     const SizedBox(width: 8),
-                    // hide edit/delete icons for parents
                     if (isEditDelete??true) ...[
                       CustomActionButton(
                         icon: Icons.edit,
@@ -564,8 +570,4 @@ class _CustomActionButtonState extends State<CustomActionButton> {
       ),
     );
   }
-}
-
-extension on DateTime {
-  T? let<T>(T Function(DateTime) cb) => cb(this);
 }

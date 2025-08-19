@@ -86,6 +86,7 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
           descriptionController.text = info.text ?? '';
           dateController.text = info.eventDate ?? '';
         });
+        
          
         final createResponse = await _repository.getCreateAnnouncementData(
           centerId: widget.centerId,

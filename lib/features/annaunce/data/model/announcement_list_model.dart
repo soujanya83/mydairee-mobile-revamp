@@ -9,93 +9,104 @@ AnnouncementsListModel announcementsListModelFromJson(String str) => Announcemen
 String announcementsListModelToJson(AnnouncementsListModel data) => json.encode(data.toJson());
 
 class AnnouncementsListModel {
-    bool? status;
-    Data? data;
+  bool? status;
+  Data? data;
 
-    AnnouncementsListModel({
-        this.status,
-        this.data,
-    });
+  AnnouncementsListModel({
+    this.status,
+    this.data,
+  });
 
-    factory AnnouncementsListModel.fromJson(Map<String, dynamic> json) => AnnouncementsListModel(
-        status: json["status"],
+  factory AnnouncementsListModel.fromJson(Map<String, dynamic> json) =>
+      AnnouncementsListModel(
+        status: json["status"] == null ? null : json["status"] as bool,
         data: json["data"] == null ? null : Data.fromJson(json["data"]),
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "status": status,
         "data": data?.toJson(),
-    };
+      };
 }
 
 class Data {
-    List<Record>? records;
-    Permissions? permissions;
-    List<Center>? centers;
-    String? centerId;
-    UserType? userType;
+  List<Record>? records;
+  dynamic permissions;
+  List<Center>? centers;
+  String? centerId;
+  String? userType;
 
-    Data({
-        this.records,
-        this.permissions,
-        this.centers,
-        this.centerId,
-        this.userType,
-    });
+  Data({
+    this.records,
+    this.permissions,
+    this.centers,
+    this.centerId,
+    this.userType,
+  });
 
-    factory Data.fromJson(Map<String, dynamic> json) => Data(
-        records: json["records"] == null ? [] : List<Record>.from(json["records"]!.map((x) => Record.fromJson(x))),
-        permissions: json["permissions"] == null ? null : Permissions.fromJson(json["permissions"]),
-        centers: json["centers"] == null ? [] : List<Center>.from(json["centers"]!.map((x) => Center.fromJson(x))),
-        centerId: json["centerId"],
-        userType: userTypeValues.map[json["userType"]]!,
-    );
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
+        records: json["records"] == null
+            ? []
+            : List<Record>.from(
+                (json["records"] as List).map((x) => Record.fromJson(x))),
+        permissions: json["permissions"],
+        centers: json["centers"] == null
+            ? []
+            : List<Center>.from(
+                (json["centers"] as List).map((x) => Center.fromJson(x))),
+        centerId: json["centerId"]?.toString(),
+        userType: json["userType"]?.toString(),
+      );
 
-    Map<String, dynamic> toJson() => {
-        "records": records == null ? [] : List<dynamic>.from(records!.map((x) => x.toJson())),
-        "permissions": permissions?.toJson(),
-        "centers": centers == null ? [] : List<dynamic>.from(centers!.map((x) => x.toJson())),
+  Map<String, dynamic> toJson() => {
+        "records": records == null
+            ? []
+            : List<dynamic>.from(records!.map((x) => x.toJson())),
+        "permissions": permissions,
+        "centers": centers == null
+            ? []
+            : List<dynamic>.from(centers!.map((x) => x.toJson())),
         "centerId": centerId,
-        "userType": userTypeValues.reverse[userType],
-    };
+        "userType": userType,
+      };
 }
 
 class Center {
-    int? id;
-    dynamic userId;
-    String? centerName;
-    String? adressStreet;
-    String? addressCity;
-    String? addressState;
-    String? addressZip;
-    DateTime? createdAt;
-    DateTime? updatedAt;
+  int? id;
+  dynamic userId;
+  String? centerName;
+  String? adressStreet;
+  String? addressCity;
+  String? addressState;
+  String? addressZip;
+  String? createdAt;
+  String? updatedAt;
 
-    Center({
-        this.id,
-        this.userId,
-        this.centerName,
-        this.adressStreet,
-        this.addressCity,
-        this.addressState,
-        this.addressZip,
-        this.createdAt,
-        this.updatedAt,
-    });
+  Center({
+    this.id,
+    this.userId,
+    this.centerName,
+    this.adressStreet,
+    this.addressCity,
+    this.addressState,
+    this.addressZip,
+    this.createdAt,
+    this.updatedAt,
+  });
 
-    factory Center.fromJson(Map<String, dynamic> json) => Center(
-        id: json["id"],
+  factory Center.fromJson(Map<String, dynamic> json) => Center(
+        id: json["id"] is int ? json["id"] : int.tryParse(json["id"]?.toString() ?? ''),
         userId: json["user_id"],
-        centerName: json["centerName"],
-        adressStreet: json["adressStreet"],
-        addressCity: json["addressCity"],
-        addressState: json["addressState"],
-        addressZip: json["addressZip"],
-        createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-        updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    );
+        centerName: json["centerName"]?.toString(),
+        adressStreet: json["adressStreet"]?.toString(),
+        addressCity: json["addressCity"]?.toString(),
+        addressState: json["addressState"]?.toString(),
+        addressZip: json["addressZip"]?.toString(),
+        createdAt: json["created_at"]?.toString(),
+        updatedAt: json["updated_at"]?.toString(),
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "id": id,
         "user_id": userId,
         "centerName": centerName,
@@ -103,167 +114,167 @@ class Center {
         "addressCity": addressCity,
         "addressState": addressState,
         "addressZip": addressZip,
-        "created_at": createdAt?.toIso8601String(),
-        "updated_at": updatedAt?.toIso8601String(),
-    };
+        "created_at": createdAt,
+        "updated_at": updatedAt,
+      };
 }
 
 class Permissions {
-    int? id;
-    String? userid;
-    int? centerid;
-    int? addObservation;
-    int? approveObservation;
-    int? deleteObservation;
-    int? updateObservation;
-    int? viewAllObservation;
-    int? addReflection;
-    int? approveReflection;
-    int? updatereflection;
-    int? deletereflection;
-    int? viewAllReflection;
-    int? addQip;
-    int? editQip;
-    int? deleteQip;
-    int? downloadQip;
-    int? printQip;
-    int? mailQip;
-    int? viewQip;
-    int? viewRoom;
-    int? addRoom;
-    int? editRoom;
-    int? deleteRoom;
-    int? addProgramPlan;
-    int? editProgramPlan;
-    int? viewProgramPlan;
-    int? deleteProgramPlan;
-    int? addAnnouncement;
-    int? approveAnnouncement;
-    int? deleteAnnouncement;
-    int? updateAnnouncement;
-    int? viewAllAnnouncement;
-    int? addSurvey;
-    int? approveSurvey;
-    int? deleteSurvey;
-    int? updateSurvey;
-    int? viewAllSurvey;
-    int? addRecipe;
-    int? approveRecipe;
-    int? deleteRecipe;
-    int? updateRecipe;
-    int? addMenu;
-    int? approveMenu;
-    int? deleteMenu;
-    int? updateMenu;
-    int? viewDailyDiary;
-    int? updateDailyDiary;
-    int? updateHeadChecks;
-    int? updateAccidents;
-    int? updateModules;
-    int? addUsers;
-    int? viewUsers;
-    int? updateUsers;
-    int? addCenters;
-    int? viewCenters;
-    int? updateCenters;
-    int? addParent;
-    int? viewParent;
-    int? updateParent;
-    int? addChildGroup;
-    int? viewChildGroup;
-    int? updateChildGroup;
-    int? updatePermission;
-    int? addprogress;
-    int? editprogress;
-    int? viewprogress;
-    int? editlesson;
-    int? viewlesson;
-    int? printpdflesson;
-    int? assessment;
-    int? addSelfAssessment;
-    int? editSelfAssessment;
-    int? deleteSelfAssessment;
-    int? viewSelfAssessment;
+  int? id;
+  String? userid;
+  int? centerid;
+  int? addObservation;
+  int? approveObservation;
+  int? deleteObservation;
+  int? updateObservation;
+  int? viewAllObservation;
+  int? addReflection;
+  int? approveReflection;
+  int? updatereflection;
+  int? deletereflection;
+  int? viewAllReflection;
+  int? addQip;
+  int? editQip;
+  int? deleteQip;
+  int? downloadQip;
+  int? printQip;
+  int? mailQip;
+  int? viewQip;
+  int? viewRoom;
+  int? addRoom;
+  int? editRoom;
+  int? deleteRoom;
+  int? addProgramPlan;
+  int? editProgramPlan;
+  int? viewProgramPlan;
+  int? deleteProgramPlan;
+  int? addAnnouncement;
+  int? approveAnnouncement;
+  int? deleteAnnouncement;
+  int? updateAnnouncement;
+  int? viewAllAnnouncement;
+  int? addSurvey;
+  int? approveSurvey;
+  int? deleteSurvey;
+  int? updateSurvey;
+  int? viewAllSurvey;
+  int? addRecipe;
+  int? approveRecipe;
+  int? deleteRecipe;
+  int? updateRecipe;
+  int? addMenu;
+  int? approveMenu;
+  int? deleteMenu;
+  int? updateMenu;
+  int? viewDailyDiary;
+  int? updateDailyDiary;
+  int? updateHeadChecks;
+  int? updateAccidents;
+  int? updateModules;
+  int? addUsers;
+  int? viewUsers;
+  int? updateUsers;
+  int? addCenters;
+  int? viewCenters;
+  int? updateCenters;
+  int? addParent;
+  int? viewParent;
+  int? updateParent;
+  int? addChildGroup;
+  int? viewChildGroup;
+  int? updateChildGroup;
+  int? updatePermission;
+  int? addprogress;
+  int? editprogress;
+  int? viewprogress;
+  int? editlesson;
+  int? viewlesson;
+  int? printpdflesson;
+  int? assessment;
+  int? addSelfAssessment;
+  int? editSelfAssessment;
+  int? deleteSelfAssessment;
+  int? viewSelfAssessment;
 
-    Permissions({
-        this.id,
-        this.userid,
-        this.centerid,
-        this.addObservation,
-        this.approveObservation,
-        this.deleteObservation,
-        this.updateObservation,
-        this.viewAllObservation,
-        this.addReflection,
-        this.approveReflection,
-        this.updatereflection,
-        this.deletereflection,
-        this.viewAllReflection,
-        this.addQip,
-        this.editQip,
-        this.deleteQip,
-        this.downloadQip,
-        this.printQip,
-        this.mailQip,
-        this.viewQip,
-        this.viewRoom,
-        this.addRoom,
-        this.editRoom,
-        this.deleteRoom,
-        this.addProgramPlan,
-        this.editProgramPlan,
-        this.viewProgramPlan,
-        this.deleteProgramPlan,
-        this.addAnnouncement,
-        this.approveAnnouncement,
-        this.deleteAnnouncement,
-        this.updateAnnouncement,
-        this.viewAllAnnouncement,
-        this.addSurvey,
-        this.approveSurvey,
-        this.deleteSurvey,
-        this.updateSurvey,
-        this.viewAllSurvey,
-        this.addRecipe,
-        this.approveRecipe,
-        this.deleteRecipe,
-        this.updateRecipe,
-        this.addMenu,
-        this.approveMenu,
-        this.deleteMenu,
-        this.updateMenu,
-        this.viewDailyDiary,
-        this.updateDailyDiary,
-        this.updateHeadChecks,
-        this.updateAccidents,
-        this.updateModules,
-        this.addUsers,
-        this.viewUsers,
-        this.updateUsers,
-        this.addCenters,
-        this.viewCenters,
-        this.updateCenters,
-        this.addParent,
-        this.viewParent,
-        this.updateParent,
-        this.addChildGroup,
-        this.viewChildGroup,
-        this.updateChildGroup,
-        this.updatePermission,
-        this.addprogress,
-        this.editprogress,
-        this.viewprogress,
-        this.editlesson,
-        this.viewlesson,
-        this.printpdflesson,
-        this.assessment,
-        this.addSelfAssessment,
-        this.editSelfAssessment,
-        this.deleteSelfAssessment,
-        this.viewSelfAssessment,
-    });
+  Permissions({
+    this.id,
+    this.userid,
+    this.centerid,
+    this.addObservation,
+    this.approveObservation,
+    this.deleteObservation,
+    this.updateObservation,
+    this.viewAllObservation,
+    this.addReflection,
+    this.approveReflection,
+    this.updatereflection,
+    this.deletereflection,
+    this.viewAllReflection,
+    this.addQip,
+    this.editQip,
+    this.deleteQip,
+    this.downloadQip,
+    this.printQip,
+    this.mailQip,
+    this.viewQip,
+    this.viewRoom,
+    this.addRoom,
+    this.editRoom,
+    this.deleteRoom,
+    this.addProgramPlan,
+    this.editProgramPlan,
+    this.viewProgramPlan,
+    this.deleteProgramPlan,
+    this.addAnnouncement,
+    this.approveAnnouncement,
+    this.deleteAnnouncement,
+    this.updateAnnouncement,
+    this.viewAllAnnouncement,
+    this.addSurvey,
+    this.approveSurvey,
+    this.deleteSurvey,
+    this.updateSurvey,
+    this.viewAllSurvey,
+    this.addRecipe,
+    this.approveRecipe,
+    this.deleteRecipe,
+    this.updateRecipe,
+    this.addMenu,
+    this.approveMenu,
+    this.deleteMenu,
+    this.updateMenu,
+    this.viewDailyDiary,
+    this.updateDailyDiary,
+    this.updateHeadChecks,
+    this.updateAccidents,
+    this.updateModules,
+    this.addUsers,
+    this.viewUsers,
+    this.updateUsers,
+    this.addCenters,
+    this.viewCenters,
+    this.updateCenters,
+    this.addParent,
+    this.viewParent,
+    this.updateParent,
+    this.addChildGroup,
+    this.viewChildGroup,
+    this.updateChildGroup,
+    this.updatePermission,
+    this.addprogress,
+    this.editprogress,
+    this.viewprogress,
+    this.editlesson,
+    this.viewlesson,
+    this.printpdflesson,
+    this.assessment,
+    this.addSelfAssessment,
+    this.editSelfAssessment,
+    this.deleteSelfAssessment,
+    this.viewSelfAssessment,
+  });
 
-    factory Permissions.fromJson(Map<String, dynamic> json) => Permissions(
+  factory Permissions.fromJson(Map<String, dynamic> json) => Permissions(
         id: json["id"],
         userid: json["userid"],
         centerid: json["centerid"],
@@ -339,9 +350,9 @@ class Permissions {
         editSelfAssessment: json["editSelfAssessment"],
         deleteSelfAssessment: json["deleteSelfAssessment"],
         viewSelfAssessment: json["viewSelfAssessment"],
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "id": id,
         "userid": userid,
         "centerid": centerid,
@@ -417,163 +428,158 @@ class Permissions {
         "editSelfAssessment": editSelfAssessment,
         "deleteSelfAssessment": deleteSelfAssessment,
         "viewSelfAssessment": viewSelfAssessment,
-    };
+      };
 }
 
 class Record {
-    int? id;
-    String? title;
-    String? text;
-    String? eventDate;
-    Status? status;
-    dynamic announcementMedia;
-    int? centerid;
-    CreatedBy? createdBy;
-    DateTime? createdAt;
-    Creator? creator;
+  int? id;
+  String? title;
+  String? text;
+  String? eventDate;
+  String? status;
+  dynamic announcementMedia;
+  int? centerid;
+  String? createdBy;
+  String? createdAt;
+  Creator? creator;
 
-    Record({
-        this.id,
-        this.title,
-        this.text,
-        this.eventDate,
-        this.status,
-        this.announcementMedia,
-        this.centerid,
-        this.createdBy,
-        this.createdAt,
-        this.creator,
-    });
+  Record({
+    this.id,
+    this.title,
+    this.text,
+    this.eventDate,
+    this.status,
+    this.announcementMedia,
+    this.centerid,
+    this.createdBy,
+    this.createdAt,
+    this.creator,
+  });
 
-    factory Record.fromJson(Map<String, dynamic> json) => Record(
-        id: json["id"],
-        title: json["title"],
-        text: json["text"],
-        eventDate: json["eventDate"],
-        status: statusValues.map[json["status"]]!,
+  factory Record.fromJson(Map<String, dynamic> json) => Record(
+        id: json["id"] is int ? json["id"] : int.tryParse(json["id"]?.toString() ?? ''),
+        title: json["title"]?.toString(),
+        text: json["text"]?.toString(),
+        eventDate: json["eventDate"]?.toString(),
+        status: json["status"]?.toString(),
         announcementMedia: json["announcementMedia"],
-        centerid: json["centerid"],
-        createdBy: createdByValues.map[json["createdBy"]]!,
-        createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+        centerid: json["centerid"] is int ? json["centerid"] : int.tryParse(json["centerid"]?.toString() ?? ''),
+        createdBy: json["createdBy"]?.toString(),
+        createdAt: json["createdAt"]?.toString(),
         creator: json["creator"] == null ? null : Creator.fromJson(json["creator"]),
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "id": id,
         "title": title,
         "text": text,
         "eventDate": eventDate,
-        "status": statusValues.reverse[status],
+        "status": status,
         "announcementMedia": announcementMedia,
         "centerid": centerid,
-        "createdBy": createdByValues.reverse[createdBy],
-        "createdAt": createdAt?.toIso8601String(),
+        "createdBy": createdBy,
+        "createdAt": createdAt,
         "creator": creator?.toJson(),
-    };
+      };
 }
-
-enum CreatedBy {
-    DEEPTI
-}
-
-final createdByValues = EnumValues({
-    "Deepti": CreatedBy.DEEPTI
-});
 
 class Creator {
-    int? id;
-    int? userid;
-    Email? username;
-    Email? emailid;
-    Email? email;
-    int? centerStatus;
-    String? contactNo;
-    CreatedBy? name;
-    DateTime? dob;
-    Gender? gender;
-    ImageUrl? imageUrl;
-    UserType? userType;
-    Title? title;
-    dynamic status;
-    String? authToken;
-    String? deviceid;
-    String? devicetype;
-    dynamic companyLogo;
-    int? theme;
-    String? imagePosition;
-    dynamic createdBy;
-    dynamic emailVerifiedAt;
-    DateTime? createdAt;
-    DateTime? updatedAt;
+  int? id;
+  int? userid;
+  String? username;
+  String? emailid;
+  String? email;
+  int? centerStatus;
+  String? contactNo;
+  String? name;
+  String? dob;
+  String? gender;
+  String? imageUrl;
+  String? userType;
+  String? title;
+  dynamic status;
+  String? authToken;
+  String? deviceid;
+  String? devicetype;
+  dynamic companyLogo;
+  int? theme;
+  String? imagePosition;
+  dynamic createdBy;
+  dynamic emailVerifiedAt;
+  int? hasSeenLoginNotice;
+  String? createdAt;
+  String? updatedAt;
 
-    Creator({
-        this.id,
-        this.userid,
-        this.username,
-        this.emailid,
-        this.email,
-        this.centerStatus,
-        this.contactNo,
-        this.name,
-        this.dob,
-        this.gender,
-        this.imageUrl,
-        this.userType,
-        this.title,
-        this.status,
-        this.authToken,
-        this.deviceid,
-        this.devicetype,
-        this.companyLogo,
-        this.theme,
-        this.imagePosition,
-        this.createdBy,
-        this.emailVerifiedAt,
-        this.createdAt,
-        this.updatedAt,
-    });
+  Creator({
+    this.id,
+    this.userid,
+    this.username,
+    this.emailid,
+    this.email,
+    this.centerStatus,
+    this.contactNo,
+    this.name,
+    this.dob,
+    this.gender,
+    this.imageUrl,
+    this.userType,
+    this.title,
+    this.status,
+    this.authToken,
+    this.deviceid,
+    this.devicetype,
+    this.companyLogo,
+    this.theme,
+    this.imagePosition,
+    this.createdBy,
+    this.emailVerifiedAt,
+    this.hasSeenLoginNotice,
+    this.createdAt,
+    this.updatedAt,
+  });
 
-    factory Creator.fromJson(Map<String, dynamic> json) => Creator(
-        id: json["id"],
-        userid: json["userid"],
-        username: emailValues.map[json["username"]]!,
-        emailid: emailValues.map[json["emailid"]]!,
-        email: emailValues.map[json["email"]]!,
-        centerStatus: json["center_status"],
-        contactNo: json["contactNo"],
-        name: createdByValues.map[json["name"]]!,
-        dob: json["dob"] == null ? null : DateTime.parse(json["dob"]),
-        gender: genderValues.map[json["gender"]]!,
-        imageUrl: imageUrlValues.map[json["imageUrl"]]!,
-        userType: userTypeValues.map[json["userType"]]!,
-        title: titleValues.map[json["title"]]!,
+  factory Creator.fromJson(Map<String, dynamic> json) => Creator(
+        id: json["id"] is int ? json["id"] : int.tryParse(json["id"]?.toString() ?? ''),
+        userid: json["userid"] is int ? json["userid"] : int.tryParse(json["userid"]?.toString() ?? ''),
+        username: json["username"]?.toString(),
+        emailid: json["emailid"]?.toString(),
+        email: json["email"]?.toString(),
+        centerStatus: json["center_status"] is int ? json["center_status"] : int.tryParse(json["center_status"]?.toString() ?? ''),
+        contactNo: json["contactNo"]?.toString(),
+        name: json["name"]?.toString(),
+        dob: json["dob"]?.toString(),
+        gender: json["gender"]?.toString(),
+        imageUrl: json["imageUrl"]?.toString(),
+        userType: json["userType"]?.toString(),
+        title: json["title"]?.toString(),
         status: json["status"],
-        authToken: json["AuthToken"],
-        deviceid: json["deviceid"],
-        devicetype: json["devicetype"],
+        authToken: json["AuthToken"]?.toString(),
+        deviceid: json["deviceid"]?.toString(),
+        devicetype: json["devicetype"]?.toString(),
         companyLogo: json["companyLogo"],
-        theme: json["theme"],
-        imagePosition: json["image_position"],
+        theme: json["theme"] is int ? json["theme"] : int.tryParse(json["theme"]?.toString() ?? ''),
+        imagePosition: json["image_position"]?.toString(),
         createdBy: json["created_by"],
         emailVerifiedAt: json["email_verified_at"],
-        createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-        updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    );
+        hasSeenLoginNotice: json["has_seen_login_notice"] is int ? json["has_seen_login_notice"] : int.tryParse(json["has_seen_login_notice"]?.toString() ?? ''),
+        createdAt: json["created_at"]?.toString(),
+        updatedAt: json["updated_at"]?.toString(),
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "id": id,
         "userid": userid,
-        "username": emailValues.reverse[username],
-        "emailid": emailValues.reverse[emailid],
-        "email": emailValues.reverse[email],
+        "username": username,
+        "emailid": emailid,
+        "email": email,
         "center_status": centerStatus,
         "contactNo": contactNo,
-        "name": createdByValues.reverse[name],
-        "dob": dob?.toIso8601String(),
-        "gender": genderValues.reverse[gender],
-        "imageUrl": imageUrlValues.reverse[imageUrl],
-        "userType": userTypeValues.reverse[userType],
-        "title": titleValues.reverse[title],
+        "name": name,
+        "dob": dob,
+        "gender": gender,
+        "imageUrl": imageUrl,
+        "userType": userType,
+        "title": title,
         "status": status,
         "AuthToken": authToken,
         "deviceid": deviceid,
@@ -583,67 +589,8 @@ class Creator {
         "image_position": imagePosition,
         "created_by": createdBy,
         "email_verified_at": emailVerifiedAt,
-        "created_at": createdAt?.toIso8601String(),
-        "updated_at": updatedAt?.toIso8601String(),
-    };
-}
-
-enum Email {
-    INFO_MYDIAREE_COM
-}
-
-final emailValues = EnumValues({
-    "info@mydiaree.com": Email.INFO_MYDIAREE_COM
-});
-
-enum Gender {
-    FEMALE
-}
-
-final genderValues = EnumValues({
-    "FEMALE": Gender.FEMALE
-});
-
-enum ImageUrl {
-    UPLOADS_OLDDATA_PROFILE_1741777755_JPG
-}
-
-final imageUrlValues = EnumValues({
-    "uploads/olddata/profile_1741777755.jpg": ImageUrl.UPLOADS_OLDDATA_PROFILE_1741777755_JPG
-});
-
-enum Title {
-    MISS
-}
-
-final titleValues = EnumValues({
-    "Miss": Title.MISS
-});
-
-enum UserType {
-    SUPERADMIN
-}
-
-final userTypeValues = EnumValues({
-    "Superadmin": UserType.SUPERADMIN
-});
-
-enum Status {
-    SENT
-}
-
-final statusValues = EnumValues({
-    "Sent": Status.SENT
-});
-
-class EnumValues<T> {
-    Map<String, T> map;
-    late Map<T, String> reverseMap;
-
-    EnumValues(this.map);
-
-    Map<T, String> get reverse {
-            reverseMap = map.map((k, v) => MapEntry(v, k));
-            return reverseMap;
-    }
+        "has_seen_login_notice": hasSeenLoginNotice,
+        "created_at": createdAt,
+        "updated_at": updatedAt,
+      };
 }
