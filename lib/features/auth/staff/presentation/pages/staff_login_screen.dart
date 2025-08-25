@@ -26,6 +26,14 @@ class StaffLoginScreen extends StatefulWidget {
 
 class _StaffLoginScreenState extends State<StaffLoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+
+
+
+
+
+
+  
   final TextEditingController employeeCodeController = TextEditingController();
   final TextEditingController pinCodeController = TextEditingController();
   bool isLoading = false;
@@ -33,6 +41,9 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return StatusBarCustom(
+
+
+
       child: CustomScaffold(
         body: SingleChildScrollView(
           child: Center(

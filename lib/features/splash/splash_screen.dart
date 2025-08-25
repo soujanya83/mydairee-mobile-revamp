@@ -14,6 +14,12 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
+
+
+
+
+
+
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
@@ -23,7 +29,9 @@ class _SplashScreenState extends State<SplashScreen> {
       if (token != null && token.isNotEmpty) {
         // If token exists, navigate to Dashboard
         Navigator.pushReplacement(
+
           context,
+          
           MaterialPageRoute(
             builder: (_) => DashboardScreen(),
           ),

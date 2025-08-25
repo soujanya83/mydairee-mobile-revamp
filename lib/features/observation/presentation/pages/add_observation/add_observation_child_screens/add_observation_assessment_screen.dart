@@ -342,6 +342,8 @@ class _AssessmentsScreenState extends State<AssessmentsScreen>
                                           .white, // Explicitly set white background
                                       child: hasSubActivities
                                           ? Column(
+
+                                            
                                               children: activity.subActivities
                                                   .map((subActivity) {
                                                 return Column(

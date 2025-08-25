@@ -44,6 +44,9 @@ class _ViewObservationScreenState extends State<ViewObservationScreen>
     super.dispose();
   }
 
+
+
+
   Widget _buildHeader(
     String? observationTitle,
     String? observationId,
@@ -56,7 +59,12 @@ class _ViewObservationScreenState extends State<ViewObservationScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
+
             child: Text(
+
+
+
+
               'Observation Details',
               // _cleanHtmlContent(observationTitle ?? 'Observation Details'),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -65,6 +73,13 @@ class _ViewObservationScreenState extends State<ViewObservationScreen>
                   ),
             ),
           ),
+         
+
+
+
+
+
+
           if (!UserTypeHelper.isParent)
             CustomButton(
               text: 'Edit',
@@ -85,6 +100,8 @@ class _ViewObservationScreenState extends State<ViewObservationScreen>
       ),
     );
   }
+
+  
 
   String _cleanHtmlContent(String htmlContent) {
     final decodedEntities = htmlContent

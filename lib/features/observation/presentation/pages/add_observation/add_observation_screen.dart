@@ -820,6 +820,8 @@ class AddObservationScreenState extends State<AddObservationScreen>
                     _controller!.animateTo(2);
                   },
                 ),
+
+                
                 ObservationLinkingScreen(
                   centerId: widget.centerId,
                   observationData: observationData,

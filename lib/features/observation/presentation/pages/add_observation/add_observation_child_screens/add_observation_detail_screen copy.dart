@@ -12,12 +12,17 @@ class AddObservationDetailsScreen extends StatefulWidget {
     required this.centerId,
   }) : super(key: key);
 
+
+
+
   @override
   State<AddObservationDetailsScreen> createState() =>
       _AddObservationDetailsScreenState();
 }
 
 class _AddObservationDetailsScreenState extends State<AddObservationDetailsScreen> { 
+
+
 
   @override
   Widget build(BuildContext context) {

@@ -564,12 +564,17 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                                   _applyAdvancedFilters([], [], '', '', []);
                                 },
                               ),
+
+
                             if (!UserTypeHelper.isParent)
                               _buildFilterChip(
                                 'Draft',
                                 _statusFilter == 'draft',
                                 () => _handleStatusFilter('draft'),
                               ),
+
+
+                              
                             if (!UserTypeHelper.isParent)
                               _buildFilterChip(
                                 'Published',
@@ -609,6 +614,13 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                 Padding(
                     padding: EdgeInsetsGeometry.only(top: screenHeight * .3),
                     child: const Center(child: CircularProgressIndicator()))
+              
+
+
+
+
+
+
               else if (_errorMessage.isNotEmpty)
                 Center(
                   child: Column(
@@ -665,6 +677,17 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                     );
                   },
                 ),
+             
+
+
+
+
+
+
+
+
+
+
               if (_isLoadingMore)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),

@@ -56,6 +56,8 @@ class _SnapshotScreenState extends State<SnapshotScreen> {
             Padding(
               padding: const EdgeInsets.only(right: 15, top: 15, bottom: 15),
               child: Align(
+
+                
                 alignment: Alignment.topRight,
                 child: UIHelpers.addButton(
                   context: context,

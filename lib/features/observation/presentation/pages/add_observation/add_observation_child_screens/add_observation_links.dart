@@ -223,16 +223,22 @@ class _ObservationLinkingScreenState extends State<ObservationLinkingScreen> {
   bool isStatusUpdating = false;
   String selectedStatus = '';
 
+
+
   Future<void> _updateObservationStatus(String status) async {
     setState(() {
       isStatusUpdating = true;
     });
     try {
+
+
       final repo = ObservationRepository();
       final resp = await repo.updateObservationStatus(
         observationId: widget.observationId,
         status: status,
       );
+
+      
       if (resp.success) {
         UIHelpers.showToast(context, message: 'Status updated to $status');
         // Pop until observation list screen if published or draft

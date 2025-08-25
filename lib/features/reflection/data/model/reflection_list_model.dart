@@ -12,6 +12,8 @@ class ReflectionListModel {
   Data? data;
 
   ReflectionListModel({
+
+
     this.status,
     this.message,
     this.data,
@@ -20,6 +22,7 @@ class ReflectionListModel {
   factory ReflectionListModel.fromJson(Map<String, dynamic> json) =>
       ReflectionListModel(
         status: json["status"] as bool?,
+        
         message: json["message"] as String?,
         data: json["data"] == null ? null : Data.fromJson(json["data"]),
       );

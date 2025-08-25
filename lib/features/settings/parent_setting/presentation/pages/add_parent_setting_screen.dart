@@ -74,6 +74,17 @@ class _AddParentScreenState extends State<AddParentScreen> {
     // childrenData = await repository.getChildren(widget.centerId ?? '');
   }
 
+
+
+
+
+
+
+
+
+
+
+
   Future<void> _pickImage() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -87,6 +98,18 @@ class _AddParentScreenState extends State<AddParentScreen> {
       });
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
 
   Future<void> _showChildrenDialog() async {
     final children = childrenData?.data?.data ?? [];
@@ -110,7 +133,8 @@ class _AddParentScreenState extends State<AddParentScreen> {
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false) || _selectedGender == null) {
+    if (!(_formKey.currentState?.validate() ?? false) ||
+        _selectedGender == null) {
       if (_selectedGender == null) {
         UIHelpers.showToast(
           context,
@@ -135,9 +159,9 @@ class _AddParentScreenState extends State<AddParentScreen> {
           children: _children,
           centerId: widget.centerId ?? '1',
         );
-        if(success) {
+        if (success) {
           message = 'Parent updated successfully!';
-        }else {
+        } else {
           message = 'Failed to update parent';
         }
       } else {
@@ -151,9 +175,9 @@ class _AddParentScreenState extends State<AddParentScreen> {
           centerId: widget.centerId ?? '1',
         );
 
-        if(success) {
+        if (success) {
           message = 'Parent added successfully!';
-        }else {
+        } else {
           message = 'Failed to add parent';
         }
       }
@@ -176,6 +200,11 @@ class _AddParentScreenState extends State<AddParentScreen> {
       );
     }
   }
+
+
+
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -206,8 +235,9 @@ class _AddParentScreenState extends State<AddParentScreen> {
                           backgroundImage: _profileImage != null
                               ? FileImage(_profileImage!)
                               : (widget.isEdit &&
-                                      widget.parent?.avatarUrl?.isNotEmpty == true
-                                  ? NetworkImage(widget.parent?.avatarUrl??'')
+                                      widget.parent?.avatarUrl?.isNotEmpty ==
+                                          true
+                                  ? NetworkImage(widget.parent?.avatarUrl ?? '')
                                   : null),
                           child: _profileImage == null &&
                                   (widget.parent?.avatarUrl?.isEmpty ?? true)
@@ -394,7 +424,6 @@ class _AddParentScreenState extends State<AddParentScreen> {
               ),
             ),
           ),
-        
         ],
       ),
     );

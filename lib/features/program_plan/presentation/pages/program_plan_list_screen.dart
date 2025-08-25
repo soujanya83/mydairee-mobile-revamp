@@ -139,12 +139,18 @@ class _ProgramPlansListScreenState extends State<ProgramPlansListScreen> {
                     if (plans.isEmpty) {
                       return const Center(child: Text('No plans found.'));
                     }
+
+
+
                     return ListView.builder(
                       padding: const EdgeInsets.all(12),
                       itemCount: plans.length,
                       itemBuilder: (context, index) {
                         final plan = plans[index];
                         final isSelected = selectedProgramIds.contains(plan.id);
+
+
+
                         return ProgramPlanCard(
                           index: index,
                           isEditDelete: !isParent,
@@ -153,6 +159,7 @@ class _ProgramPlansListScreenState extends State<ProgramPlansListScreen> {
                           // --- Add view icon and navigation ---
                           onViewPressed: () {
                             Navigator.push(
+                              
                               context,
                               MaterialPageRoute(
                                 builder: (_) => ProgramPlanViewScreen(id: plan.id.toString()),
